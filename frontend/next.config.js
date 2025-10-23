@@ -8,13 +8,7 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '2mb',
     },
-    // Skip static generation during build - render all pages dynamically
-    dynamicIO: true,
   },
-
-  // Skip prerendering completely
-  skipTrailingSlashRedirect: true,
-  skipMiddlewareUrlNormalize: true,
 
   images: {
     remotePatterns: [

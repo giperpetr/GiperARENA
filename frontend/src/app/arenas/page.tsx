@@ -1,9 +1,7 @@
 'use client';
 
-
 import { useState } from 'react';
 import Link from 'next/link';
-import { Header } from '@/components/layout/header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -101,8 +99,6 @@ export default function ArenasPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-
       {/* Hero Section */}
       <section className="relative border-b border-border/40 bg-gradient-to-b from-background to-space-dark-gray py-16">
         <div className="container mx-auto px-4">

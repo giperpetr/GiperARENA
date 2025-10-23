@@ -1,8 +1,6 @@
 'use client';
 
-
 import { useState } from 'react';
-import { Header } from '@/components/layout/header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -89,8 +87,6 @@ export default function WalletPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-
       {/* Header */}
       <section className="border-b border-border/40 bg-gradient-to-b from-background to-space-dark-gray py-8">
         <div className="container mx-auto px-4">

@@ -1,9 +1,7 @@
 'use client';
 
-
-import { useState, use } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { Header } from '@/components/layout/header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,14 +39,11 @@ const RECENT_SESSIONS = [
   { player: 'SkyMaster', score: 9650, time: '2m 58s', timestamp: '28 минут назад' },
 ];
 
-export default function ArenaDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function ArenaDetailPage({ params }: { params: { id: string } }) {
   const [isPlaying, setIsPlaying] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-
       {/* Arena Header */}
       <section className="border-b border-border/40 bg-gradient-to-b from-background to-space-dark-gray py-8">
         <div className="container mx-auto px-4">

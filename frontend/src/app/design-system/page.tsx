@@ -1,6 +1,5 @@
 'use client';
 
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,7 @@ export default function DesignSystemPage() {
       <div className="mx-auto max-w-7xl space-y-12">
         {/* Header */}
         <div className="space-y-4">
-          <h1 className="text-gradient-cyan-purple">ArenaHUB Design System</h1>
+          <h1 className="text-gradient-cyan-purple">GiperARENA Design System</h1>
           <p className="text-xl text-muted-foreground">
             Космическая игровая тема с неоновыми акцентами
           </p>
