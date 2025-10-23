@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,7 +41,7 @@ const RECENT_SESSIONS = [
   { player: 'SkyMaster', score: 9650, time: '2m 58s', timestamp: '28 минут назад' },
 ];
 
-export default function ArenaDetailPage({ params }: { params: { id: string } }) {
+export default function ArenaDetailPage({ params }: any) {
   const [isPlaying, setIsPlaying] = useState(false);
 
   return (
