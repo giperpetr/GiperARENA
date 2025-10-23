@@ -139,16 +139,10 @@ jobs:
             echo "📦 Загрузка новых SLIM образов (SHA: ${SHORT_SHA})..."
             docker pull ghcr.io/giperpetr/giperarena/frontend:master-${SHORT_SHA}
             docker pull ghcr.io/giperpetr/giperarena/backend:master-${SHORT_SHA}
-            docker pull ghcr.io/giperpetr/giperarena/realtime:master-${SHORT_SHA}
-            docker pull ghcr.io/giperpetr/giperarena/media:master-${SHORT_SHA}
-            docker pull ghcr.io/giperpetr/giperarena/blockchain:master-${SHORT_SHA}
 
             # Тегируем как latest для совместимости
             docker tag ghcr.io/giperpetr/giperarena/frontend:master-${SHORT_SHA} ghcr.io/giperpetr/giperarena/frontend:latest
             docker tag ghcr.io/giperpetr/giperarena/backend:master-${SHORT_SHA} ghcr.io/giperpetr/giperarena/backend:latest
-            docker tag ghcr.io/giperpetr/giperarena/realtime:master-${SHORT_SHA} ghcr.io/giperpetr/giperarena/realtime:latest
-            docker tag ghcr.io/giperpetr/giperarena/media:master-${SHORT_SHA} ghcr.io/giperpetr/giperarena/media:latest
-            docker tag ghcr.io/giperpetr/giperarena/blockchain:master-${SHORT_SHA} ghcr.io/giperpetr/giperarena/blockchain:latest
 
             # Проверка размеров образов
             echo "📊 Размеры SLIM образов:"
@@ -177,7 +171,7 @@ jobs:
                   - proxy
                 labels:
                   - "traefik.enable=true"
-                  - "traefik.http.routers.giperarena-frontend.rule=Host(\`giperarena.space\`)"
+                  - "traefik.http.routers.giperarena-frontend.rule=Host(`giperarena.space`)"
                   - "traefik.http.routers.giperarena-frontend.entrypoints=websecure"
                   - "traefik.http.routers.giperarena-frontend.tls.certresolver=letsencrypt"
                   - "traefik.http.services.giperarena-frontend.loadbalancer.server.port=3000"
@@ -211,84 +205,12 @@ jobs:
                   - supabase_default
                 labels:
                   - "traefik.enable=true"
-                  - "traefik.http.routers.giperarena-api.rule=Host(\`api.giperarena.space\`)"
+                  - "traefik.http.routers.giperarena-api.rule=Host(`api.giperarena.space`)"
                   - "traefik.http.routers.giperarena-api.entrypoints=websecure"
                   - "traefik.http.routers.giperarena-api.tls.certresolver=letsencrypt"
                   - "traefik.http.services.giperarena-api.loadbalancer.server.port=3000"
                 healthcheck:
                   test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
-                  interval: 30s
-                  timeout: 10s
-                  retries: 3
-
-              realtime:
-                image: ghcr.io/giperpetr/giperarena/realtime:latest
-                container_name: giperarena-realtime
-                restart: unless-stopped
-                environment:
-                  - NODE_ENV=production
-                  - PORT=3001
-                  - REDIS_URL=redis://:${{ secrets.REDIS_PASSWORD }}@queue-redis:6379/3
-                  - DATABASE_URL=postgresql://postgres.giper_prod:${{ secrets.POSTGRES_PASSWORD }}@supavisor:5432/postgres
-                  - JWT_SECRET=${{ secrets.JWT_SECRET }}
-                  - CORS_ORIGIN=https://giperarena.space
-                networks:
-                  - proxy
-                  - supabase_default
-                labels:
-                  - "traefik.enable=true"
-                  - "traefik.http.routers.giperarena-ws.rule=Host(\`ws.giperarena.space\`)"
-                  - "traefik.http.routers.giperarena-ws.entrypoints=websecure"
-                  - "traefik.http.routers.giperarena-ws.tls.certresolver=letsencrypt"
-                  - "traefik.http.services.giperarena-ws.loadbalancer.server.port=3001"
-                healthcheck:
-                  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
-                  interval: 30s
-                  timeout: 10s
-                  retries: 3
-
-              media:
-                image: ghcr.io/giperpetr/giperarena/media:latest
-                container_name: giperarena-media
-                restart: unless-stopped
-                environment:
-                  - NODE_ENV=production
-                  - PORT=3002
-                  - MEDIASOUP_ANNOUNCED_IP=83.222.20.168
-                  - REDIS_URL=redis://:${{ secrets.REDIS_PASSWORD }}@queue-redis:6379/4
-                  - JWT_SECRET=${{ secrets.JWT_SECRET }}
-                  - S3_ENDPOINT=http://minio:9000
-                  - S3_ACCESS_KEY=${{ secrets.MINIO_ROOT_USER }}
-                  - S3_SECRET_KEY=${{ secrets.MINIO_ROOT_PASSWORD }}
-                networks:
-                  - proxy
-                  - supabase_default
-                labels:
-                  - "traefik.enable=true"
-                  - "traefik.http.routers.giperarena-media.rule=Host(\`media.giperarena.space\`)"
-                  - "traefik.http.routers.giperarena-media.entrypoints=websecure"
-                  - "traefik.http.routers.giperarena-media.tls.certresolver=letsencrypt"
-                  - "traefik.http.services.giperarena-media.loadbalancer.server.port=3002"
-                healthcheck:
-                  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3002/health"]
-                  interval: 30s
-                  timeout: 10s
-                  retries: 3
-
-              blockchain:
-                image: ghcr.io/giperpetr/giperarena/blockchain:latest
-                container_name: giperarena-blockchain
-                restart: unless-stopped
-                environment:
-                  - NODE_ENV=production
-                  - PORT=3003
-                  - DATABASE_URL=postgresql://postgres.giper_prod:${{ secrets.POSTGRES_PASSWORD }}@supavisor:5432/postgres
-                  - REDIS_URL=redis://:${{ secrets.REDIS_PASSWORD }}@queue-redis:6379/5
-                  - SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
-                networks:
-                  - supabase_default
-                healthcheck:
-                  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3003/health"]
                   interval: 30s
                   timeout: 10s
                   retries: 3
