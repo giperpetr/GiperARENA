@@ -28,7 +28,8 @@ jobs:
 
     strategy:
       matrix:
-        service: [frontend, backend, realtime, media, blockchain]
+        service: [frontend, backend]
+        # TODO: Добавить когда будут готовы: realtime, media, blockchain
         include:
           - service: frontend
             context: .
