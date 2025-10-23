@@ -29,11 +29,12 @@ export function rateLimitMiddleware(options: RateLimitOptions) {
         const ttl = await redis.pttl(key);
         res.setHeader('Retry-After', Math.ceil(ttl / 1000).toString());
 
-        return res.status(429).json({
+        res.status(429).json({
           success: false,
           error: 'Too Many Requests',
           message: message || 'Rate limit exceeded. Please try again later.',
         });
+        return;
       }
 
       next();

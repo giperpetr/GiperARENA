@@ -18,11 +18,12 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         error: 'Unauthorized',
         message: 'No token provided',
       });
+      return;
     }
 
     const token = authHeader.substring(7);
@@ -38,11 +39,12 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
         .single();
 
       if (error || !user || !user.is_active) {
-        return res.status(401).json({
+        res.status(401).json({
           success: false,
           error: 'Unauthorized',
           message: 'Invalid or inactive user',
         });
+        return;
       }
 
       req.user = {
@@ -52,15 +54,16 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
 
       next();
     } catch (jwtError) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         error: 'Unauthorized',
         message: 'Invalid token',
       });
+      return;
     }
   } catch (error) {
     console.error('Auth middleware error:', error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       error: 'Internal Server Error',
       message: 'Authentication failed',
