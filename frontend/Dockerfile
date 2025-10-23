@@ -41,6 +41,8 @@ RUN corepack enable pnpm && pnpm run build
 # Build frontend
 WORKDIR /app/frontend
 ENV NEXT_TELEMETRY_DISABLED=1
+# Skip prerendering during build (all pages will be SSR)
+ENV NEXT_PRIVATE_SKIP_PRERENDERING=1
 
 RUN corepack enable pnpm && pnpm run build
 
