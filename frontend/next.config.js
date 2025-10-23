@@ -3,19 +3,11 @@ const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
 
-  // Disable static optimization for dynamic pages
+  // Disable static optimization - force dynamic rendering
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb',
     },
-    // Force dynamic rendering for all pages
-    isrMemoryCacheSize: 0,
-  },
-
-  // Disable static page generation during build
-  distDir: '.next',
-  generateBuildId: async () => {
-    return 'build-' + Date.now()
   },
 
   images: {
