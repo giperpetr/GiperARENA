@@ -1,0 +1,40 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+build
+target
+
+# Anchor build artifacts
+.anchor
+
+# Testing
+coverage
+*.test.ts
+*.spec.ts
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+!.env.example
+
+# IDE & OS
+.vscode
+.idea
+.DS_Store
+
+# Git
+.git
+.gitignore
+
+# Docs
+*.md
+!README.md
+
+# Rust/Cargo
+target/
+Cargo.lock

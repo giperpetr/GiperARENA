@@ -1,0 +1,42 @@
+{
+  "name": "@giperarena/blockchain",
+  "version": "0.1.0",
+  "description": "GiperARENA Blockchain Service (Solana Integration)",
+  "main": "service/dist/index.js",
+  "private": true,
+  "scripts": {
+    "dev": "cd service && tsx watch src/index.ts",
+    "build": "cd service && tsc",
+    "start": "cd service && node dist/index.js",
+    "clean": "rm -rf service/dist",
+    "type-check": "cd service && tsc --noEmit",
+    "anchor:build": "anchor build",
+    "anchor:test": "anchor test",
+    "anchor:deploy:devnet": "anchor deploy --provider.cluster devnet",
+    "anchor:deploy:mainnet": "anchor deploy --provider.cluster mainnet"
+  },
+  "keywords": [
+    "giperarena",
+    "blockchain",
+    "solana"
+  ],
+  "author": "GiperARENA Team",
+  "license": "MIT",
+  "dependencies": {
+    "@giperarena/shared": "workspace:*",
+    "@coral-xyz/anchor": "^0.29.0",
+    "@metaplex-foundation/js": "^0.19.4",
+    "@solana/spl-token": "^0.3.9",
+    "@solana/web3.js": "^1.87.6",
+    "dotenv": "^16.3.1",
+    "ioredis": "^5.3.2",
+    "pg": "^8.11.3",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/pg": "^8.10.9",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}

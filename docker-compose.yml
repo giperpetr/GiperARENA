@@ -1,0 +1,306 @@
+name: giperarena
+
+services:
+  # ============================================
+  # BACKEND API (Node.js + Express/Fastify)
+  # ============================================
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: giperarena-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Database (Supavisor pooler)
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres.giper_prod}:${POSTGRES_PASSWORD}@supavisor:5432/${POSTGRES_DB}
+      - DATABASE_TRANSACTION_URL=postgresql://${POSTGRES_USER:-postgres.giper_prod}:${POSTGRES_PASSWORD}@supavisor:6543/${POSTGRES_DB}
+
+      # Redis (existing queue-redis)
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@queue-redis:6379/1
+      - REDIS_HOST=queue-redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_DB=1
+
+      # MinIO/S3 (existing minio)
+      - S3_ENDPOINT=http://minio:9000
+      - S3_ACCESS_KEY=${MINIO_ROOT_USER}
+      - S3_SECRET_KEY=${MINIO_ROOT_PASSWORD}
+      - S3_BUCKET=giperarena
+      - S3_REGION=us-east-1
+
+      # Supabase Services
+      - SUPABASE_URL=https://api.${MAIN_DOMAIN}
+      - SUPABASE_ANON_KEY=${ANON_KEY}
+      - SUPABASE_SERVICE_KEY=${SERVICE_ROLE_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+
+      # n8n webhooks
+      - N8N_WEBHOOK_URL=https://n8n.${MAIN_DOMAIN}/webhook
+
+      # Application
+      - NODE_ENV=production
+      - PORT=3000
+      - API_URL=https://api.giperarena.space
+      - FRONTEND_URL=https://${MAIN_DOMAIN}
+
+      # WebRTC/Media
+      - MEDIA_SERVER_URL=https://media.giperarena.space
+      - REALTIME_SERVER_URL=wss://ws.giperarena.space
+
+      # Monitoring
+      - PROMETHEUS_METRICS_PORT=9090
+      - LOG_LEVEL=info
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - default
+      - proxy
+      - supabase_default
+      - monitoring_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.giperarena-api.rule=Host(`api.giperarena.space`)"
+      - "traefik.http.routers.giperarena-api.entrypoints=websecure"
+      - "traefik.http.routers.giperarena-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.giperarena-api.loadbalancer.server.port=3000"
+      - "traefik.http.middlewares.giperarena-api-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS,PATCH"
+      - "traefik.http.middlewares.giperarena-api-cors.headers.accesscontrolalloworigin=*"
+      - "traefik.http.middlewares.giperarena-api-cors.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.giperarena-api-cors.headers.addvaryheader=true"
+      - "traefik.http.routers.giperarena-api.middlewares=giperarena-api-cors"
+      # Prometheus metrics endpoint
+      - "traefik.http.routers.giperarena-api-metrics.rule=Host(`api.giperarena.space`) && PathPrefix(`/metrics`)"
+      - "traefik.http.routers.giperarena-api-metrics.entrypoints=websecure"
+      - "traefik.http.routers.giperarena-api-metrics.tls.certresolver=letsencrypt"
+      - "traefik.http.services.giperarena-api-metrics.loadbalancer.server.port=9090"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============================================
+  # FRONTEND (Next.js 15 SSR)
+  # ============================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: giperarena-frontend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # API
+      - NEXT_PUBLIC_API_URL=https://api.giperarena.space
+      - NEXT_PUBLIC_WS_URL=wss://ws.giperarena.space
+      - NEXT_PUBLIC_MEDIA_URL=https://media.giperarena.space
+
+      # Supabase
+      - NEXT_PUBLIC_SUPABASE_URL=https://api.gipergiraffe.com
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${ANON_KEY}
+
+      # Application
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - default
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.giperarena-frontend.rule=Host(`giperarena.space`)"
+      - "traefik.http.routers.giperarena-frontend.entrypoints=websecure"
+      - "traefik.http.routers.giperarena-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.giperarena-frontend.loadbalancer.server.port=3000"
+      - "traefik.http.middlewares.giperarena-frontend-compress.compress=true"
+      - "traefik.http.routers.giperarena-frontend.middlewares=giperarena-frontend-compress"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============================================
+  # WEBSOCKET/REALTIME SERVER (Socket.io)
+  # ============================================
+  realtime:
+    build:
+      context: ./realtime
+      dockerfile: Dockerfile
+    container_name: giperarena-realtime
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Redis for Socket.io adapter
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@queue-redis:6379/2
+      - REDIS_HOST=queue-redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_DB=2
+
+      # Database
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres.arenahub}:${POSTGRES_PASSWORD}@supavisor:5432/${POSTGRES_DB}
+
+      # Auth
+      - JWT_SECRET=${JWT_SECRET}
+      - SUPABASE_SERVICE_KEY=${SERVICE_ROLE_KEY}
+
+      # Application
+      - NODE_ENV=production
+      - PORT=3001
+      - CORS_ORIGIN=https://giperarena.space
+
+      # Monitoring
+      - LOG_LEVEL=info
+    volumes:
+      - ./realtime:/app
+      - /app/node_modules
+    networks:
+      - default
+      - proxy
+      - supabase_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.giperarena-ws.rule=Host(`ws.giperarena.space`)"
+      - "traefik.http.routers.giperarena-ws.entrypoints=websecure"
+      - "traefik.http.routers.giperarena-ws.tls.certresolver=letsencrypt"
+      - "traefik.http.services.giperarena-ws.loadbalancer.server.port=3001"
+      # WebSocket specific
+      - "traefik.http.middlewares.giperarena-ws-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.giperarena-ws-headers.headers.customrequestheaders.Upgrade=websocket"
+      - "traefik.http.middlewares.giperarena-ws-headers.headers.customrequestheaders.Connection=Upgrade"
+      - "traefik.http.routers.giperarena-ws.middlewares=giperarena-ws-headers"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============================================
+  # WEBRTC MEDIA SERVER (mediasoup)
+  # ============================================
+  media:
+    build:
+      context: ./media
+      dockerfile: Dockerfile
+    container_name: giperarena-media
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # mediasoup config
+      - MEDIASOUP_ANNOUNCED_IP=${SERVER_IP}
+      - MEDIASOUP_MIN_PORT=40000
+      - MEDIASOUP_MAX_PORT=49999
+      - MEDIASOUP_LISTEN_IP=0.0.0.0
+
+      # Redis for state
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@queue-redis:6379/3
+      - REDIS_HOST=queue-redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_DB=3
+
+      # Auth
+      - JWT_SECRET=${JWT_SECRET}
+
+      # Application
+      - NODE_ENV=production
+      - PORT=3002
+      - HTTPS=true
+
+      # Recording
+      - RECORDING_ENABLED=true
+      - RECORDING_BUCKET=giperarena
+      - S3_ENDPOINT=http://minio:9000
+      - S3_ACCESS_KEY=${MINIO_ROOT_USER}
+      - S3_SECRET_KEY=${MINIO_ROOT_PASSWORD}
+    volumes:
+      - ./media:/app
+      - /app/node_modules
+    networks:
+      - default
+      - proxy
+      - supabase_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.giperarena-media.rule=Host(`media.giperarena.space`)"
+      - "traefik.http.routers.giperarena-media.entrypoints=websecure"
+      - "traefik.http.routers.giperarena-media.tls.certresolver=letsencrypt"
+      - "traefik.http.services.giperarena-media.loadbalancer.server.port=3002"
+      # WebRTC needs long timeout
+      - "traefik.http.middlewares.giperarena-media-timeout.headers.customresponseheaders.Connection=keep-alive"
+      - "traefik.http.routers.giperarena-media.middlewares=giperarena-media-timeout"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============================================
+  # BLOCKCHAIN SERVICE (Solana integration)
+  # ============================================
+  blockchain:
+    build:
+      context: ./blockchain
+      dockerfile: Dockerfile
+    container_name: giperarena-blockchain
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Solana RPC
+      - SOLANA_RPC_URL=${SOLANA_RPC_URL:-https://api.mainnet-beta.solana.com}
+      - SOLANA_WS_URL=${SOLANA_WS_URL:-wss://api.mainnet-beta.solana.com}
+
+      # Program IDs
+      - GAC_TOKEN_PROGRAM_ID=${GAC_TOKEN_PROGRAM_ID}
+      - PAC_TOKEN_PROGRAM_ID=${PAC_TOKEN_PROGRAM_ID}
+      - ESCROW_PROGRAM_ID=${ESCROW_PROGRAM_ID}
+      - STAKING_PROGRAM_ID=${STAKING_PROGRAM_ID}
+      - NFT_PROGRAM_ID=${NFT_PROGRAM_ID}
+
+      # Database
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres.giper_prod}:${POSTGRES_PASSWORD}@supavisor:5432/${POSTGRES_DB}
+
+      # Redis for tx queue
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@queue-redis:6379/4
+
+      # Application
+      - NODE_ENV=production
+      - PORT=3003
+    volumes:
+      - ./blockchain:/app
+      - /app/node_modules
+    networks:
+      - default
+      - supabase_default
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  default:
+    driver: bridge
+  proxy:
+    external: true
+  supabase_default:
+    external: true
+  monitoring_default:
+    external: true
+
+# No volumes needed - using existing Supabase infrastructure

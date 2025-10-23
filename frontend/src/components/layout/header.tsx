@@ -1,0 +1,83 @@
+'use client';
+
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+
+export function Header() {
+  return (
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 glass backdrop-blur-xl">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+        {/* Logo */}
+        <Link href="/" className="flex items-center space-x-2 hover-lift">
+          <div className="text-2xl">🎮</div>
+          <span className="text-xl font-bold text-gradient-cyan-purple">ArenaHUB</span>
+        </Link>
+
+        {/* Navigation */}
+        <nav className="hidden md:flex items-center space-x-6">
+          <Link
+            href="/arenas"
+            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+          >
+            Арены
+          </Link>
+          <Link
+            href="/tournaments"
+            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+          >
+            Турниры
+          </Link>
+          <Link
+            href="/marketplace"
+            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+          >
+            NFT
+          </Link>
+          <Link
+            href="/leaderboard"
+            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+          >
+            Рейтинг
+          </Link>
+        </nav>
+
+        {/* Actions */}
+        <div className="flex items-center space-x-4">
+          {/* Balance */}
+          <Link href="/wallet">
+            <div className="hidden lg:flex items-center space-x-2 glass rounded-lg px-3 py-1.5 hover:border-primary/30 transition-colors cursor-pointer">
+              <Badge variant="neon" className="text-xs">
+                PAC
+              </Badge>
+              <span className="text-sm font-bold">1,234.56</span>
+            </div>
+          </Link>
+
+          {/* Profile */}
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/profile">
+              <span className="hidden sm:inline">Профиль</span>
+              <span className="sm:hidden">👤</span>
+            </Link>
+          </Button>
+
+          {/* Settings */}
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/settings">
+              ⚙️
+            </Link>
+          </Button>
+
+          {/* Wallet Connect */}
+          <Button variant="neon" size="sm" asChild>
+            <Link href="/auth/login">
+              <span className="hidden sm:inline">Войти</span>
+              <span className="sm:hidden">🔗</span>
+            </Link>
+          </Button>
+        </div>
+      </div>
+    </header>
+  );
+}

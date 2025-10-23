@@ -1,0 +1,25 @@
+{
+  "name": "@giperarena/shared",
+  "version": "0.1.0",
+  "description": "Shared types, constants, and utilities for GiperARENA",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "giperarena",
+    "shared",
+    "types"
+  ],
+  "author": "GiperARENA Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3"
+  }
+}

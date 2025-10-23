@@ -1,0 +1,67 @@
+# ============================================
+# ArenaHUB .dockerignore
+# ============================================
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+!README.md
+docs/
+.taskmaster/
+.claude/
+.claude-collective/
+.specify/
+.claude-backups/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts (will be created in container)
+dist/
+build/
+out/
+.next/
+coverage/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Tests
+tests/
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.log
+
+# Docker
+docker-compose*.yml
+Dockerfile
+.dockerignore

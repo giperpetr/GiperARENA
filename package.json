@@ -1,0 +1,47 @@
+{
+  "name": "giperarena-monorepo",
+  "version": "0.1.0",
+  "description": "GiperARENA - Remote-Controlled Gaming Platform",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend",
+    "realtime",
+    "media",
+    "blockchain",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter @giperarena/backend dev\" \"pnpm --filter @giperarena/frontend dev\" \"pnpm --filter @giperarena/realtime dev\"",
+    "dev:backend": "pnpm --filter @giperarena/backend dev",
+    "dev:frontend": "pnpm --filter @giperarena/frontend dev",
+    "dev:realtime": "pnpm --filter @giperarena/realtime dev",
+    "dev:media": "pnpm --filter @giperarena/media dev",
+    "dev:blockchain": "pnpm --filter @giperarena/blockchain dev",
+    "build": "pnpm --filter @giperarena/shared build && pnpm -r --parallel build",
+    "build:backend": "pnpm --filter @giperarena/backend build",
+    "build:frontend": "pnpm --filter @giperarena/frontend build",
+    "clean": "pnpm -r --parallel clean",
+    "type-check": "pnpm -r --parallel type-check",
+    "lint": "pnpm -r --parallel lint",
+    "lint:fix": "pnpm -r --parallel lint:fix",
+    "test": "pnpm -r --parallel test",
+    "test:coverage": "pnpm -r --parallel test:coverage",
+    "migrate:up": "pnpm --filter @giperarena/backend migrate:up",
+    "migrate:down": "pnpm --filter @giperarena/backend migrate:down",
+    "migrate:status": "pnpm --filter @giperarena/backend migrate:status",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}

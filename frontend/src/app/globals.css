@@ -1,0 +1,284 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ArenaHUB Design System - CSS Variables */
+@layer base {
+  :root {
+    /* Base spacing and sizing */
+    --radius: 0.5rem;
+
+    /* Light theme (not used but defined for compatibility) */
+    --background: 222 47% 5%;
+    --foreground: 210 20% 98%;
+
+    /* Dark theme - Space Gaming */
+    --card: 222 47% 8%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 199 89% 48%; /* Cyan */
+    --primary-foreground: 210 20% 98%;
+
+    --secondary: 271 81% 56%; /* Purple */
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 16% 65%;
+
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 20% 98%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 199 89% 48%;
+  }
+
+  /* Force dark mode always */
+  .dark {
+    --background: 222 47% 5%;
+    --foreground: 210 20% 98%;
+
+    --card: 222 47% 8%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 199 89% 48%;
+    --primary-foreground: 210 20% 98%;
+
+    --secondary: 271 81% 56%;
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 16% 65%;
+
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 20% 98%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 199 89% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  /* Space texture background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+      radial-gradient(ellipse at top, rgba(0, 102, 255, 0.1) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom, rgba(191, 0, 255, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-space-dark-gray;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-space-border-gray rounded-full;
+    transition: background-color 0.2s;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/50;
+  }
+
+  /* Headings with gaming style */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+
+  h1 {
+    @apply text-5xl lg:text-6xl;
+  }
+
+  h2 {
+    @apply text-4xl lg:text-5xl;
+  }
+
+  h3 {
+    @apply text-3xl lg:text-4xl;
+  }
+
+  h4 {
+    @apply text-2xl lg:text-3xl;
+  }
+
+  h5 {
+    @apply text-xl lg:text-2xl;
+  }
+
+  h6 {
+    @apply text-lg lg:text-xl;
+  }
+}
+
+@layer utilities {
+  /* Text gradient utilities */
+  .text-gradient-cyan-purple {
+    @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
+  }
+
+  .text-gradient-neon {
+    @apply bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink bg-clip-text text-transparent;
+  }
+
+  /* Glass morphism */
+  .glass {
+    @apply bg-space-medium-gray/40 backdrop-blur-md border border-space-border-gray/50;
+  }
+
+  .glass-hover {
+    @apply glass hover:bg-space-medium-gray/60 hover:border-space-border-gray transition-all duration-300;
+  }
+
+  /* Card with glow effect */
+  .card-glow {
+    @apply relative overflow-hidden;
+  }
+
+  .card-glow::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: radial-gradient(
+      600px circle at var(--mouse-x) var(--mouse-y),
+      rgba(0, 240, 255, 0.1),
+      transparent 40%
+    );
+  }
+
+  .card-glow:hover::before {
+    @apply opacity-100;
+  }
+
+  /* Neon border effect */
+  .neon-border {
+    @apply border-2 border-primary/50 shadow-glow-cyan;
+  }
+
+  .neon-border-purple {
+    @apply border-2 border-secondary/50 shadow-glow-purple;
+  }
+
+  /* Button glow effect */
+  .btn-glow {
+    @apply relative overflow-hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-glow::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 opacity-0 transition-opacity duration-300;
+  }
+
+  .btn-glow:hover::before {
+    @apply opacity-100;
+  }
+
+  .btn-glow:hover {
+    @apply shadow-glow-cyan transform scale-105;
+  }
+
+  /* Grid background pattern */
+  .grid-bg {
+    background-size: 50px 50px;
+    background-image:
+      linear-gradient(to right, rgba(58, 58, 78, 0.3) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(58, 58, 78, 0.3) 1px, transparent 1px);
+  }
+
+  /* Animated gradient background */
+  .animated-gradient {
+    background: linear-gradient(
+      -45deg,
+      rgba(0, 240, 255, 0.1),
+      rgba(191, 0, 255, 0.1),
+      rgba(0, 102, 255, 0.1),
+      rgba(255, 0, 229, 0.1)
+    );
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+  }
+
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  /* Text shadow for neon effect */
+  .text-neon {
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+  }
+
+  /* Hover lift effect */
+  .hover-lift {
+    @apply transition-transform duration-300 ease-out;
+  }
+
+  .hover-lift:hover {
+    @apply -translate-y-1;
+  }
+
+  /* Focus visible styles */
+  .focus-visible-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+}
+
+/* Loading spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  @apply inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full;
+  animation: spin 0.6s linear infinite;
+}
+
+/* Smooth page transitions */
+@layer components {
+  .page-transition {
+    @apply animate-fade-in;
+  }
+}
