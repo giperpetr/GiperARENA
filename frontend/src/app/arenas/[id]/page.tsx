@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, use } from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/layout/header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,7 +40,8 @@ const RECENT_SESSIONS = [
   { player: 'SkyMaster', score: 9650, time: '2m 58s', timestamp: '28 минут назад' },
 ];
 
-export default function ArenaDetailPage({ params }: { params: { id: string } }) {
+export default function ArenaDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [isPlaying, setIsPlaying] = useState(false);
 
   return (
