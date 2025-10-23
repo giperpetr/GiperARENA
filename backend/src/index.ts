@@ -28,7 +28,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Health check
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.json({
     success: true,
     service: `${APP_NAME} Backend`,
@@ -40,7 +40,7 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 // API routes
-app.get(`/api/${API_VERSION}`, (req: Request, res: Response) => {
+app.get(`/api/${API_VERSION}`, (_req: Request, res: Response) => {
   res.json({
     success: true,
     message: `Welcome to ${APP_NAME} API ${API_VERSION}`,
@@ -72,7 +72,7 @@ app.use((req: Request, res: Response) => {
 });
 
 // Error handler
-app.use((err: Error, req: Request, res: Response, next: Function) => {
+app.use((err: Error, _req: Request, res: Response, _next: Function) => {
   console.error('Error:', err);
   res.status(500).json({
     success: false,

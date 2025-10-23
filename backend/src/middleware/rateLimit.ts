@@ -11,7 +11,7 @@ interface RateLimitOptions {
 export function rateLimitMiddleware(options: RateLimitOptions) {
   const { windowMs, max, message } = options;
 
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const identifier = req.ip || req.socket.remoteAddress || 'unknown';
       const key = `ratelimit:${identifier}:${req.path}`;
