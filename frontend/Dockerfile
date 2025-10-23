@@ -16,7 +16,7 @@ COPY shared/package.json ./shared/
 COPY frontend/package.json ./frontend/
 
 # Install dependencies
-RUN corepack enable pnpm && pnpm install --frozen-lockfile
+RUN corepack enable pnpm && pnpm install --no-frozen-lockfile
 
 # ============================================
 # Build stage

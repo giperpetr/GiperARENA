@@ -1,0 +1,195 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Initialize Project Structure and Development Environment",
+        "description": "Set up the complete monorepo structure with all necessary tooling and configuration for ArenaHUB development",
+        "details": "Create monorepo structure with frontend/ (Next.js 15), backend/ (Node.js), blockchain/ (Solana), shared/ (TypeScript types), and docs/ directories. Initialize package.json files with TypeScript, ESLint, Prettier configuration. Set up Husky pre-commit hooks, Docker Compose for local development, and GitHub Actions CI/CD pipeline. Configure environment variables management with .env files and validation schemas.",
+        "testStrategy": "Verify all directories are created correctly, linting and formatting work, pre-commit hooks execute, and Docker containers can be built and started successfully",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create monorepo directory structure and root package.json",
+            "description": "Set up the complete folder structure for the ArenaHUB monorepo with all required directories and initialize the root package.json with workspace configuration",
+            "dependencies": [],
+            "details": "Create directories: frontend/, backend/, blockchain/, arena-control/, shared/, docs/. Initialize root package.json with workspaces configuration for npm/yarn. Set up basic scripts for building, testing, and linting across all packages. Configure package manager workspaces to handle dependencies efficiently across the monorepo.",
+            "status": "pending",
+            "testStrategy": "Verify all directories exist, confirm workspace configuration works by running npm install from root, test that scripts can be executed across workspaces"
+          },
+          {
+            "id": 2,
+            "title": "Configure TypeScript, ESLint, and Prettier for all packages",
+            "description": "Set up consistent code formatting and linting configuration across the entire monorepo with TypeScript support",
+            "dependencies": [
+              1
+            ],
+            "details": "Create shared tsconfig.json base configuration. Set up ESLint with TypeScript parser and React/Node.js specific rules. Configure Prettier for consistent code formatting. Create .eslintrc.js and .prettierrc files in root and package-specific configurations. Set up VS Code settings for consistent development experience.",
+            "status": "pending",
+            "testStrategy": "Run ESLint and Prettier on sample files, verify TypeScript compilation works, test that linting rules are properly enforced across different package types"
+          },
+          {
+            "id": 3,
+            "title": "Set up Husky pre-commit hooks and Git configuration",
+            "description": "Install and configure Husky for pre-commit hooks with lint-staged to ensure code quality before commits",
+            "dependencies": [
+              2
+            ],
+            "details": "Install Husky and lint-staged packages. Configure pre-commit hooks to run ESLint, Prettier, and TypeScript checks on staged files. Set up commit message linting with conventional commits format. Configure Git hooks to prevent commits with linting errors or failing tests.",
+            "status": "pending",
+            "testStrategy": "Test pre-commit hooks by making commits with intentional linting errors, verify hooks prevent bad commits, confirm commit message validation works"
+          },
+          {
+            "id": 4,
+            "title": "Create Docker Compose configuration for local development",
+            "description": "Set up Docker Compose with all required services for local development including PostgreSQL, Redis, and application containers",
+            "dependencies": [
+              1
+            ],
+            "details": "Create docker-compose.yml with services: PostgreSQL 17, Redis, Node.js backend, Next.js frontend. Configure environment variables and volumes for development. Set up health checks and service dependencies. Create Dockerfiles for each service with multi-stage builds for optimization.",
+            "status": "pending",
+            "testStrategy": "Run docker-compose up and verify all services start successfully, test database connections, confirm hot reloading works for development"
+          },
+          {
+            "id": 5,
+            "title": "Configure environment variables and GitHub Actions CI/CD",
+            "description": "Set up environment variable management with validation schemas and create GitHub Actions workflow for automated testing and deployment",
+            "dependencies": [
+              3,
+              4
+            ],
+            "details": "Create .env.example files for each package with required variables. Set up environment variable validation using Zod or similar library. Create GitHub Actions workflow for CI/CD with jobs for linting, testing, building, and deployment. Configure secrets management and deployment to staging/production environments.",
+            "status": "pending",
+            "testStrategy": "Verify environment variable validation works, test GitHub Actions workflow by pushing changes, confirm build and deployment processes complete successfully"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Database Schema and Backend Foundation Setup",
+        "description": "Create Supabase project with PostgreSQL 17 database schema and initialize Node.js API server",
+        "details": "Set up Supabase project and create all required tables: users, arenas, game_sessions, tournaments, bets, nfts, wallets, transactions with proper foreign keys, indexes, and constraints. Implement Row Level Security (RLS) policies for data protection. Set up database migration system using Supabase CLI. Initialize Node.js API server with Express/Fastify, configure Redis for caching, and implement API Gateway with rate limiting (10 req/sec per IP).",
+        "testStrategy": "Test database connections, verify all tables exist with correct schemas, validate RLS policies work, confirm API server starts and responds to health checks, test rate limiting functionality",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Authentication System Implementation",
+        "description": "Implement comprehensive authentication system with email, social OAuth, and Solana wallet integration",
+        "details": "Integrate Supabase Auth with email/password authentication including validation and email verification. Add Social OAuth providers (Google, Twitter, Discord) using Supabase Auth. Implement Solana wallet connection using Phantom and Solflare adapters. Create JWT token management with 15-minute access tokens and 30-day refresh tokens. Add 2FA/TOTP authentication using libraries like speakeasy. Build password reset functionality with secure token generation.",
+        "testStrategy": "Test all authentication flows (email, social, wallet), verify token expiration and refresh works, validate 2FA setup and verification, test password reset end-to-end",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Frontend Foundation with Next.js 15 and UI Components",
+        "description": "Initialize Next.js 15 application with TypeScript, Tailwind CSS 4, and shadcn/ui component library",
+        "details": "Create Next.js 15 project with App Router and TypeScript configuration. Set up Tailwind CSS 4 with custom dark theme and responsive design system. Integrate shadcn/ui components library for consistent UI. Configure Zustand for global state management and React Query for data fetching and caching. Create basic layouts, navigation components, and landing page with hero section. Set up proper TypeScript types for API responses.",
+        "testStrategy": "Verify Next.js builds successfully, test responsive design on different screen sizes, validate state management works, test data fetching and caching functionality",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "User Profile System and Basic User Management",
+        "description": "Build complete user profile system with CRUD operations and avatar upload functionality",
+        "details": "Create user profile API endpoints (GET, PUT, DELETE) with proper validation and error handling. Build user profile pages for viewing and editing user information. Implement avatar upload functionality using Supabase Storage with image compression and validation. Create user statistics tracking system for gameplay metrics. Add user settings management including privacy controls and notification preferences.",
+        "testStrategy": "Test profile CRUD operations, verify avatar upload and display works, validate user statistics calculations, test settings persistence",
+        "priority": "medium",
+        "dependencies": [
+          3,
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Arena Management System",
+        "description": "Create comprehensive arena management system for arena operators and players",
+        "details": "Build arena registration API endpoints with CRUD operations and validation. Implement arena verification workflow for admin approval. Create arena listing page with advanced filtering (type, status, price, rating, location) and full-text search. Build detailed arena pages with video galleries, statistics, and review systems. Add arena operator dashboard with analytics (games played, revenue, unique players). Implement arena scheduling system with operating hours and availability management.",
+        "testStrategy": "Test arena CRUD operations, verify filtering and search functionality, validate admin approval workflow, test analytics calculations and dashboard display",
+        "priority": "medium",
+        "dependencies": [
+          5
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Game Session Management and Real-time Features",
+        "description": "Implement game session lifecycle management with real-time WebSocket communication",
+        "details": "Create game session API endpoints for session lifecycle (create, join, leave, start, end). Implement session queue system for popular arenas with wait time estimates. Build session state machine (waiting → in_progress → completed → cancelled) with proper validation. Create real-time Socket.io integration for live session updates. Build game lobby UI with player list, ready status, and chat functionality. Implement session countdown timer and ready check system.",
+        "testStrategy": "Test session lifecycle operations, verify real-time updates work correctly, validate queue system functionality, test lobby interactions and chat",
+        "priority": "medium",
+        "dependencies": [
+          6
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "WebRTC Integration for Device Control",
+        "description": "Implement WebRTC streaming and real-time device control system with low latency",
+        "details": "Set up mediasoup or Janus Gateway media server for WebRTC streaming. Implement WebRTC signaling server using Socket.io with proper ICE candidate exchange. Create peer connection management with adaptive bitrate streaming. Build video streaming client components with multi-camera angle support. Implement device control protocol for movement and action commands. Add latency monitoring with target <100ms. Create game control interface supporting keyboard, gamepad, and touchscreen inputs.",
+        "testStrategy": "Test WebRTC connection establishment, verify low latency streaming (<100ms), validate device control responsiveness, test multi-camera switching functionality",
+        "priority": "high",
+        "dependencies": [
+          7
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Blockchain Integration with Solana Tokens",
+        "description": "Implement Solana blockchain integration with GAC and PAC token contracts and wallet functionality",
+        "details": "Set up Solana development environment with Anchor framework. Create GAC token contract (governance token, fixed supply 100M) with proper tokenomics. Implement PAC token contract (utility token, controlled inflation 5% APY). Build escrow smart contract for game fee deposits and automated payouts. Integrate Phantom and Solflare wallet connections in frontend. Create token balance display components and transaction history tracking. Implement deposit/withdrawal functionality with proper validation and confirmation flows.",
+        "testStrategy": "Test token contract deployment and functionality, verify wallet connections work, validate escrow deposit/withdrawal flows, test transaction history accuracy",
+        "priority": "medium",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Tournament and Betting System Foundation",
+        "description": "Build tournament creation system and basic betting functionality for competitive gameplay",
+        "details": "Create tournament API endpoints for tournament lifecycle management (create, register, start, complete). Implement tournament bracket generation supporting single/double elimination and round robin formats. Build tournament registration system with entry fee handling. Create betting market API endpoints with dynamic odds calculation engine. Implement bet placement logic with proper validation and limits. Build betting UI components including market cards, bet slip, and history tracking. Add KYC verification integration for betting compliance.",
+        "testStrategy": "Test tournament creation and bracket generation, verify betting odds calculations, validate bet placement and settlement logic, test KYC verification flow",
+        "priority": "medium",
+        "dependencies": [
+          9
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-10-22T18:35:23.322Z",
+      "updated": "2025-10-22T18:35:23.322Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

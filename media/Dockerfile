@@ -13,7 +13,7 @@ COPY package.json pnpm-lock.yaml* ./
 COPY shared/package.json ./shared/
 COPY media/package.json ./media/
 
-RUN corepack enable pnpm && pnpm install --frozen-lockfile
+RUN corepack enable pnpm && pnpm install --no-frozen-lockfile
 
 # ============================================
 # Build stage

@@ -1,0 +1,11 @@
+# Task ID: 8
+# Title: WebRTC Integration for Device Control
+# Status: pending
+# Dependencies: 7
+# Priority: high
+# Description: Implement WebRTC streaming and real-time device control system with low latency
+# Details:
+Set up mediasoup or Janus Gateway media server for WebRTC streaming. Implement WebRTC signaling server using Socket.io with proper ICE candidate exchange. Create peer connection management with adaptive bitrate streaming. Build video streaming client components with multi-camera angle support. Implement device control protocol for movement and action commands. Add latency monitoring with target <100ms. Create game control interface supporting keyboard, gamepad, and touchscreen inputs.
+
+# Test Strategy:
+Test WebRTC connection establishment, verify low latency streaming (<100ms), validate device control responsiveness, test multi-camera switching functionality

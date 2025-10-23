@@ -1,0 +1,11 @@
+# Task ID: 3
+# Title: Authentication System Implementation
+# Status: pending
+# Dependencies: 2
+# Priority: high
+# Description: Implement comprehensive authentication system with email, social OAuth, and Solana wallet integration
+# Details:
+Integrate Supabase Auth with email/password authentication including validation and email verification. Add Social OAuth providers (Google, Twitter, Discord) using Supabase Auth. Implement Solana wallet connection using Phantom and Solflare adapters. Create JWT token management with 15-minute access tokens and 30-day refresh tokens. Add 2FA/TOTP authentication using libraries like speakeasy. Build password reset functionality with secure token generation.
+
+# Test Strategy:
+Test all authentication flows (email, social, wallet), verify token expiration and refresh works, validate 2FA setup and verification, test password reset end-to-end

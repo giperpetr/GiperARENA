@@ -1,0 +1,11 @@
+# Task ID: 2
+# Title: Database Schema and Backend Foundation Setup
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Create Supabase project with PostgreSQL 17 database schema and initialize Node.js API server
+# Details:
+Set up Supabase project and create all required tables: users, arenas, game_sessions, tournaments, bets, nfts, wallets, transactions with proper foreign keys, indexes, and constraints. Implement Row Level Security (RLS) policies for data protection. Set up database migration system using Supabase CLI. Initialize Node.js API server with Express/Fastify, configure Redis for caching, and implement API Gateway with rate limiting (10 req/sec per IP).
+
+# Test Strategy:
+Test database connections, verify all tables exist with correct schemas, validate RLS policies work, confirm API server starts and responds to health checks, test rate limiting functionality

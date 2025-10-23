@@ -1,0 +1,11 @@
+# Task ID: 10
+# Title: Tournament and Betting System Foundation
+# Status: pending
+# Dependencies: 9
+# Priority: medium
+# Description: Build tournament creation system and basic betting functionality for competitive gameplay
+# Details:
+Create tournament API endpoints for tournament lifecycle management (create, register, start, complete). Implement tournament bracket generation supporting single/double elimination and round robin formats. Build tournament registration system with entry fee handling. Create betting market API endpoints with dynamic odds calculation engine. Implement bet placement logic with proper validation and limits. Build betting UI components including market cards, bet slip, and history tracking. Add KYC verification integration for betting compliance.
+
+# Test Strategy:
+Test tournament creation and bracket generation, verify betting odds calculations, validate bet placement and settlement logic, test KYC verification flow

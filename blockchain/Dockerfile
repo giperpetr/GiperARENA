@@ -13,7 +13,7 @@ COPY package.json pnpm-lock.yaml* ./
 COPY shared/package.json ./shared/
 COPY blockchain/package.json ./blockchain/
 
-RUN corepack enable pnpm && pnpm install --frozen-lockfile
+RUN corepack enable pnpm && pnpm install --no-frozen-lockfile
 
 # ============================================
 # Build stage

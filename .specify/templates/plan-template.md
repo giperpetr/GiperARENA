@@ -31,7 +31,64 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+Verify compliance with ArenaHUB Constitution v1.0.0:
+
+### I. Technology Stack Compliance
+- [ ] Using Supabase (PostgreSQL 17, Auth, Realtime, Storage)?
+- [ ] Using approved frontend stack (Next.js 14+, React Native with TypeScript)?
+- [ ] Using Redis for caching real-time data?
+- [ ] Blockchain integration via Solana (if financial features)?
+- [ ] State management via Zustand or Redux Toolkit?
+
+### II. Architecture Principles Compliance
+- [ ] Microservices with clear bounded contexts?
+- [ ] API-First: REST/GraphQL endpoints documented before UI?
+- [ ] Event-driven architecture for real-time features?
+- [ ] Blockchain-first for ALL financial operations?
+- [ ] Horizontal scalability supported?
+
+### III. Quality Standards Compliance
+- [ ] Test coverage plan achieves 80% for critical modules?
+- [ ] TypeScript strict mode enabled?
+- [ ] ESLint + Prettier configured?
+- [ ] Code review process defined?
+- [ ] CI/CD pipeline includes: lint, type check, tests, security scan?
+
+### IV. Security Requirements Compliance
+- [ ] Authentication required for non-public endpoints?
+- [ ] Rate limiting implemented for all public endpoints?
+- [ ] Sensitive data encryption plan (AES-256, TLS 1.3)?
+- [ ] Smart contract security audit planned (if blockchain)?
+- [ ] GDPR compliance addressed?
+
+### V. Performance Standards Compliance
+- [ ] API p95 response time <200ms target?
+- [ ] WebRTC latency <100ms target (if applicable)?
+- [ ] System supports 10,000+ concurrent users?
+- [ ] Mobile network (3G/4G) optimization planned?
+
+### VI. User Experience Compliance
+- [ ] Mobile-first design approach?
+- [ ] WCAG 2.1 AA accessibility compliance?
+- [ ] Multilingual support (minimum 5 languages)?
+- [ ] Offline-first for critical functions?
+- [ ] Progressive loading implemented?
+
+### VII. Blockchain Compliance (if applicable)
+- [ ] Financial operations via smart contracts only?
+- [ ] Blockchain explorer transparency provided?
+- [ ] DAO governance integration planned?
+- [ ] NFTs for digital assets?
+- [ ] Multi-signature for critical operations?
+
+### VIII. Documentation Compliance
+- [ ] Inline comments for complex logic?
+- [ ] OpenAPI/Swagger documentation planned?
+- [ ] ADR (Architecture Decision Records) planned?
+- [ ] Multilingual user documentation planned?
+
+**Constitution Violations Requiring Justification:**
+*Fill only if any gates above are unchecked. Document in Complexity Tracking section below.*
 
 ## Project Structure
 

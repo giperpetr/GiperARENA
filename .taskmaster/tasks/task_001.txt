@@ -1,0 +1,43 @@
+# Task ID: 1
+# Title: Initialize Project Structure and Development Environment
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Set up the complete monorepo structure with all necessary tooling and configuration for ArenaHUB development
+# Details:
+Create monorepo structure with frontend/ (Next.js 15), backend/ (Node.js), blockchain/ (Solana), shared/ (TypeScript types), and docs/ directories. Initialize package.json files with TypeScript, ESLint, Prettier configuration. Set up Husky pre-commit hooks, Docker Compose for local development, and GitHub Actions CI/CD pipeline. Configure environment variables management with .env files and validation schemas.
+
+# Test Strategy:
+Verify all directories are created correctly, linting and formatting work, pre-commit hooks execute, and Docker containers can be built and started successfully
+
+# Subtasks:
+## 1. Create monorepo directory structure and root package.json [pending]
+### Dependencies: None
+### Description: Set up the complete folder structure for the ArenaHUB monorepo with all required directories and initialize the root package.json with workspace configuration
+### Details:
+Create directories: frontend/, backend/, blockchain/, arena-control/, shared/, docs/. Initialize root package.json with workspaces configuration for npm/yarn. Set up basic scripts for building, testing, and linting across all packages. Configure package manager workspaces to handle dependencies efficiently across the monorepo.
+
+## 2. Configure TypeScript, ESLint, and Prettier for all packages [pending]
+### Dependencies: 1.1
+### Description: Set up consistent code formatting and linting configuration across the entire monorepo with TypeScript support
+### Details:
+Create shared tsconfig.json base configuration. Set up ESLint with TypeScript parser and React/Node.js specific rules. Configure Prettier for consistent code formatting. Create .eslintrc.js and .prettierrc files in root and package-specific configurations. Set up VS Code settings for consistent development experience.
+
+## 3. Set up Husky pre-commit hooks and Git configuration [pending]
+### Dependencies: 1.2
+### Description: Install and configure Husky for pre-commit hooks with lint-staged to ensure code quality before commits
+### Details:
+Install Husky and lint-staged packages. Configure pre-commit hooks to run ESLint, Prettier, and TypeScript checks on staged files. Set up commit message linting with conventional commits format. Configure Git hooks to prevent commits with linting errors or failing tests.
+
+## 4. Create Docker Compose configuration for local development [pending]
+### Dependencies: 1.1
+### Description: Set up Docker Compose with all required services for local development including PostgreSQL, Redis, and application containers
+### Details:
+Create docker-compose.yml with services: PostgreSQL 17, Redis, Node.js backend, Next.js frontend. Configure environment variables and volumes for development. Set up health checks and service dependencies. Create Dockerfiles for each service with multi-stage builds for optimization.
+
+## 5. Configure environment variables and GitHub Actions CI/CD [pending]
+### Dependencies: 1.3, 1.4
+### Description: Set up environment variable management with validation schemas and create GitHub Actions workflow for automated testing and deployment
+### Details:
+Create .env.example files for each package with required variables. Set up environment variable validation using Zod or similar library. Create GitHub Actions workflow for CI/CD with jobs for linting, testing, building, and deployment. Configure secrets management and deployment to staging/production environments.
+

@@ -1,0 +1,11 @@
+# Task ID: 5
+# Title: User Profile System and Basic User Management
+# Status: pending
+# Dependencies: 3, 4
+# Priority: medium
+# Description: Build complete user profile system with CRUD operations and avatar upload functionality
+# Details:
+Create user profile API endpoints (GET, PUT, DELETE) with proper validation and error handling. Build user profile pages for viewing and editing user information. Implement avatar upload functionality using Supabase Storage with image compression and validation. Create user statistics tracking system for gameplay metrics. Add user settings management including privacy controls and notification preferences.
+
+# Test Strategy:
+Test profile CRUD operations, verify avatar upload and display works, validate user statistics calculations, test settings persistence

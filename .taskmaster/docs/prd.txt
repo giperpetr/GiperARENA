@@ -1,83 +1,265 @@
-# Product Requirements Document: Simple Todo Application
+# ArenaHUB - Product Requirements Document
 
 ## Overview
-Create a basic todo application with essential CRUD operations and local storage persistence.
+ArenaHUB is a remote-controlled gaming platform connecting physical arenas with robotic devices to online players worldwide. Players control real robots, drones, and machines in real-time, compete in tournaments, place bets, and earn cryptocurrency.
 
-## Core Features
+## Target Timeline: 28 weeks to MVP launch (Q3 2026)
 
-### 1. Todo Management
-- **Add New Todos**: Input field with submit button
-- **Edit Todos**: Click to edit todo text inline
-- **Delete Todos**: Delete button to remove todos
-- **Toggle Completion**: Checkbox to mark complete/incomplete
+---
 
-### 2. Basic Organization
-- **Filtering**: Show All, Active, Completed views
-- **Search**: Simple text search through todos
+## PHASE 1: FOUNDATION (Weeks 1-4)
 
-### 3. Data Persistence
-- **Local Storage**: Save todos to browser localStorage
-- **Auto-save**: Changes saved automatically
+### Project Setup & Infrastructure
+- Initialize monorepo structure (frontend, backend, blockchain, shared)
+- Set up TypeScript, ESLint, Prettier, Husky pre-commit hooks
+- Configure Docker Compose for local development
+- Create Git repository structure and CI/CD pipeline (GitHub Actions)
+- Set up environment variables management
 
-### 4. User Experience
-- **Responsive Design**: Works on desktop and mobile
-- **Clean Interface**: Simple, intuitive design
+### Database & Backend Foundation
+- Set up Supabase project with PostgreSQL 17
+- Create all database tables: users, arenas, game_sessions, tournaments, bets, nfts, wallets, transactions
+- Implement database indexes and Row Level Security (RLS) policies
+- Set up database migration system
+- Initialize Node.js API server with Express/Fastify
+- Configure Redis for caching and session management
+- Set up API Gateway with rate limiting (10 req/sec per IP)
 
-## Technical Requirements
+### Authentication System
+- Implement Supabase Auth integration
+- Add email/password authentication with validation
+- Implement Social OAuth (Google, Twitter, Discord)
+- Add Solana wallet connection (Phantom, Solflare)
+- Create JWT token management (15min access + 30day refresh tokens)
+- Implement 2FA/TOTP authentication
+- Build user registration flow with email verification
+- Create password reset functionality
 
-### Frontend Architecture
-- **React 18** with modern hooks
-- **TypeScript** for better development experience
-- **CSS Modules** or styled-components for styling
+### User Profiles & Basic Frontend
+- Initialize Next.js 15 project with TypeScript and App Router
+- Configure Tailwind CSS 4 with custom dark theme
+- Integrate shadcn/ui components library
+- Create user profile API endpoints (GET, PUT, DELETE)
+- Build user profile pages (view/edit)
+- Implement avatar upload to Supabase Storage
+- Create user statistics tracking system
+- Build basic landing page with hero section
+- Set up Zustand for global state management
+- Configure React Query for data fetching and caching
 
-### Data Model
-```typescript
-interface Todo {
-  id: string;
-  text: string;
-  completed: boolean;
-  createdAt: Date;
-}
+---
 
-interface AppState {
-  todos: Todo[];
-  filter: 'all' | 'active' | 'completed';
-  searchQuery: string;
-}
-```
+## PHASE 2: CORE FEATURES (Weeks 5-12)
 
-### Development Tools
-- **Vite** for fast development
-- **ESLint + Prettier** for code quality
-- **Vitest** for testing
+### Arena Management System
+- Create arena registration API endpoints (CRUD operations)
+- Implement arena verification workflow for admins
+- Build arena listing page with filtering (type, status, price, rating, location)
+- Implement arena detail page with video, stats, reviews
+- Add arena search functionality with full-text search
+- Build arena operator dashboard with analytics
+- Implement arena scheduling system with operating hours
+- Create arena device management (register as NFT, status tracking)
+- Add arena gallery and media uploads (photos/videos)
+- Implement arena reviews and ratings system
+- Create arena analytics dashboard (games played, revenue, unique players)
 
-## User Stories
+### Game Session Management
+- Create game session API endpoints (create, join, leave, start, end)
+- Implement session queue system for popular arenas
+- Build session player management (max players, ready status)
+- Create session state machine (waiting → in_progress → completed → cancelled)
+- Implement session join/leave logic with validation
+- Build game lobby UI with player list and chat
+- Create session countdown timer and ready checks
+- Implement session results tracking and prize distribution
+- Add session replay recording to storage
+- Create session history and player statistics
 
-1. **As a user**, I want to add new todos so I can track my tasks
-2. **As a user**, I want to edit todos so I can update task details
-3. **As a user**, I want to delete todos so I can remove completed tasks
-4. **As a user**, I want to mark todos complete so I can track progress
-5. **As a user**, I want to filter todos so I can focus on specific items
-6. **As a user**, I want to search todos so I can find specific tasks
+### WebRTC Integration for Real-time Control
+- Set up mediasoup or Janus Gateway media server
+- Implement WebRTC signaling server using Socket.io
+- Create peer connection management with ICE candidate exchange
+- Build video streaming client components with adaptive bitrate
+- Implement device control protocol (move, rotate, action commands)
+- Add multi-camera angle support with camera selector
+- Create latency monitoring and display (target <100ms)
+- Implement game control interface (keyboard, gamepad, touchscreen support)
+- Add HUD overlay with timer, score, health, objectives
+- Create spectator mode for viewers
+- Implement game replay playback system
 
-## Success Criteria
+### Blockchain Integration (Basic)
+- Set up Solana development environment (Anchor framework)
+- Implement GAC token contract (governance, fixed supply 100M)
+- Implement PAC token contract (utility, controlled inflation)
+- Create token minting and burn mechanisms
+- Build escrow smart contract for game fee deposits
+- Implement wallet integration in frontend (Phantom, Solflare)
+- Create token balance display components
+- Build deposit/withdrawal functionality with confirmation
+- Implement transaction history tracking
+- Add blockchain transaction monitoring and status updates
+- Create token transfer API with validation
 
-- ✅ All CRUD operations work correctly
-- ✅ Data persists across browser sessions
-- ✅ Filtering and search work properly
-- ✅ Clean, responsive interface
-- ✅ Basic test coverage
+---
 
-## Implementation Plan
+## PHASE 3: ADVANCED FEATURES (Weeks 13-20)
 
-### Phase 1: Core Features
-- Basic todo CRUD operations
-- Local storage persistence
-- Simple list display
+### Tournament System
+- Create tournament API endpoints (create, register, start, complete)
+- Implement tournament bracket generation (single/double elimination, round robin, swiss)
+- Build tournament registration system with entry fees
+- Create tournament admin dashboard for organizers
+- Implement tournament match scheduling with notifications
+- Build interactive bracket visualization component
+- Create tournament leaderboard with real-time updates
+- Implement prize pool distribution logic through smart contracts
+- Build tournament detail page with tabs (overview, bracket, participants, rules)
+- Add tournament notifications (match starting, results, etc.)
+- Create tournament history tracking
+- Implement tournament smart contract for prize distribution
 
-### Phase 2: Organization
-- Filtering system (all/active/completed)
-- Search functionality
-- Improved styling
+### Betting System
+- Create betting market API endpoints (create, place bet, settle)
+- Implement bet placement logic with validation
+- Build odds calculation engine (dynamic based on volume)
+- Create real-time odds updates during live games
+- Implement bet settlement automation based on game results
+- Build betting UI components (market cards, bet slip, history)
+- Add betting limits and responsible gambling features
+- Implement KYC verification integration for betting users
+- Create betting history tracking with P&L calculations
+- Build betting analytics dashboard
+- Implement betting smart contract with escrow
+- Add betting notifications (bet placed, won, lost)
 
-This simple todo application demonstrates modern React development practices with essential functionality.
+### NFT Marketplace
+- Create NFT minting smart contract using Metaplex standard
+- Implement device NFT registration (arena equipment as NFTs)
+- Build achievement NFT system (badges for milestones)
+- Create NFT marketplace API endpoints (list, buy, bid, unlist)
+- Implement NFT listing/unlisting with price setting
+- Build NFT purchase flow with wallet integration
+- Add NFT auction functionality with bidding system
+- Create NFT gallery components (grid view, detail view)
+- Implement NFT metadata management and IPFS storage
+- Build NFT trading history with price charts
+- Add NFT royalty distribution to creators
+- Create NFT marketplace UI with filtering and search
+
+### Social Features & Community
+- Create friendship system API (add friend, accept, block)
+- Implement follow/unfollow functionality
+- Build real-time chat system using WebSocket
+- Create group chat functionality (arena-specific, tournament chats)
+- Implement achievement system with unlock conditions
+- Build achievement unlock tracking and notifications
+- Create leaderboard system (global, per-arena, seasonal, regional)
+- Implement notification system (game starting, results, achievements, messages)
+- Build social feed/activity timeline
+- Add content sharing (screenshots, video highlights, share to social media)
+- Create referral system with bonus rewards
+- Implement reputation system based on gameplay
+
+---
+
+## PHASE 4: POLISH & LAUNCH (Weeks 21-28)
+
+### Staking & DAO Governance
+- Implement GAC staking smart contract with lock periods
+- Create staking tier system (Bronze: 1K, Silver: 10K, Gold: 50K, Platinum: 100K GAC)
+- Build staking rewards distribution in PAC (daily, based on APY)
+- Implement lock period management (30, 90, 180, 365 days)
+- Create staking UI dashboard with tier benefits
+- Build DAO governance smart contract for platform decisions
+- Implement proposal creation system (with GAC threshold)
+- Create voting mechanism (weighted by staked GAC)
+- Build proposal execution logic for approved proposals
+- Create DAO governance UI (create proposal, vote, view results)
+- Add voting power calculation based on stake
+- Implement governance notifications for new proposals
+
+### Performance Optimization
+- Optimize database queries with proper indexes and query planning
+- Add Redis caching for hot paths (user sessions, arena list, leaderboards)
+- Optimize image and video delivery using CDN
+- Implement lazy loading and code splitting in Next.js
+- Optimize WebRTC connection handling (connection pooling)
+- Add service worker for offline support and caching
+- Implement real-time data synchronization optimization
+- Create database connection pooling for API server
+- Add API response compression (gzip/brotli)
+- Optimize blockchain transaction batching
+- Implement progressive web app (PWA) features
+- Conduct performance testing and benchmarking
+
+### Security & Compliance
+- Security audit of authentication system
+- Implement comprehensive rate limiting and DDoS protection
+- Add input validation and sanitization across all endpoints
+- Implement SQL injection prevention (parameterized queries)
+- Add XSS protection (Content Security Policy)
+- Smart contract security audit by third-party firm
+- Implement GDPR compliance features (consent management)
+- Add data export functionality for users
+- Create account deletion workflow (right to be forgotten)
+- Implement comprehensive audit logging
+- Add content moderation system (user reports, admin actions)
+- Create fraud detection system for betting
+
+### Testing & Quality Assurance
+- Write unit tests for critical backend logic (>80% coverage)
+- Create integration tests for all API endpoints
+- Implement E2E tests with Playwright (critical user flows)
+- Add smart contract tests using Anchor test framework
+- Create WebRTC connection tests (latency, stability)
+- Implement load testing with k6 (target: 10K concurrent users)
+- Add test coverage reporting with badges
+- Create smoke tests for production deployment
+- Implement visual regression testing for UI
+- Add security testing using OWASP ZAP
+- Create mobile app testing on real devices
+- Comprehensive bug fixing and QA cycle
+
+### Monitoring, Documentation & Launch
+- Set up Sentry for error tracking and alerting
+- Configure Prometheus metrics collection (custom metrics)
+- Create Grafana dashboards (system health, business metrics)
+- Set up Loki for centralized log aggregation
+- Implement alert system for critical issues
+- Create comprehensive API documentation using OpenAPI/Swagger
+- Write developer documentation (architecture, setup guide)
+- Create user guide and FAQ for players
+- Build admin documentation for arena operators
+- Create deployment runbook and disaster recovery plan
+- Add troubleshooting guides for common issues
+- Create video tutorials for key features
+- Final production environment setup
+- Database migration to production with rollback plan
+- Smart contract deployment to Solana mainnet
+- Conduct final security review
+- Prepare marketing materials and press kit
+- Set up customer support system
+- Soft launch with beta users (1 week)
+- Public launch and monitoring
+
+---
+
+## SUCCESS METRICS
+
+### User Metrics
+- DAU: 5K by Q1 2026
+- MAU: 20K by Q1 2026
+- 30-day retention: >40%
+- NPS Score: >50
+
+### Business Metrics
+- Active arenas: 5 by Q1 2026
+- Games played: 50K by Q1 2026
+- Revenue: $2M by Q2 2026
+
+### Technical Metrics
+- Latency: <80ms average
+- Uptime: >99.9%
+- Error rate: <0.1%

@@ -1,0 +1,11 @@
+# Task ID: 4
+# Title: Frontend Foundation with Next.js 15 and UI Components
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Initialize Next.js 15 application with TypeScript, Tailwind CSS 4, and shadcn/ui component library
+# Details:
+Create Next.js 15 project with App Router and TypeScript configuration. Set up Tailwind CSS 4 with custom dark theme and responsive design system. Integrate shadcn/ui components library for consistent UI. Configure Zustand for global state management and React Query for data fetching and caching. Create basic layouts, navigation components, and landing page with hero section. Set up proper TypeScript types for API responses.
+
+# Test Strategy:
+Verify Next.js builds successfully, test responsive design on different screen sizes, validate state management works, test data fetching and caching functionality
