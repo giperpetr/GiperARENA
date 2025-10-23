@@ -16,7 +16,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: giperpetr/giperarena
 
 jobs:
   build-and-push:
@@ -135,18 +135,18 @@ jobs:
 
             # Загрузка новых образов с SHA тегом
             echo "📦 Загрузка новых SLIM образов (SHA: ${SHORT_SHA})..."
-            docker pull ghcr.io/giperpetr/giperarena/frontend:main-${SHORT_SHA}
-            docker pull ghcr.io/giperpetr/giperarena/backend:main-${SHORT_SHA}
-            docker pull ghcr.io/giperpetr/giperarena/realtime:main-${SHORT_SHA}
-            docker pull ghcr.io/giperpetr/giperarena/media:main-${SHORT_SHA}
-            docker pull ghcr.io/giperpetr/giperarena/blockchain:main-${SHORT_SHA}
+            docker pull ghcr.io/giperpetr/giperarena/frontend:master-${SHORT_SHA}
+            docker pull ghcr.io/giperpetr/giperarena/backend:master-${SHORT_SHA}
+            docker pull ghcr.io/giperpetr/giperarena/realtime:master-${SHORT_SHA}
+            docker pull ghcr.io/giperpetr/giperarena/media:master-${SHORT_SHA}
+            docker pull ghcr.io/giperpetr/giperarena/blockchain:master-${SHORT_SHA}
 
             # Тегируем как latest для совместимости
-            docker tag ghcr.io/giperpetr/giperarena/frontend:main-${SHORT_SHA} ghcr.io/giperpetr/giperarena/frontend:latest
-            docker tag ghcr.io/giperpetr/giperarena/backend:main-${SHORT_SHA} ghcr.io/giperpetr/giperarena/backend:latest
-            docker tag ghcr.io/giperpetr/giperarena/realtime:main-${SHORT_SHA} ghcr.io/giperpetr/giperarena/realtime:latest
-            docker tag ghcr.io/giperpetr/giperarena/media:main-${SHORT_SHA} ghcr.io/giperpetr/giperarena/media:latest
-            docker tag ghcr.io/giperpetr/giperarena/blockchain:main-${SHORT_SHA} ghcr.io/giperpetr/giperarena/blockchain:latest
+            docker tag ghcr.io/giperpetr/giperarena/frontend:master-${SHORT_SHA} ghcr.io/giperpetr/giperarena/frontend:latest
+            docker tag ghcr.io/giperpetr/giperarena/backend:master-${SHORT_SHA} ghcr.io/giperpetr/giperarena/backend:latest
+            docker tag ghcr.io/giperpetr/giperarena/realtime:master-${SHORT_SHA} ghcr.io/giperpetr/giperarena/realtime:latest
+            docker tag ghcr.io/giperpetr/giperarena/media:master-${SHORT_SHA} ghcr.io/giperpetr/giperarena/media:latest
+            docker tag ghcr.io/giperpetr/giperarena/blockchain:master-${SHORT_SHA} ghcr.io/giperpetr/giperarena/blockchain:latest
 
             # Проверка размеров образов
             echo "📊 Размеры SLIM образов:"
