@@ -80,4 +80,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:3000/ || exit 1
 
 # Run dev server (production build fails with event handler errors)
-CMD ["sh", "-c", "corepack enable pnpm && pnpm run dev"]
+# Use npx to avoid corepack permission issues
+CMD ["sh", "-c", "npx pnpm@10.19.0 run dev"]
