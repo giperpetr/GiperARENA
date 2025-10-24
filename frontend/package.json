@@ -1,6 +1,6 @@
 {
   "name": "@giperarena/frontend",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "GiperARENA Frontend Next.js Application",
   "private": true,
   "scripts": {
