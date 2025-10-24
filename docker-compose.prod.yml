@@ -1,0 +1,69 @@
+version: '3.9'
+
+services:
+  # =========================================
+  # Frontend (Next.js)
+  # =========================================
+  frontend:
+    image: giperpetr/giperarena-frontend:latest
+    container_name: giperarena-frontend
+    restart: unless-stopped
+    env_file:
+      - gipergiraffe.com.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    networks:
+      - default
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.giperarena.rule=Host(`giperarena.space`) || Host(`www.giperarena.space`)"
+      - "traefik.http.routers.giperarena.entrypoints=websecure"
+      - "traefik.http.routers.giperarena.tls.certresolver=letsencrypt"
+      - "traefik.http.services.giperarena.loadbalancer.server.port=3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # =========================================
+  # Backend API (Node.js)
+  # =========================================
+  backend:
+    image: giperpetr/giperarena-backend:latest
+    container_name: giperarena-backend
+    restart: unless-stopped
+    env_file:
+      - gipergiraffe.com.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    networks:
+      - default
+      - proxy
+      - supabase_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.giperarena-api.rule=Host(`api.giperarena.space`)"
+      - "traefik.http.routers.giperarena-api.entrypoints=websecure"
+      - "traefik.http.routers.giperarena-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.giperarena-api.loadbalancer.server.port=3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  default:
+    driver: bridge
+  proxy:
+    external: true
+  supabase_default:
+    external: true
