@@ -70,7 +70,7 @@ COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/shared/package.json ./shared/
 COPY --from=builder /app/frontend/package.json ./frontend/
 
-RUN corepack enable pnpm && pnpm install --prod --frozen-lockfile
+RUN corepack enable pnpm && corepack prepare pnpm@latest --activate && pnpm install --prod --no-frozen-lockfile
 
 # Copy built files
 COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next ./frontend/.next

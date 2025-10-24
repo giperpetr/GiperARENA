@@ -69,7 +69,7 @@ COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/shared/package.json ./shared/
 COPY --from=builder /app/backend/package.json ./backend/
 
-RUN corepack enable pnpm && pnpm install --prod --frozen-lockfile
+RUN corepack enable pnpm && corepack prepare pnpm@latest --activate && pnpm install --prod --no-frozen-lockfile
 
 # Copy built files
 COPY --from=builder --chown=nodejs:nodejs /app/backend/dist ./backend/dist
