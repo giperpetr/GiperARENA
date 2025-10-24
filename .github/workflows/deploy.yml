@@ -235,6 +235,10 @@ jobs:
 
             # Остановка старых контейнеров
             echo "🛑 Остановка старых контейнеров..."
+            # Сначала отключаем от сети proxy (если были подключены)
+            docker network disconnect proxy giperarena-frontend 2>/dev/null || true
+            docker network disconnect proxy giperarena-backend 2>/dev/null || true
+            # Теперь останавливаем
             docker compose -f docker-compose.prod.yml down --remove-orphans || true
 
             # Запуск новых контейнеров
@@ -243,8 +247,9 @@ jobs:
 
             # КРИТИЧНО: Подключение контейнеров к сети proxy для Traefik
             echo "🔌 Подключение контейнеров к сети proxy..."
-            docker network connect proxy giperarena-frontend || echo "⚠️ Frontend уже в сети proxy"
-            docker network connect proxy giperarena-backend || echo "⚠️ Backend уже в сети proxy"
+            sleep 5  # Даём контейнерам время запуститься
+            docker network connect proxy giperarena-frontend
+            docker network connect proxy giperarena-backend
 
             # Ожидание запуска
             echo "⏱️ Ожидание готовности сервисов..."
