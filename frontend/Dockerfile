@@ -54,8 +54,11 @@ COPY --from=builder /app/shared/dist ./shared/dist
 COPY --from=builder /app/shared/package.json ./shared/package.json
 COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 
-# Copy frontend source code (not built)
-COPY frontend ./frontend
+# Copy frontend source code with ALL config files (not built)
+COPY frontend/package.json frontend/tsconfig.json frontend/next.config.js ./frontend/
+COPY frontend/tailwind.config.js frontend/postcss.config.js ./frontend/
+COPY frontend/src ./frontend/src
+COPY frontend/public ./frontend/public
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
