@@ -54,7 +54,7 @@ RUN corepack enable pnpm && pnpm run build
 # ============================================
 FROM base AS runner
 
-WORKDIR /app
+WORKDIR /app/frontend
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -63,15 +63,16 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy everything from standalone output
-# Standalone includes minimal node_modules and optimized code
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
+# Copy node_modules from builder
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules /app/node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/shared /app/shared
 
-# Copy static files which are not included in standalone by default
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./frontend/.next/static
-
-# Copy public folder
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/public ./frontend/public
+# Copy built application
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next ./.next
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/next.config.js ./
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/package.json ./
 
 USER nextjs
 
@@ -80,5 +81,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Start Next.js standalone server
-CMD ["node", "frontend/server.js"]
+# Start Next.js production server
+CMD ["npx", "next", "start"]

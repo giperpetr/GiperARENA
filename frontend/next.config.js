@@ -2,9 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
 
-  // Enable standalone output for Docker
-  output: 'standalone',
-
   // Disable static optimization - force dynamic rendering
   experimental: {
     serverActions: {
