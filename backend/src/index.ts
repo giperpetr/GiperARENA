@@ -5,7 +5,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
-import { APP_NAME, API_VERSION } from '@giperarena/shared';
+import { APP_NAME, API_VERSION } from '../../shared/dist/constants';
 import './config/database';
 import './config/redis';
 import './config/supabase';
