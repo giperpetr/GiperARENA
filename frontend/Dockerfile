@@ -63,15 +63,15 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy the standalone folder from the build stage
-# This includes pre-bundled node_modules and code
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone/frontend ./
+# Copy everything from standalone output
+# Standalone includes minimal node_modules and optimized code
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
 
-# Copy static files - they are not included in standalone
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./.next/static
+# Copy static files which are not included in standalone by default
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./frontend/.next/static
 
-# Copy public folder - needed for static assets
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/public ./public
+# Copy public folder
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/public ./frontend/public
 
 USER nextjs
 
@@ -80,5 +80,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Start the Next.js server
-CMD ["node", "server.js"]
+# Start Next.js standalone server
+CMD ["node", "frontend/server.js"]
