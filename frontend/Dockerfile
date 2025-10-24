@@ -1,5 +1,5 @@
 # ============================================
-# ArenaHUB Frontend Dockerfile (Next.js 15)
+# ArenaHUB Frontend Dockerfile (Next.js Standalone)
 # ============================================
 
 FROM node:20-alpine AS base
@@ -43,18 +43,17 @@ COPY frontend ./frontend
 WORKDIR /app/shared
 RUN corepack enable pnpm && pnpm run build
 
-# Build frontend
+# Build frontend in standalone mode
 WORKDIR /app/frontend
 ENV NEXT_TELEMETRY_DISABLED=1
-
 RUN corepack enable pnpm && pnpm run build
 
 # ============================================
-# Production stage
+# Production stage (Standalone)
 # ============================================
 FROM base AS runner
 
-WORKDIR /app/frontend
+WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -63,16 +62,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy node_modules from builder
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules /app/node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/node_modules ./node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/shared /app/shared
-
-# Copy built application
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next ./.next
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/next.config.js ./
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/package.json ./
+# Copy standalone output
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./frontend/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/public ./frontend/public
 
 USER nextjs
 
@@ -81,5 +74,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Start Next.js production server
-CMD ["npx", "next", "start"]
+# Start Next.js standalone server
+CMD ["node", "frontend/server.js"]

@@ -2,6 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
 
+  // Use standalone output mode - no static generation during build
+  output: 'standalone',
 
   // Disable static optimization - force dynamic rendering
   experimental: {
