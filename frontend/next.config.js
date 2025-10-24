@@ -1,17 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  output: 'standalone',
+  // Note: Running dev server in production because production builds
+  // fail with "Event handlers cannot be passed to Client Component props"
+  // after 60+ deployment attempts. Dev mode works perfectly.
 
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**.giperarena.space',
+        hostname: '**.arenahub.space',
       },
       {
         protocol: 'https',
-        hostname: 'minio.giperarena.space',
+        hostname: 'minio.arenahub.space',
       },
     ],
   },
@@ -29,7 +31,6 @@ const nextConfig = {
       bodySizeLimit: '2mb',
     },
   },
-
 };
 
 module.exports = nextConfig;

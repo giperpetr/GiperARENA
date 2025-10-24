@@ -8,7 +8,7 @@ FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat python3 py3-pip make g++
+RUN apk add --no-cache libc6-compat python3 py3-pip make g++ linux-headers eudev-dev
 
 WORKDIR /app
 
@@ -18,7 +18,7 @@ COPY shared/package.json ./shared/
 COPY backend/package.json ./backend/
 
 # Install dependencies
-RUN corepack enable pnpm && pnpm install --frozen-lockfile
+RUN corepack enable pnpm && pnpm install --no-frozen-lockfile
 
 # ============================================
 # Build stage

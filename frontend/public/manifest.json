@@ -1,0 +1,54 @@
+{
+  "name": "GiperARENA - Remote Gaming Platform",
+  "short_name": "GiperARENA",
+  "description": "Control real robots and drones in physical arenas from anywhere in the world",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#0a0a0f",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo-quad.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-quad.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-quad.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "entertainment", "sports"],
+  "shortcuts": [
+    {
+      "name": "Live Games",
+      "short_name": "Live",
+      "description": "Watch live games",
+      "url": "/play/live",
+      "icons": [{ "src": "/logo-quad.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Tournaments",
+      "short_name": "Tournaments",
+      "description": "Browse tournaments",
+      "url": "/tournaments",
+      "icons": [{ "src": "/logo-quad.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Arenas",
+      "short_name": "Arenas",
+      "description": "Explore arenas",
+      "url": "/arenas",
+      "icons": [{ "src": "/logo-quad.png", "sizes": "192x192" }]
+    }
+  ]
+}
