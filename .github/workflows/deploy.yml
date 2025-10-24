@@ -198,6 +198,7 @@ jobs:
                   - S3_SECRET_KEY=${{ secrets.MINIO_ROOT_PASSWORD }}
                   - S3_BUCKET=giperarena
                   - SUPABASE_URL=https://api.gipergiraffe.com
+                  - SUPABASE_ANON_KEY=${{ secrets.ANON_KEY }}
                   - SUPABASE_SERVICE_KEY=${{ secrets.SERVICE_ROLE_KEY }}
                   - JWT_SECRET=${{ secrets.JWT_SECRET }}
                 networks:
