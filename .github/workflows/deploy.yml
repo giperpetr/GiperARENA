@@ -171,6 +171,7 @@ jobs:
                   - proxy
                 labels:
                   - "traefik.enable=true"
+                  - "traefik.docker.network=proxy"
                   - "traefik.http.routers.giperarena-frontend.rule=Host(`giperarena.space`)"
                   - "traefik.http.routers.giperarena-frontend.entrypoints=websecure"
                   - "traefik.http.routers.giperarena-frontend.tls.certresolver=letsencrypt"
@@ -206,6 +207,7 @@ jobs:
                   - supabase_default
                 labels:
                   - "traefik.enable=true"
+                  - "traefik.docker.network=proxy"
                   - "traefik.http.routers.giperarena-api.rule=Host(`api.giperarena.space`)"
                   - "traefik.http.routers.giperarena-api.entrypoints=websecure"
                   - "traefik.http.routers.giperarena-api.tls.certresolver=letsencrypt"
