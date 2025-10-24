@@ -57,14 +57,21 @@ RUN apk add --no-cache curl && \
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nodejs
 
-# Copy built files
-COPY --from=builder --chown=nodejs:nodejs /app/backend/dist ./dist
-COPY --from=builder --chown=nodejs:nodejs /app/backend/package.json ./
-COPY --from=builder --chown=nodejs:nodejs /app/backend/migrations ./migrations
-COPY --from=builder --chown=nodejs:nodejs /app/shared/dist ../shared/dist
+# Install production dependencies
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/shared/package.json ./shared/
+COPY --from=builder /app/backend/package.json ./backend/
 
-# Copy node_modules (production only)
-COPY --from=builder --chown=nodejs:nodejs /app/backend/node_modules ./node_modules
+RUN corepack enable pnpm && pnpm install --prod --frozen-lockfile
+
+# Copy built files
+COPY --from=builder --chown=nodejs:nodejs /app/backend/dist ./backend/dist
+COPY --from=builder --chown=nodejs:nodejs /app/backend/migrations ./backend/migrations
+COPY --from=builder --chown=nodejs:nodejs /app/shared/dist ./shared/dist
+
+WORKDIR /app/backend
 
 USER nodejs
 

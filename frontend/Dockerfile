@@ -58,15 +58,22 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy built files
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next ./.next
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/node_modules ./node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/package.json ./package.json
-COPY --from=builder /app/frontend/public ./public
-COPY --from=builder /app/frontend/next.config.js ./next.config.js
+# Install production dependencies
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/shared/package.json ./shared/
+COPY --from=builder /app/frontend/package.json ./frontend/
 
-# Copy shared package (needed for runtime)
-COPY --from=builder --chown=nextjs:nodejs /app/shared ../shared
+RUN corepack enable pnpm && pnpm install --prod --frozen-lockfile
+
+# Copy built files
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next ./frontend/.next
+COPY --from=builder /app/frontend/public ./frontend/public
+COPY --from=builder /app/frontend/next.config.js ./frontend/
+COPY --from=builder --chown=nextjs:nodejs /app/shared/dist ./shared/dist
+
+WORKDIR /app/frontend
 
 USER nextjs
 
