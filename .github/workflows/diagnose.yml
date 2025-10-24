@@ -1,0 +1,69 @@
+name: Diagnose Frontend Issues
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Diagnostics on Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd /root/giperarena
+
+            echo "===== ДИАГНОСТИКА ФРОНТЕНДА GIPERARENA ====="
+            echo ""
+
+            echo "1️⃣ Статус контейнера frontend:"
+            docker ps --filter name=giperarena-frontend --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+            echo ""
+
+            echo "2️⃣ Healthcheck контейнера:"
+            docker inspect giperarena-frontend --format='{{json .State.Health}}' | python3 -m json.tool || echo "No health info"
+            echo ""
+
+            echo "3️⃣ Последние 30 строк логов frontend:"
+            docker logs giperarena-frontend --tail 30
+            echo ""
+
+            echo "4️⃣ Проверка доступности frontend изнутри контейнера (healthcheck endpoint):"
+            docker exec giperarena-frontend wget --no-verbose --tries=1 --spider http://localhost:3000/ 2>&1 || echo "❌ Healthcheck FAILED"
+            echo ""
+
+            echo "5️⃣ Проверка доступности через IP контейнера:"
+            FRONTEND_IP=$(docker inspect giperarena-frontend --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}')
+            echo "Frontend IP: $FRONTEND_IP"
+            curl -I http://$FRONTEND_IP:3000/ 2>&1 | head -10
+            echo ""
+
+            echo "6️⃣ Проверка сети proxy:"
+            docker network inspect proxy --format='{{range $id, $container := .Containers}}{{$container.Name}}: {{$container.IPv4Address}}{{"\n"}}{{end}}' | grep giperarena
+            echo ""
+
+            echo "7️⃣ Traefik labels на frontend:"
+            docker inspect giperarena-frontend --format='{{range $key, $value := .Config.Labels}}{{if (hasPrefix $key "traefik")}}{{$key}}: {{$value}}{{"\n"}}{{end}}{{end}}'
+            echo ""
+
+            echo "8️⃣ Логи Traefik (последние 50 строк, фильтр giperarena):"
+            docker logs traefik --tail 50 2>&1 | grep -i "giperarena\|frontend" || echo "No giperarena mentions in recent Traefik logs"
+            echo ""
+
+            echo "9️⃣ Проверка Traefik роутеров через API:"
+            curl -s http://localhost:8080/api/http/routers 2>/dev/null | python3 -c "import sys, json; routers = json.load(sys.stdin); [print(f'{r[\"name\"]}: {r[\"rule\"]} -> {r[\"status\"]}') for r in routers if 'giperarena' in r['name']]" || echo "Traefik API недоступен"
+            echo ""
+
+            echo "🔟 Текущие активные Traefik роутеры:"
+            curl -s http://localhost:8080/api/http/routers 2>/dev/null | python3 -c "import sys, json; print(json.dumps([{k: v for k, v in r.items() if k in ['name', 'rule', 'status', 'service']} for r in json.load(sys.stdin) if 'giperarena' in r.get('name', '')], indent=2))" || echo "Failed"
+            echo ""
+
+            echo "===== КОНЕЦ ДИАГНОСТИКИ ====="
