@@ -65,3 +65,4 @@ temp/
 docker-compose*.yml
 Dockerfile
 .dockerignore
+# Force rebuild Fri Oct 24 14:36:52 MSK 2025
