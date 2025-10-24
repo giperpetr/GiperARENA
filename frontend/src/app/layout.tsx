@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import { Exo_2 } from 'next/font/google';
 import './globals.css';
@@ -5,8 +6,6 @@ import { cn } from '@/lib/utils';
 import { MegaHeader } from '@/components/layout/MegaHeader';
 import { RichFooter } from '@/components/layout/RichFooter';
 
-// Force dynamic rendering for all pages
-export const dynamic = 'force-dynamic';
 
 
 // GiperARENA Primary Font - Exo 2
