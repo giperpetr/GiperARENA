@@ -63,18 +63,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy node_modules from builder (already contains all dependencies)
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/node_modules ./frontend/node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/shared/node_modules ./shared/node_modules
-
-# Copy built files
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next ./frontend/.next
-COPY --from=builder /app/frontend/public ./frontend/public
-COPY --from=builder /app/frontend/next.config.js ./frontend/
-COPY --from=builder --chown=nextjs:nodejs /app/shared/dist ./shared/dist
-
-WORKDIR /app/frontend
+# Copy standalone output from builder
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./frontend/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/public ./frontend/public
 
 USER nextjs
 
@@ -83,4 +75,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["npx", "next", "start"]
+# Run standalone server
+CMD ["node", "frontend/server.js"]
