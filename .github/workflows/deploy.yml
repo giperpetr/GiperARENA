@@ -249,6 +249,16 @@ jobs:
             echo "🔍 Проверка состояния сервисов..."
             docker compose -f docker-compose.prod.yml ps
 
+            # Диагностика сети proxy
+            echo "🔍 Диагностика сети proxy..."
+            docker network ls | grep proxy || echo "⚠️ Сеть proxy не найдена!"
+            docker network inspect proxy 2>/dev/null | grep -A 5 "Containers" || echo "⚠️ Не могу проверить контейнеры в сети proxy"
+
+            # Проверка labels контейнеров
+            echo "🔍 Проверка Traefik labels..."
+            docker inspect giperarena-frontend | grep -A 20 "Labels" || true
+            docker inspect giperarena-backend | grep -A 20 "Labels" || true
+
             # Проверка логов
             echo "📋 Проверка логов (последние 30 строк)..."
             docker compose -f docker-compose.prod.yml logs --tail=30 frontend || true
