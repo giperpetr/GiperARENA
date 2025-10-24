@@ -1,7 +1,5 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -91,7 +89,7 @@ const MOCK_PARTICIPANTS = [
   { rank: 8, username: 'VelocityKing', avatar: '👾', seed: 8, status: 'active' },
 ];
 
-export default function TournamentDetailPage({ params }: any) {
+export default function TournamentDetailPage({ params }: { params: { id: string } }) {
   const participationPercentage = (MOCK_TOURNAMENT.current_participants / MOCK_TOURNAMENT.max_participants) * 100;
 
   return (

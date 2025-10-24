@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Exo_2 } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
+import { MegaHeader } from '@/components/layout/MegaHeader';
+import { RichFooter } from '@/components/layout/RichFooter';
 
 // GiperARENA Primary Font - Exo 2
 const exo2 = Exo_2({
@@ -18,6 +20,17 @@ export const metadata: Metadata = {
   authors: [{ name: 'GiperARENA Team' }],
   creator: 'GiperARENA',
   publisher: 'GiperARENA',
+  icons: {
+    icon: [
+      { url: '/logo-quad.svg', type: 'image/svg+xml' },
+      { url: '/logo-quad.png', sizes: '32x32', type: 'image/png' },
+      { url: '/logo-quad.png', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/logo-quad.png', sizes: '180x180', type: 'image/png' },
+    ],
+    shortcut: '/logo-quad.svg',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
@@ -25,11 +38,20 @@ export const metadata: Metadata = {
     title: 'GiperARENA - Remote Gaming Platform',
     description: 'Control real robots and drones in physical arenas from anywhere in the world',
     siteName: 'GiperARENA',
+    images: [
+      {
+        url: '/logo-quad.png',
+        width: 1200,
+        height: 630,
+        alt: 'GiperARENA',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'GiperARENA - Remote Gaming Platform',
     description: 'Control real robots and drones in physical arenas from anywhere in the world',
+    images: ['/logo-quad.png'],
   },
   viewport: {
     width: 'device-width',
@@ -39,6 +61,7 @@ export const metadata: Metadata = {
   themeColor: [
     { media: '(prefers-color-scheme: dark)', color: '#0a0a0f' },
   ],
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -55,7 +78,9 @@ export default function RootLayout({
           'overflow-x-hidden'
         )}
       >
+        <MegaHeader />
         {children}
+        <RichFooter />
       </body>
     </html>
   );
