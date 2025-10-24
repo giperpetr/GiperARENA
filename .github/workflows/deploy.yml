@@ -241,6 +241,11 @@ jobs:
             echo "🚀 Запуск новых SLIM контейнеров..."
             docker compose -f docker-compose.prod.yml up -d
 
+            # КРИТИЧНО: Подключение контейнеров к сети proxy для Traefik
+            echo "🔌 Подключение контейнеров к сети proxy..."
+            docker network connect proxy giperarena-frontend || echo "⚠️ Frontend уже в сети proxy"
+            docker network connect proxy giperarena-backend || echo "⚠️ Backend уже в сети proxy"
+
             # Ожидание запуска
             echo "⏱️ Ожидание готовности сервисов..."
             sleep 45
