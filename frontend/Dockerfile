@@ -6,7 +6,7 @@ FROM node:20-alpine AS base
 
 # Install dependencies
 FROM base AS deps
-RUN apk add --no-cache libc6-compat python3 py3-pip make g++ linux-headers libusb-dev eudev-dev
+RUN apk add --no-cache libc6-compat python3 py3-pip make g++ linux-headers libusb-dev eudev-dev curl
 
 WORKDIR /app
 
@@ -25,8 +25,11 @@ FROM base AS runner
 
 WORKDIR /app
 
-ENV NODE_ENV=development
+# Don't set NODE_ENV - let Next.js handle it
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# Install curl for healthcheck
+RUN apk add --no-cache curl
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
@@ -54,5 +57,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Run Next.js dev server in production!!!
+# Run Next.js dev server
 CMD ["sh", "-c", "corepack enable pnpm && pnpm run dev"]
