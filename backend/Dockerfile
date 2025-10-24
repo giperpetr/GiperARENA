@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 # ============================================
 # ArenaHUB Backend API Dockerfile
 # ============================================
@@ -6,7 +8,7 @@ FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat python3 py3-pip make g++
 
 WORKDIR /app
 
@@ -16,7 +18,7 @@ COPY shared/package.json ./shared/
 COPY backend/package.json ./backend/
 
 # Install dependencies
-RUN corepack enable pnpm && pnpm install --no-frozen-lockfile
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
 
 # ============================================
 # Build stage
@@ -81,5 +83,8 @@ EXPOSE 9090
 
 ENV NODE_ENV=production
 ENV PORT=3000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
 
 CMD ["node", "dist/index.js"]

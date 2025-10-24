@@ -1,54 +1,65 @@
-# ============================================
-# ArenaHUB Frontend Dockerfile (DEV MODE FOR PRODUCTION)
-# ============================================
+# syntax=docker/dockerfile:1
 
-FROM node:20-alpine AS base
-
-# Install dependencies
-FROM base AS deps
-RUN apk add --no-cache libc6-compat python3 py3-pip make g++ linux-headers libusb-dev eudev-dev curl
+# =========================================
+# Stage 1: Dependencies
+# =========================================
+FROM node:20-alpine AS deps
+RUN apk add --no-cache libc6-compat python3 py3-pip make g++ curl
 
 WORKDIR /app
 
-# Copy package files
+# Copy workspace files  
 COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 COPY shared/package.json ./shared/
 COPY frontend/package.json ./frontend/
 
 # Install dependencies
-RUN corepack enable pnpm && pnpm install --no-frozen-lockfile
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
 
-# ============================================
-# Runtime stage (NO BUILD - RUN DEV SERVER)
-# ============================================
-FROM base AS runner
+# =========================================
+# Stage 2: Builder
+# =========================================
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Don't set NODE_ENV - let Next.js handle it
+# Copy dependencies
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/shared/node_modules ./shared/node_modules
+COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
+
+# Copy source code
+COPY shared ./shared
+COPY frontend ./frontend
+
+# Build shared package
+WORKDIR /app/shared
+RUN corepack enable pnpm && pnpm run build
+
+# Build frontend
+WORKDIR /app/frontend
+
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install curl for healthcheck
+RUN corepack enable pnpm && pnpm run build
+
+# =========================================
+# Stage 3: Production Runtime (Node.js)
+# =========================================
+FROM node:20-alpine AS production
+
+WORKDIR /app
+
 RUN apk add --no-cache curl
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy dependencies
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
-COPY --from=deps --chown=nextjs:nodejs /app/frontend/node_modules ./frontend/node_modules
-COPY --from=deps --chown=nextjs:nodejs /app/shared/node_modules ./shared/node_modules
-
-# Copy source code (NO BUILD)
-COPY --chown=nextjs:nodejs shared ./shared
-COPY --chown=nextjs:nodejs frontend ./frontend
-
-# Build shared package
-WORKDIR /app/shared
-RUN corepack enable pnpm && pnpm run build
-
-WORKDIR /app/frontend
+# Copy standalone output
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./frontend/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/public ./frontend/public
 
 USER nextjs
 
@@ -57,5 +68,7 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Run Next.js dev server
-CMD ["sh", "-c", "corepack enable pnpm && pnpm run dev"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3000/ || exit 1
+
+CMD ["node", "frontend/server.js"]
