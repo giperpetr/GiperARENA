@@ -1,16 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-
-  // Use standalone output mode - no static generation during build
   output: 'standalone',
-
-  // Disable static optimization - force dynamic rendering
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '2mb',
-    },
-  },
 
   images: {
     remotePatterns: [
@@ -20,7 +11,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'storage.gipergiraffe.com',
+        hostname: 'minio.giperarena.space',
       },
     ],
   },
@@ -31,6 +22,12 @@ const nextConfig = {
     NEXT_PUBLIC_MEDIA_URL: process.env.NEXT_PUBLIC_MEDIA_URL,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  },
+
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
   },
 
   turbopack: {},
