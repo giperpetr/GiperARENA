@@ -25,6 +25,11 @@ FROM base AS builder
 
 WORKDIR /app
 
+# Copy package files for runner stage access
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
+COPY shared/package.json ./shared/
+COPY backend/package.json ./backend/
+
 # Copy dependencies
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/backend/node_modules ./backend/node_modules
