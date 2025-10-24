@@ -5,6 +5,10 @@ import { cn } from '@/lib/utils';
 import { MegaHeader } from '@/components/layout/MegaHeader';
 import { RichFooter } from '@/components/layout/RichFooter';
 
+// Force dynamic rendering for all pages
+export const dynamic = 'force-dynamic';
+
+
 // GiperARENA Primary Font - Exo 2
 const exo2 = Exo_2({
   subsets: ['latin', 'cyrillic'],

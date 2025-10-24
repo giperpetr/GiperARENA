@@ -2,6 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
 
+
   // Disable static optimization - force dynamic rendering
   experimental: {
     serverActions: {
