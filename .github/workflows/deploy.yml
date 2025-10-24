@@ -179,7 +179,7 @@ jobs:
                   - "traefik.http.middlewares.giperarena-frontend-compress.compress=true"
                   - "traefik.http.routers.giperarena-frontend.middlewares=giperarena-frontend-compress"
                 healthcheck:
-                  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+                  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
                   interval: 30s
                   timeout: 10s
                   retries: 3
