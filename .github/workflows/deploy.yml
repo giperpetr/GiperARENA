@@ -235,11 +235,12 @@ jobs:
 
             # Остановка старых контейнеров
             echo "🛑 Остановка старых контейнеров..."
-            # Сначала отключаем от сети proxy (если были подключены)
-            docker network disconnect proxy giperarena-frontend 2>/dev/null || true
-            docker network disconnect proxy giperarena-backend 2>/dev/null || true
-            # Теперь останавливаем
             docker compose -f docker-compose.prod.yml down --remove-orphans || true
+
+            # КРИТИЧНО: Принудительная очистка "призрачных" endpoints в сети proxy
+            echo "🧹 Очистка endpoints в сети proxy..."
+            docker network disconnect -f proxy giperarena-frontend 2>/dev/null || true
+            docker network disconnect -f proxy giperarena-backend 2>/dev/null || true
 
             # Запуск новых контейнеров
             echo "🚀 Запуск новых SLIM контейнеров..."
