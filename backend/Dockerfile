@@ -62,14 +62,10 @@ RUN apk add --no-cache curl && \
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nodejs
 
-# Install production dependencies
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/pnpm-lock.yaml ./
-COPY --from=builder /app/pnpm-workspace.yaml ./
-COPY --from=builder /app/shared/package.json ./shared/
-COPY --from=builder /app/backend/package.json ./backend/
-
-RUN corepack enable pnpm && corepack prepare pnpm@latest --activate && pnpm install --prod --no-frozen-lockfile
+# Copy node_modules from builder (already contains all dependencies)
+COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nodejs:nodejs /app/backend/node_modules ./backend/node_modules
+COPY --from=builder --chown=nodejs:nodejs /app/shared/node_modules ./shared/node_modules
 
 # Copy built files
 COPY --from=builder --chown=nodejs:nodejs /app/backend/dist ./backend/dist

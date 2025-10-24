@@ -63,14 +63,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Install production dependencies
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/pnpm-lock.yaml ./
-COPY --from=builder /app/pnpm-workspace.yaml ./
-COPY --from=builder /app/shared/package.json ./shared/
-COPY --from=builder /app/frontend/package.json ./frontend/
-
-RUN corepack enable pnpm && corepack prepare pnpm@latest --activate && pnpm install --prod --no-frozen-lockfile
+# Copy node_modules from builder (already contains all dependencies)
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/node_modules ./frontend/node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/shared/node_modules ./shared/node_modules
 
 # Copy built files
 COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next ./frontend/.next
