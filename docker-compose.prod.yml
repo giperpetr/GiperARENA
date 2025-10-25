@@ -6,7 +6,7 @@ services:
     container_name: giperarena-frontend
     restart: unless-stopped
     env_file:
-      - gipergiraffe.com.env
+      - .env
     environment:
       - NODE_ENV=development
       - PORT=3000
@@ -26,7 +26,7 @@ services:
     container_name: giperarena-backend
     restart: unless-stopped
     env_file:
-      - gipergiraffe.com.env
+      - .env
     environment:
       - NODE_ENV=production
       - PORT=3000

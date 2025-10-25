@@ -2,6 +2,39 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+---
+
+## 🚀 DEPLOYMENT WORKFLOW (MANDATORY)
+
+**⚠️ CRITICAL: GitHub Actions НЕ ИСПОЛЬЗУЮТСЯ! Только Docker Hub + SSH!**
+
+### Единственный правильный способ деплоя:
+
+```bash
+export DOCKER_HUB_TOKEN="dckr_pat_W2slXQiZOhpiOj9CX-DnITmfVro"
+./scripts/deploy-reliable.sh
+```
+
+### Что делает скрипт:
+1. **Git commit** → получает SHA версию
+2. **Docker build** с `--no-cache` → избегает кэша
+3. **Docker push** с SHA + latest тегами → загрузка в Docker Hub
+4. **SSH на сервер** → удаляет старые образы
+5. **docker compose pull** с `--no-cache` → скачивает новые образы
+6. **docker compose up** с `--force-recreate` → пересоздаёт контейнеры
+
+### НИКОГДА НЕ ДЕЛАЙ:
+- ❌ GitHub Actions workflows (минуты кончились!)
+- ❌ git push без последующего деплоя скриптом
+- ❌ Деплой без `--no-cache` (будет старый кэш!)
+- ❌ Деплой без `--force-recreate` (будут старые контейнеры!)
+
+### Почему dev mode в production:
+Production build Next.js 14 падает 60+ раз с onClick handler errors.
+Dev server работает идеально → используем его в production.
+
+---
+
 ## Project Overview
 
 **ArenaHUB** is a revolutionary remote-controlled gaming platform that connects physical arenas with robotic devices (robots, drones, crawler machines) to online players worldwide. Users can control real devices in real-time, compete in tournaments, place bets, and earn cryptocurrency.
