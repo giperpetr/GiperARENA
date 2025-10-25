@@ -62,14 +62,14 @@ export function MegaHeader() {
                   <h4 className="text-xs font-bold text-cyan-400 mb-2">DISCOVER</h4>
                   <div className="space-y-1">
                     <Link
-                      href="/discover/arenas"
+                      href="/arenas"
                       className="flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-cyan-500/10 hover:text-cyan-400 rounded transition-colors"
                     >
                       <ArenaIcon size={16} />
                       Arenas
                     </Link>
                     <Link
-                      href="/discover/games"
+                      href="/games"
                       className="flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-cyan-500/10 hover:text-cyan-400 rounded transition-colors"
                     >
                       <GamepadIcon size={16} />
@@ -264,7 +264,7 @@ export function MegaHeader() {
 
       {/* Mobile Navigation Bar */}
       <div className="md:hidden border-t border-border/40 px-4 py-2 flex justify-around">
-        <Link href="/discover/arenas" className="flex flex-col items-center gap-1 text-xs text-muted-foreground hover:text-cyan-400">
+        <Link href="/arenas" className="flex flex-col items-center gap-1 text-xs text-muted-foreground hover:text-cyan-400">
           <ArenaIcon size={18} />
           <span>Arenas</span>
         </Link>

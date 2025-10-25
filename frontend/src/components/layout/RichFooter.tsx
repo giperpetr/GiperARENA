@@ -21,7 +21,7 @@ export function RichFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/discover/games" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Link href="/games" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Games
                 </Link>
               </li>
@@ -31,7 +31,7 @@ export function RichFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/discover/search" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Link href="/search" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Search
                 </Link>
               </li>

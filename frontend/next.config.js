@@ -1,9 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Note: Running dev server in production because production builds
-  // fail with "Event handlers cannot be passed to Client Component props"
-  // after 60+ deployment attempts. Dev mode works perfectly.
+  output: 'standalone',
 
   images: {
     remotePatterns: [
@@ -31,6 +29,8 @@ const nextConfig = {
       bodySizeLimit: '2mb',
     },
   },
+
+  turbopack: {},
 };
 
 module.exports = nextConfig;

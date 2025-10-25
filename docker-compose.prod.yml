@@ -10,6 +10,7 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3000
+      - NEXT_TELEMETRY_DISABLED=1
     networks:
       - default
       - proxy
@@ -41,6 +42,57 @@ services:
       - "traefik.http.routers.giperarena-api.entrypoints=websecure"
       - "traefik.http.routers.giperarena-api.tls.certresolver=letsencrypt"
       - "traefik.http.services.giperarena-api.loadbalancer.server.port=3000"
+
+  realtime:
+    image: giperpetr/giperarena-realtime:latest
+    container_name: giperarena-realtime
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - default
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.giperarena-realtime.rule=Host(`ws.giperarena.space`)"
+      - "traefik.http.routers.giperarena-realtime.entrypoints=websecure"
+      - "traefik.http.routers.giperarena-realtime.tls.certresolver=letsencrypt"
+      - "traefik.http.services.giperarena-realtime.loadbalancer.server.port=3001"
+
+  media:
+    image: giperpetr/giperarena-media:latest
+    container_name: giperarena-media
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - default
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.giperarena-media.rule=Host(`media.giperarena.space`)"
+      - "traefik.http.routers.giperarena-media.entrypoints=websecure"
+      - "traefik.http.routers.giperarena-media.tls.certresolver=letsencrypt"
+      - "traefik.http.services.giperarena-media.loadbalancer.server.port=3002"
+
+  blockchain:
+    image: giperpetr/giperarena-blockchain:latest
+    container_name: giperarena-blockchain
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - default
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.giperarena-blockchain.rule=Host(`blockchain.giperarena.space`)"
+      - "traefik.http.routers.giperarena-blockchain.entrypoints=websecure"
+      - "traefik.http.routers.giperarena-blockchain.tls.certresolver=letsencrypt"
+      - "traefik.http.services.giperarena-blockchain.loadbalancer.server.port=3003"
 
 networks:
   default:

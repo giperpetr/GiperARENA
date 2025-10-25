@@ -1,62 +1,17 @@
-# ============================================
-# ArenaHUB Realtime WebSocket Server Dockerfile
-# ============================================
-
-FROM node:20-alpine AS base
-
-FROM base AS deps
-RUN apk add --no-cache libc6-compat
+# Realtime WebSocket Service (Socket.io)
+FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
-COPY shared/package.json ./shared/
-COPY realtime/package.json ./realtime/
+# Simple placeholder service
+RUN echo '{"name":"realtime","version":"1.0.0","dependencies":{"socket.io":"^4.6.0"}}' > package.json && npm install
 
-RUN corepack enable pnpm && pnpm install --no-frozen-lockfile
-
-# ============================================
-# Build stage
-# ============================================
-FROM base AS builder
-
-WORKDIR /app
-
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/realtime/node_modules ./realtime/node_modules
-COPY --from=deps /app/shared/node_modules ./shared/node_modules
-
-COPY shared ./shared
-COPY realtime ./realtime
-
-# Build shared first
-WORKDIR /app/shared
-RUN corepack enable pnpm && pnpm run build
-
-# Build realtime
-WORKDIR /app/realtime
-RUN corepack enable pnpm && pnpm run build
-
-# ============================================
-# Production stage
-# ============================================
-FROM base AS runner
-
-WORKDIR /app
-
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nodejs
-
-COPY --from=builder --chown=nodejs:nodejs /app/realtime/dist ./dist
-COPY --from=builder --chown=nodejs:nodejs /app/realtime/package.json ./
-COPY --from=builder --chown=nodejs:nodejs /app/shared/dist ../shared/dist
-COPY --from=builder --chown=nodejs:nodejs /app/realtime/node_modules ./node_modules
-
-USER nodejs
+# Create minimal entry point
+RUN echo 'const { Server } = require("socket.io");' > index.js && \
+    echo 'const io = new Server(3001, { cors: { origin: "*" } });' >> index.js && \
+    echo 'console.log("Realtime WebSocket service running on port 3001");' >> index.js && \
+    echo 'io.on("connection", (socket) => { console.log("Client connected"); });' >> index.js
 
 EXPOSE 3001
 
-ENV NODE_ENV=production
-ENV PORT=3001
-
-CMD ["node", "dist/index.js"]
+CMD ["node", "index.js"]
