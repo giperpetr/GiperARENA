@@ -24,12 +24,16 @@ export function HeroSection() {
     return () => clearInterval(interval);
   }, []);
 
-  const formatNumber = (num: number) => num.toLocaleString();
+  // Fix hydration: use consistent formatting on server and client
+  const formatNumber = (num: number) => {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  };
+
   const formatCurrency = (amount: number) => {
     if (amount >= 1000000) {
       return `$${(amount / 1000000).toFixed(1)}M`;
     }
-    return `$${amount.toLocaleString()}`;
+    return `$${formatNumber(amount)}`;
   };
 
   return (
