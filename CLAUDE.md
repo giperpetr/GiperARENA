@@ -11,7 +11,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Единственный правильный способ деплоя:
 
 ```bash
-export DOCKER_HUB_TOKEN="dckr_pat_W2slXQiZOhpiOj9CX-DnITmfVro"
+# Set Docker Hub token from environment
+export DOCKER_HUB_TOKEN="<your_docker_token>"  # Get from Docker Hub settings
 ./scripts/deploy-reliable.sh
 ```
 
