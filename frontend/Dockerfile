@@ -147,4 +147,50 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:3000/ || exit 1
 
 # Start dev server in production (fixes onClick handler errors)
-CMD ["npx", "next", "dev"]
+# First create proper tsconfig.json, then start Next.js
+CMD ["sh", "-c", "cat > tsconfig.json << 'EOF' && npx next dev
+{
+  \"compilerOptions\": {
+    \"target\": \"ES2022\",
+    \"lib\": [
+      \"dom\",
+      \"dom.iterable\",
+      \"ES2022\"
+    ],
+    \"allowJs\": true,
+    \"skipLibCheck\": true,
+    \"strict\": true,
+    \"noEmit\": true,
+    \"esModuleInterop\": true,
+    \"module\": \"esnext\",
+    \"moduleResolution\": \"bundler\",
+    \"resolveJsonModule\": true,
+    \"isolatedModules\": true,
+    \"jsx\": \"preserve\",
+    \"incremental\": true,
+    \"plugins\": [
+      {
+        \"name\": \"next\"
+      }
+    ],
+    \"paths\": {
+      \"@/*\": [
+        \"./src/*\"
+      ],
+      \"@shared/*\": [
+        \"../shared/src/*\"
+      ]
+    }
+  },
+  \"include\": [
+    \"next-env.d.ts\",
+    \"**/*.ts\",
+    \"**/*.tsx\",
+    \".next/types/**/*.ts\",
+    \".next/dev/types/**/*.ts\"
+  ],
+  \"exclude\": [
+    \"node_modules\"
+  ]
+}
+EOF"]
