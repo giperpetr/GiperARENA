@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  output: 'standalone',
 
   images: {
     remotePatterns: [
@@ -30,7 +29,26 @@ const nextConfig = {
     },
   },
 
-  turbopack: {},
+  // Fix for Next.js 15 production build with onClick handlers
+  compiler: {
+    // Remove in production to fix onClick issues
+    removeConsole: {
+      exclude: ['error', 'warn'],
+    },
+  },
+
+  // Ensure proper client-side bundle handling
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+        os: false,
+      };
+    }
+    return config;
+  },
 };
 
 module.exports = nextConfig;

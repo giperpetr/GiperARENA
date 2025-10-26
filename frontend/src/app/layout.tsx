@@ -17,35 +17,12 @@ export const metadata: Metadata = {
   title: 'GiperARENA - Remote Gaming Platform',
   description: 'Control real robots and drones in physical arenas from anywhere in the world',
   keywords: ['gaming', 'robots', 'drones', 'remote control', 'tournaments', 'blockchain'],
-  authors: [{ name: 'GiperARENA Team' }],
-  creator: 'GiperARENA',
-  publisher: 'GiperARENA',
-  icons: {
-    icon: [
-      { url: '/logo-quad.svg', type: 'image/svg+xml' },
-      { url: '/logo-quad.png', sizes: '32x32', type: 'image/png' },
-      { url: '/logo-quad.png', sizes: '16x16', type: 'image/png' },
-    ],
-    apple: [
-      { url: '/logo-quad.png', sizes: '180x180', type: 'image/png' },
-    ],
-    shortcut: '/logo-quad.svg',
-  },
   openGraph: {
     type: 'website',
-    locale: 'en_US',
     url: 'https://giperarena.space',
     title: 'GiperARENA - Remote Gaming Platform',
     description: 'Control real robots and drones in physical arenas from anywhere in the world',
-    siteName: 'GiperARENA',
-    images: [
-      {
-        url: '/logo-quad.png',
-        width: 1200,
-        height: 630,
-        alt: 'GiperARENA',
-      },
-    ],
+    images: ['/logo-quad.png'],
   },
   twitter: {
     card: 'summary_large_image',
@@ -53,15 +30,13 @@ export const metadata: Metadata = {
     description: 'Control real robots and drones in physical arenas from anywhere in the world',
     images: ['/logo-quad.png'],
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
+  icons: {
+    icon: [
+      { url: '/logo-quad.svg', type: 'image/svg+xml' },
+      { url: '/logo-quad.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: '/logo-quad.png',
   },
-  themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#0a0a0f' },
-  ],
-  manifest: '/manifest.json',
 };
 
 export default function RootLayout({

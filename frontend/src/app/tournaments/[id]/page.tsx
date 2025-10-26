@@ -89,8 +89,10 @@ const MOCK_PARTICIPANTS = [
   { rank: 8, username: 'VelocityKing', avatar: '👾', seed: 8, status: 'active' },
 ];
 
-export default function TournamentDetailPage({ params }: { params: { id: string } }) {
+export default function TournamentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const participationPercentage = (MOCK_TOURNAMENT.current_participants / MOCK_TOURNAMENT.max_participants) * 100;
+  // Note: In Next.js 15, params is a Promise but we're not using the id in this Client Component yet
+  // In the future, we'll need to unwrap the promise in a Server Component wrapper
 
   return (
     <main className="min-h-screen px-6 py-24">

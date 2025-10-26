@@ -1,0 +1,45 @@
+# syntax=docker/dockerfile:1
+
+# =========================================
+# DEV MODE Dockerfile
+# =========================================
+# This runs Next.js dev server (npx next dev) instead of production build
+# Use this when production build fails with onClick handler errors
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+RUN apk add --no-cache libc6-compat python3 py3-pip make g++ curl linux-headers eudev-dev
+
+# Copy workspace files
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
+COPY shared/package.json ./shared/
+COPY frontend/package.json ./frontend/
+
+# Install dependencies
+RUN corepack enable pnpm && pnpm install --no-frozen-lockfile --strict-peer-dependencies=false
+
+# Copy source code
+COPY shared ./shared
+COPY frontend ./frontend
+
+# Build shared package only (не frontend!)
+WORKDIR /app/shared
+RUN corepack enable pnpm && pnpm run build
+
+# Switch to frontend directory
+WORKDIR /app/frontend
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:3000/ || exit 1
+
+# Start DEV server (no production build needed!)
+CMD ["npx", "next", "dev"]

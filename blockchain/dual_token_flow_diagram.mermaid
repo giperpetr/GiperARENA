@@ -1,0 +1,67 @@
+graph TB
+    subgraph "ВНЕШНИЙ МИР"
+        FIAT[💵 Fiat Money USD/EUR/RUB]
+        CRYPTO[₿ Crypto BTC/ETH]
+        CEX[🏦 CEX: Binance/Coinbase]
+    end
+
+    subgraph "ПЛАТФОРМА GIPERARENA"
+        GAM[💰 GAM Stablecoin<br/>Polygon<br/>1 GAM = $1 USD]
+        GAC[⭐ GAC Governance<br/>Arbitrum<br/>1B fixed supply]
+        
+        STAKE[🔒 Staking Pool]
+        BURN[🔥 Burn Address]
+        TREASURY[🏛️ Platform Treasury]
+    end
+
+    subgraph "ПОЛЬЗОВАТЕЛИ"
+        PLAYER[🎮 Игрок]
+        ORGANIZER[🏟️ Организатор]
+        INVESTOR[💼 Инвестор]
+    end
+
+    subgraph "ДЕЙСТВИЯ"
+        GAME[🎯 Игра/Ставки]
+        TOURNAMENT[🏆 Турнир]
+        FEES[💸 Комиссии]
+    end
+
+    %% Входы в систему
+    FIAT -->|Покупка| GAM
+    CRYPTO -->|Обмен| GAM
+    CEX -->|Покупка| GAC
+    
+    %% GAM flows
+    PLAYER -->|Депозит fiat| GAM
+    GAM -->|Оплата игр| GAME
+    GAM -->|Турнирные взносы| TOURNAMENT
+    GAME -->|Выигрыш| GAM
+    TOURNAMENT -->|Приз| GAM
+    GAM -->|Вывод| PLAYER
+    
+    %% Комиссии
+    GAME -->|Комиссия 20%| FEES
+    TOURNAMENT -->|Комиссия 15%| FEES
+    FEES -->|Collect GAM| TREASURY
+    
+    %% Распределение комиссий
+    TREASURY -->|70-80%| ORGANIZER
+    TREASURY -->|20% buy| GAC
+    GAC -->|burn| BURN
+    
+    %% GAC flows
+    INVESTOR -->|Buy| GAC
+    GAC -->|Stake| STAKE
+    STAKE -->|Rewards 40%| GAM
+    GAM -->|Convert| GAC
+    
+    %% Выходы
+    GAM -->|Withdraw| FIAT
+    GAM -->|Convert| CRYPTO
+    GAC -->|Sell| CEX
+    
+    style GAM fill:#4CAF50,stroke:#2E7D32,stroke-width:3px
+    style GAC fill:#FF9800,stroke:#E65100,stroke-width:3px
+    style BURN fill:#F44336,stroke:#C62828,stroke-width:3px
+    style STAKE fill:#9C27B0,stroke:#6A1B9A,stroke-width:3px
+    style TREASURY fill:#2196F3,stroke:#1565C0,stroke-width:3px
