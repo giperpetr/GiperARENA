@@ -88,11 +88,11 @@ EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-ENV NODE_ENV=production
+ENV NODE_ENV=development
 ENV NEXT_TELEMETRY_DISABLED=1
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:3000/ || exit 1
 
-# Start production server
-CMD ["npx", "next", "start"]
+# Start dev server in production (fixes onClick handler errors)
+CMD ["npx", "next", "dev"]

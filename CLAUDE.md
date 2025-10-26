@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 # Set Docker Hub token from environment
-export DOCKER_HUB_TOKEN="<your_docker_token>"  # Get from Docker Hub settings
+export DOCKER_HUB_TOKEN="***REDACTED***"  # Get from Docker Hub settings
 ./scripts/deploy-reliable.sh
 ```
 
