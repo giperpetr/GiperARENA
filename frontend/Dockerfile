@@ -74,6 +74,10 @@ COPY --from=builder /app/frontend/.next ./frontend/.next
 COPY --from=builder /app/frontend/public ./frontend/public
 COPY --from=builder /app/frontend/next.config.js ./frontend/next.config.js
 COPY --from=builder /app/frontend/package.json ./frontend/package.json
+COPY --from=builder /app/frontend/tsconfig.json ./frontend/tsconfig.json
+
+# For dev mode, we also need the source code
+COPY --from=builder /app/frontend/src ./frontend/src
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
