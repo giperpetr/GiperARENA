@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -29,6 +29,33 @@ export function MegaHeader() {
   const [showBrowseMenu, setShowBrowseMenu] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
+  const browseMenuRef = useRef<HTMLDivElement>(null);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking on a link
+  const handleBrowseMenuLinkClick = () => {
+    setShowBrowseMenu(false);
+  };
+
+  const handleProfileMenuLinkClick = () => {
+    setShowProfileMenu(false);
+  };
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (browseMenuRef.current && !browseMenuRef.current.contains(event.target as Node)) {
+        setShowBrowseMenu(false);
+      }
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 glass backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -45,7 +72,7 @@ export function MegaHeader() {
         </Link>
 
         {/* Browse Dropdown */}
-        <div className="relative hidden md:block">
+        <div className="relative hidden md:block" ref={browseMenuRef}>
           <button
             onClick={() => setShowBrowseMenu(!showBrowseMenu)}
             className="flex items-center space-x-1 text-sm font-medium text-foreground hover:text-cyan-400 transition-colors"
@@ -63,6 +90,7 @@ export function MegaHeader() {
                   <div className="space-y-1">
                     <Link
                       href="/arenas"
+                      onClick={handleBrowseMenuLinkClick}
                       className="flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-cyan-500/10 hover:text-cyan-400 rounded transition-colors"
                     >
                       <ArenaIcon size={16} />
@@ -70,6 +98,7 @@ export function MegaHeader() {
                     </Link>
                     <Link
                       href="/games"
+                      onClick={handleBrowseMenuLinkClick}
                       className="flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-cyan-500/10 hover:text-cyan-400 rounded transition-colors"
                     >
                       <GamepadIcon size={16} />
@@ -77,6 +106,7 @@ export function MegaHeader() {
                     </Link>
                     <Link
                       href="/tournaments"
+                      onClick={handleBrowseMenuLinkClick}
                       className="flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-cyan-500/10 hover:text-cyan-400 rounded transition-colors"
                     >
                       <TrophyIcon size={16} />
@@ -91,6 +121,7 @@ export function MegaHeader() {
                   <div className="space-y-1">
                     <Link
                       href="/play/queue"
+                      onClick={handleBrowseMenuLinkClick}
                       className="flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-purple-500/10 hover:text-purple-400 rounded transition-colors"
                     >
                       <ClockIcon size={16} />
@@ -98,6 +129,7 @@ export function MegaHeader() {
                     </Link>
                     <Link
                       href="/play/live"
+                      onClick={handleBrowseMenuLinkClick}
                       className="flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-purple-500/10 hover:text-purple-400 rounded transition-colors"
                     >
                       <PlayIcon size={16} />
@@ -112,6 +144,7 @@ export function MegaHeader() {
                   <div className="space-y-1">
                     <Link
                       href="/streams/live"
+                      onClick={handleBrowseMenuLinkClick}
                       className="flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-cyan-500/10 hover:text-cyan-400 rounded transition-colors"
                     >
                       <EyeIcon size={16} />
@@ -119,6 +152,7 @@ export function MegaHeader() {
                     </Link>
                     <Link
                       href="/streams/highlights"
+                      onClick={handleBrowseMenuLinkClick}
                       className="flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-cyan-500/10 hover:text-cyan-400 rounded transition-colors"
                     >
                       <FireIcon size={16} />
@@ -133,6 +167,7 @@ export function MegaHeader() {
                   <div className="space-y-1">
                     <Link
                       href="/leaderboard"
+                      onClick={handleBrowseMenuLinkClick}
                       className="flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-purple-500/10 hover:text-purple-400 rounded transition-colors"
                     >
                       <TrophyIcon size={16} />
@@ -140,6 +175,7 @@ export function MegaHeader() {
                     </Link>
                     <Link
                       href="/community/groups"
+                      onClick={handleBrowseMenuLinkClick}
                       className="flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-purple-500/10 hover:text-purple-400 rounded transition-colors"
                     >
                       <UsersIcon size={16} />
@@ -154,6 +190,7 @@ export function MegaHeader() {
                   <div className="space-y-1">
                     <Link
                       href="/marketplace"
+                      onClick={handleBrowseMenuLinkClick}
                       className="flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-cyan-500/10 hover:text-cyan-400 rounded transition-colors"
                     >
                       <CoinsIcon size={16} />
@@ -210,7 +247,7 @@ export function MegaHeader() {
           </Link>
 
           {/* Profile Dropdown */}
-          <div className="relative">
+          <div className="relative" ref={profileMenuRef}>
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
               className="flex items-center space-x-2 hover-lift"
@@ -227,6 +264,7 @@ export function MegaHeader() {
               <div className="absolute right-0 top-full mt-2 w-48 glass border border-border/50 rounded-lg p-2 shadow-xl">
                 <Link
                   href="/profile"
+                  onClick={handleProfileMenuLinkClick}
                   className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-cyan-500/10 hover:text-cyan-400 rounded transition-colors"
                 >
                   <UserIcon size={16} />
@@ -234,6 +272,7 @@ export function MegaHeader() {
                 </Link>
                 <Link
                   href="/settings"
+                  onClick={handleProfileMenuLinkClick}
                   className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-cyan-500/10 hover:text-cyan-400 rounded transition-colors"
                 >
                   <SettingsIcon size={16} />
@@ -241,6 +280,7 @@ export function MegaHeader() {
                 </Link>
                 <Link
                   href="/wallet"
+                  onClick={handleProfileMenuLinkClick}
                   className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-cyan-500/10 hover:text-cyan-400 rounded transition-colors"
                 >
                   <WalletIcon size={16} />
