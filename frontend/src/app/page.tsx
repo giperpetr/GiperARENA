@@ -1,28 +1,41 @@
 'use client';
 
 import { HeroSection } from '@/components/home/HeroSection';
+import { QuickStatsBanner } from '@/components/home/QuickStatsBanner';
 import { LiveGamesCarousel } from '@/components/home/LiveGamesCarousel';
+import { FeaturedTournamentHero } from '@/components/home/FeaturedTournamentHero';
 import { TrendingTournaments } from '@/components/home/TrendingTournaments';
 import { TopPlayersLeaderboard } from '@/components/home/TopPlayersLeaderboard';
 import { TopArenasShowcase } from '@/components/home/TopArenasShowcase';
-import { NewsSection } from '@/components/home/NewsSection';
-import { CommunityHighlights } from '@/components/home/CommunityHighlights';
+import { CommunitySpotlight } from '@/components/home/CommunitySpotlight';
 import { UpcomingEvents } from '@/components/home/UpcomingEvents';
+import { NewsSection } from '@/components/home/NewsSection';
+import { TokenPricesWidget } from '@/components/home/TokenPricesWidget';
+import { HowItWorksSection } from '@/components/home/HowItWorksSection';
+import { PartnerArenasShowcase } from '@/components/home/PartnerArenasShowcase';
+import { FooterCTA } from '@/components/home/FooterCTA';
 import { LiveStatsWidget } from '@/components/home/LiveStatsWidget';
-import { Separator } from '@/components/ui/separator';
+import { AnimatedGradientLine } from '@/components/ui/animated-gradient-line';
+import { GlowingDivider } from '@/components/ui/glowing-divider';
 
 export default function HomePage() {
   return (
     <main className="min-h-screen">
-      {/* Hero Section with Live Championship */}
+      {/* 1. Hero Section */}
       <HeroSection />
 
-      {/* Live Games Carousel */}
+      {/* 2. Quick Stats Banner */}
+      <QuickStatsBanner />
+
+      {/* 3. Live Games Carousel */}
       <section className="relative px-6 py-16 lg:py-20 border-b border-border/20">
         <LiveGamesCarousel />
       </section>
 
-      {/* Main Content Grid */}
+      {/* 4. Featured Tournament Hero */}
+      <FeaturedTournamentHero />
+
+      {/* 5. Main Content Grid */}
       <section className="relative px-6 py-16 lg:py-24">
         <div className="container mx-auto max-w-7xl">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-16">
@@ -31,15 +44,15 @@ export default function HomePage() {
               {/* Trending Tournaments */}
               <TrendingTournaments />
 
-              <Separator className="opacity-30" />
+              <AnimatedGradientLine />
 
               {/* Top Arenas Showcase */}
               <TopArenasShowcase />
 
-              <Separator className="opacity-30" />
+              <GlowingDivider />
 
-              {/* Community Highlights */}
-              <CommunityHighlights />
+              {/* Community Spotlight */}
+              <CommunitySpotlight />
             </div>
 
             {/* Right Column - Sidebar (1/3 width) */}
@@ -47,19 +60,33 @@ export default function HomePage() {
               {/* Top Players Leaderboard */}
               <TopPlayersLeaderboard />
 
-              <Separator className="opacity-20" />
+              <GlowingDivider subtle />
 
               {/* Upcoming Events */}
               <UpcomingEvents />
 
-              <Separator className="opacity-20" />
+              <GlowingDivider subtle />
 
               {/* News Section */}
               <NewsSection />
+
+              <GlowingDivider subtle />
+
+              {/* Token Prices Widget */}
+              <TokenPricesWidget />
             </div>
           </div>
         </div>
       </section>
+
+      {/* 6. How It Works Section */}
+      <HowItWorksSection />
+
+      {/* 7. Partner Arenas Showcase */}
+      <PartnerArenasShowcase />
+
+      {/* 8. Footer CTA */}
+      <FooterCTA />
 
       {/* Live Stats Widget - Fixed Position Overlay */}
       <LiveStatsWidget />
