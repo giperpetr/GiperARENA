@@ -6,33 +6,46 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 🚀 DEPLOYMENT WORKFLOW (MANDATORY)
 
+**✅ СТАТУС:** Работает! Последний успешный деплой: commit `c8a7c3f` (27 октября 2025)
+**🌐 САЙТ:** https://giperarena.space (HTTP 200 ✅)
+**📦 GIT TAG:** `v1.0.0-successful-deploy`
+
 **⚠️ CRITICAL: GitHub Actions НЕ ИСПОЛЬЗУЮТСЯ! Только Docker Hub + SSH!**
 
-### Единственный правильный способ деплоя:
+### ⭐ РАБОЧИЙ СПОСОБ ДЕПЛОЯ (27 октября 2025):
 
 ```bash
-# Set Docker Hub token from environment
-export DOCKER_HUB_TOKEN="***REDACTED***"  # Get from Docker Hub settings
-./scripts/deploy-reliable.sh
+cd /Users/giperpetr/Documents/Programming/ArenaHUB
+chmod +x scripts/deploy.sh
+./scripts/deploy.sh
 ```
 
-### Что делает скрипт:
-1. **Git commit** → получает SHA версию
-2. **Docker build** с `--no-cache` → избегает кэша
-3. **Docker push** с SHA + latest тегами → загрузка в Docker Hub
-4. **SSH на сервер** → удаляет старые образы
-5. **docker compose pull** с `--no-cache` → скачивает новые образы
-6. **docker compose up** с `--force-recreate` → пересоздаёт контейнеры
+### 📋 Что делает НОВЫЙ модульный `scripts/deploy.sh`:
 
-### НИКОГДА НЕ ДЕЛАЙ:
+1. **build-amd64.sh** → собирает Docker образ для AMD64 с `--no-cache`
+2. **docker push** → загружает образ в Docker Hub с SHA тегом
+3. **update-compose.sh** → обновляет `docker-compose.prod.yml` с новым SHA
+4. **deploy-to-server.sh** → копирует файлы на сервер и запускает контейнеры
+
+### 🎯 Ключевые особенности:
+
+- ✅ **SHA версионирование** образов (giperpetr/giperarena-frontend:c8a7c3f)
+- ✅ **--no-cache** при сборке (избегает старого кэша Docker)
+- ✅ **Модульная система** (4 скрипта вместо монолитного)
+- ✅ **NODE_ENV=development** в production (Next.js production build падает)
+
+### ❌ НИКОГДА НЕ ДЕЛАЙ:
+
 - ❌ GitHub Actions workflows (минуты кончились!)
-- ❌ git push без последующего деплоя скриптом
-- ❌ Деплой без `--no-cache` (будет старый кэш!)
-- ❌ Деплой без `--force-recreate` (будут старые контейнеры!)
+- ❌ `scripts/deploy-reliable.sh` (устаревший монолитный скрипт от 25 октября)
+- ❌ `scripts/deploy-dockerhub.sh` (устаревший от 24 октября)
+- ❌ Любые скрипты из `frontend/scripts/` (дубликаты, используй `scripts/`)
+- ❌ Деплой без SHA тега в docker-compose.prod.yml
+- ❌ `NODE_ENV=production` для frontend (падает с onClick errors)
 
-### Почему dev mode в production:
-Production build Next.js 14 падает 60+ раз с onClick handler errors.
-Dev server работает идеально → используем его в production.
+### 📚 Полная документация:
+
+См. [DEPLOYMENT_WORKING.md](./DEPLOYMENT_WORKING.md) для детальной схемы деплоя.
 
 ---
 
