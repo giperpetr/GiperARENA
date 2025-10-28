@@ -23,7 +23,7 @@ services:
       - "traefik.http.services.giperarena.loadbalancer.server.port=3000"
 
   backend:
-    image: giperpetr/giperarena-backend:latest
+    image: giperpetr/giperarena-backend:3f6a1d1
     container_name: giperarena-backend
     restart: unless-stopped
     env_file:
