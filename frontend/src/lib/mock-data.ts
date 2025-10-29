@@ -328,8 +328,7 @@ export const MOCK_TOP_PLAYERS: TopPlayer[] = [
   { rank: 50, name: 'BasicallyIDoWrk', tier: 'C', rating: 1217, wins: 213, earnings: 3903, avatar: '🎭', country: 'USA' },
 ];
 
-// Mock Arenas (12 items, showing top 6 on homepage)
-// Using real UUIDs from database
+// Mock Arenas - Using ONLY real UUIDs from database (5 arenas)
 export const MOCK_ARENAS: Arena[] = [
   {
     id: '20000000-0000-0000-0000-000000000001',
@@ -380,76 +379,6 @@ export const MOCK_ARENAS: Arena[] = [
     type: 'Robot Racing',
     images: ['🏛️', '🏎️', '⚙️'],
     isVerified: true,
-  },
-  {
-    id: '20000000-0000-0000-0000-000000000001',
-    name: 'Moscow Battle Arena (dup)',
-    location: 'Moscow, Russia',
-    rating: 4.8,
-    playerCount: 1250,
-    type: 'Claw Games',
-    images: ['🏯', '🎁', '💎'],
-    isVerified: true,
-  },
-  {
-    id: '7',
-    name: 'Singapore Sky Track',
-    location: 'Singapore',
-    rating: 4.7,
-    playerCount: 1089,
-    type: 'Drone Racing',
-    images: ['🏙️', '🛸', '🌃'],
-    isVerified: true,
-  },
-  {
-    id: '8',
-    name: 'LA Horror House',
-    location: 'Los Angeles, USA',
-    rating: 4.9,
-    playerCount: 1034,
-    type: 'Escape Room',
-    images: ['🎬', '👻', '🔦'],
-    isVerified: true,
-  },
-  {
-    id: '9',
-    name: 'Paris Fashion Arcade',
-    location: 'Paris, France',
-    rating: 4.6,
-    playerCount: 989,
-    type: 'Claw Games',
-    images: ['🗼', '👗', '💄'],
-    isVerified: false,
-  },
-  {
-    id: '10',
-    name: 'Sydney Outback Track',
-    location: 'Sydney, Australia',
-    rating: 4.7,
-    playerCount: 923,
-    type: 'Robot Racing',
-    images: ['🦘', '🏎️', '🌏'],
-    isVerified: true,
-  },
-  {
-    id: '11',
-    name: 'Vegas Neon Circuit',
-    location: 'Las Vegas, USA',
-    rating: 4.8,
-    playerCount: 876,
-    type: 'Drone Racing',
-    images: ['🎰', '🛸', '💡'],
-    isVerified: true,
-  },
-  {
-    id: '12',
-    name: 'Miami Beach Puzzle',
-    location: 'Miami, USA',
-    rating: 4.5,
-    playerCount: 834,
-    type: 'Escape Room',
-    images: ['🏖️', '🔐', '🌴'],
-    isVerified: false,
   },
 ];
 
