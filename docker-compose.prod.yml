@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   frontend:
-    image: giperpetr/giperarena-frontend:0ed4268
+    image: giperpetr/giperarena-frontend:6bf2418
     container_name: giperarena-frontend
     restart: unless-stopped
     env_file:

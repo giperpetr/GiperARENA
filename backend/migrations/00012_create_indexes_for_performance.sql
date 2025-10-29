@@ -28,8 +28,6 @@ CREATE INDEX idx_leaderboards_type_period_rank ON giperarena.leaderboards(leader
 
 -- Full-text search on arenas
 CREATE INDEX idx_arenas_name_search ON giperarena.arenas USING GIN(to_tsvector('english', name || ' ' || COALESCE(description, '')));
-
-COMMENT ON INDEX idx_arenas_name_search IS 'Full-text search index for arena name and description';
 -- +goose StatementEnd
 
 -- +goose Down

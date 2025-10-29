@@ -6,7 +6,7 @@ CREATE SCHEMA IF NOT EXISTS giperarena;
 -- Enable necessary extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "postgis";
-CREATE EXTENSION IF NOT EXISTS "pgvector";
+CREATE EXTENSION IF NOT EXISTS "vector";
 
 -- Set default search path for giperarena tenant
 ALTER DATABASE postgres SET search_path TO giperarena, public;
