@@ -240,7 +240,6 @@ export function OptimizedImage({
 
       <Image
         src={imageSrc}
-        srcSet={imageSrcSet || undefined}
         alt={alt}
         width={width}
         height={height}
