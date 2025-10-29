@@ -19,13 +19,7 @@ echo ""
 
 # Шаг 1: Git коммит и получение SHA
 echo "📝 Шаг 1/7: Git commit и versioning..."
-git add -A
-git diff --staged --quiet && echo "⚠️  Нет изменений для коммита" || {
-  read -p "Введи сообщение коммита: " COMMIT_MSG
-  git commit -m "$COMMIT_MSG"
-  git push origin master
-}
-
+# Используем текущий HEAD без нового коммита
 GIT_SHA=$(git rev-parse --short HEAD)
 echo "✅ Версия: $GIT_SHA"
 echo ""
