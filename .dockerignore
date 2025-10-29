@@ -65,4 +65,4 @@ temp/
 docker-compose*.yml
 Dockerfile
 .dockerignore
-# Force rebuild Fri Oct 24 14:36:52 MSK 2025
+# Force rebuild Oct 29 20:40 - Fix TypeScript error
