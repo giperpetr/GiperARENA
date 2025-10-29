@@ -64,8 +64,8 @@ cd $SERVER_DIR
 echo "🗑️  Удаление старых frontend образов..."
 docker rmi giperpetr/giperarena-frontend:latest -f 2>/dev/null || true
 
-echo "📥 Pull нового frontend образа БЕЗ КЭША (версия: ${GIT_SHA})..."
-docker compose -f docker-compose.prod.yml pull --no-cache frontend
+echo "📥 Pull нового frontend образа (версия: ${GIT_SHA})..."
+docker compose -f docker-compose.prod.yml pull frontend
 
 echo "🔄 Пересоздание frontend контейнера с --force-recreate..."
 docker compose -f docker-compose.prod.yml up -d --force-recreate frontend
