@@ -60,20 +60,37 @@ export class ArenasService {
       return JSON.parse(cached);
     }
 
-    const { data, error } = await supabaseAdmin
-      .from('arenas')
-      .select('*')
-      .eq('id', arenaId)
-      .single();
+    // Use direct PostgreSQL
+    const client = await pool.connect();
+    try {
+      const result = await client.query(
+        `
+        SELECT
+          id, name, description, arena_type, location_address,
+          location_coordinates, status, price_per_minute, currency,
+          max_players, operating_hours, features, equipment,
+          media_urls, rating, total_games, total_revenue,
+          is_verified as verified, operator_id, metadata,
+          created_at, updated_at
+        FROM giperarena.arenas
+        WHERE id = $1
+      `,
+        [arenaId]
+      );
 
-    if (error) throw error;
+      const arena = result.rows[0];
 
-    // Cache for 5 minutes
-    if (data) {
-      await redis.setex(cacheKey, 300, JSON.stringify(data));
+      if (!arena) {
+        throw new Error('Arena not found');
+      }
+
+      // Cache for 5 minutes
+      await redis.setex(cacheKey, 300, JSON.stringify(arena));
+
+      return arena;
+    } finally {
+      client.release();
     }
-
-    return data;
   }
 
   // Create arena

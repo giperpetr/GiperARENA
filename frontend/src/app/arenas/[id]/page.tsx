@@ -1,34 +1,9 @@
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import ArenaDetailClient from './ArenaDetailClient';
+import { api } from '@/lib/api-client';
 
-// Mock data
-const MOCK_ARENA = {
-  id: '1',
-  name: 'Tokyo Cyber Arena',
-  location: 'Tokyo, Japan',
-  country: 'Japan',
-  city: 'Tokyo',
-  game_type: 'drone_racing',
-  status: 'active',
-  rating: 4.8,
-  total_sessions: 1234,
-  hourly_rate: 50,
-  pricing_model: 'hourly',
-  description:
-    'Футуристическая арена в самом сердце Токио. Оснащена последними технологиями для гонок дронов с препятствиями и ультра-низкой задержкой передачи данных.',
-  features: ['4K камеры', 'WebRTC <50ms', '5G connectivity', 'Препятствия', 'Ночной режим'],
-  operator: {
-    name: 'Tech Gaming Inc.',
-    verified: true,
-  },
-  devices: [
-    { id: '1', name: 'Drone Alpha', status: 'available', image: '🚁' },
-    { id: '2', name: 'Drone Beta', status: 'in_use', image: '🚁' },
-    { id: '3', name: 'Drone Gamma', status: 'available', image: '🚁' },
-  ],
-};
-
+// Recent sessions mock data (will be fetched from API in future)
 const RECENT_SESSIONS = [
   { player: 'Player123', score: 9850, time: '2m 45s', timestamp: '5 минут назад' },
   { player: 'DroneKing', score: 9720, time: '2m 52s', timestamp: '12 минут назад' },
@@ -39,8 +14,23 @@ export default async function ArenaDetailPage({ params }: { params: Promise<{ id
   const resolvedParams = await params;
   const arenaId = resolvedParams.id;
 
-  // In future, fetch arena data from API based on arenaId
-  // const arena = await fetchArena(arenaId);
+  // Fetch arena data from API
+  let arena;
+  try {
+    arena = await api.getArenaById(arenaId);
+  } catch (error) {
+    console.error('Failed to fetch arena:', error);
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Арена не найдена</h1>
+          <Link href="/arenas" className="text-primary hover:underline">
+            Вернуться к списку арен
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -52,16 +42,16 @@ export default async function ArenaDetailPage({ params }: { params: Promise<{ id
               Арены
             </Link>
             <span>/</span>
-            <span>{MOCK_ARENA.name}</span>
+            <span>{arena.name}</span>
           </div>
 
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
                 <h1 className="text-4xl font-bold text-gradient-cyan-purple">
-                  {MOCK_ARENA.name}
+                  {arena.name}
                 </h1>
-                {MOCK_ARENA.operator.verified && (
+                {arena.verified && (
                   <Badge variant="success">✓ Верифицирована</Badge>
                 )}
               </div>
@@ -69,22 +59,22 @@ export default async function ArenaDetailPage({ params }: { params: Promise<{ id
               <div className="flex flex-wrap items-center gap-4 text-muted-foreground mb-4">
                 <div className="flex items-center gap-1">
                   <span>📍</span>
-                  <span>{MOCK_ARENA.location}</span>
+                  <span>{arena.location_address || 'Location not set'}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <span>⭐</span>
-                  <span className="font-bold text-foreground">{MOCK_ARENA.rating}</span>
-                  <span>({MOCK_ARENA.total_sessions} игр)</span>
+                  <span className="font-bold text-foreground">{arena.rating || '4.5'}</span>
+                  <span>({arena.total_games || 0} игр)</span>
                 </div>
-                <Badge variant={MOCK_ARENA.status === 'active' ? 'success' : 'warning'}>
-                  {MOCK_ARENA.status === 'active' ? 'Активна' : 'Обслуживание'}
+                <Badge variant={arena.status === 'active' ? 'success' : 'warning'}>
+                  {arena.status === 'active' ? 'Активна' : 'Обслуживание'}
                 </Badge>
               </div>
 
-              <p className="text-muted-foreground max-w-2xl">{MOCK_ARENA.description}</p>
+              <p className="text-muted-foreground max-w-2xl">{arena.description}</p>
             </div>
 
-            <ArenaDetailClient arena={MOCK_ARENA} recentSessions={RECENT_SESSIONS} />
+            <ArenaDetailClient arena={arena} recentSessions={RECENT_SESSIONS} />
           </div>
         </div>
       </section>
