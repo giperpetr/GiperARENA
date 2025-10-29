@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS giperarena.achievements (
     name VARCHAR(100) UNIQUE NOT NULL,
     slug VARCHAR(100) UNIQUE NOT NULL,
     description TEXT NOT NULL,
-    category VARCHAR(30) NOT NULL CHECK (category IN (
+    achievement_category VARCHAR(30) NOT NULL CHECK (achievement_category IN (
         'gameplay', 'social', 'tournament', 'collection', 'special', 'seasonal'
     )),
     tier VARCHAR(20) NOT NULL CHECK (tier IN (
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS giperarena.user_achievements (
 );
 
 -- Indexes for achievements
-CREATE INDEX idx_achievements_category ON giperarena.achievements(category);
+CREATE INDEX idx_achievements_category ON giperarena.achievements(achievement_category);
 CREATE INDEX idx_achievements_tier ON giperarena.achievements(tier);
 CREATE INDEX idx_achievements_slug ON giperarena.achievements(slug);
 CREATE INDEX idx_achievements_is_active ON giperarena.achievements(is_active) WHERE is_active = true;
