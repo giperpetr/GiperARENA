@@ -1,7 +1,7 @@
 // API Client for GiperARENA - connects to backend REST API and Supabase
 import { supabase } from './supabase';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.gipergiraffe.com/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.giperarena.space/api/v1';
 
 /**
  * API Client class with authentication support
