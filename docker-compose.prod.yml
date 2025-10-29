@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   frontend:
-    image: giperpetr/giperarena-frontend:fb8b5f6
+    image: giperpetr/giperarena-frontend:7bbf643
     container_name: giperarena-frontend
     restart: unless-stopped
     env_file:
@@ -11,6 +11,7 @@ services:
       - NODE_ENV=development
       - PORT=3000
       - NEXT_TELEMETRY_DISABLED=1
+      - NEXT_PUBLIC_API_URL=https://api.giperarena.space/api/v1
     networks:
       - default
       - proxy
@@ -23,7 +24,7 @@ services:
       - "traefik.http.services.giperarena.loadbalancer.server.port=3000"
 
   backend:
-    image: giperpetr/giperarena-backend:3f6a1d1
+    image: giperpetr/giperarena-backend:7bbf643
     container_name: giperarena-backend
     restart: unless-stopped
     env_file:
