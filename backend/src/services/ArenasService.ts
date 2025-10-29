@@ -13,88 +13,42 @@ export class ArenasService {
       return JSON.parse(cached);
     }
 
-    let query = supabaseAdmin
-      .from('arenas')
-      .select(
-        `
-        id,
-        name,
-        description,
-        game_type,
-        location_address,
-        location_coordinates,
-        country,
-        city,
-        status,
-        pricing_model,
-        hourly_rate,
-        total_sessions,
-        rating,
-        operator_id,
-        created_at
-      `
-      );
+    // Use direct PostgreSQL for better control
+    const client = await pool.connect();
+    try {
+      let query = `
+        SELECT
+          id, name, description, arena_type, location_address,
+          location_coordinates, status, price_per_minute, currency,
+          max_players, operating_hours, features, equipment,
+          media_urls, rating, total_games, total_revenue,
+          is_verified, operator_id, metadata, created_at, updated_at
+        FROM giperarena.arenas
+        WHERE 1=1
+      `;
+      const params: any[] = [];
+      let paramCount = 0;
 
-    // Apply filters
-    if (filters.status) {
-      query = query.eq('status', filters.status);
-    }
-    if (filters.game_type) {
-      query = query.eq('game_type', filters.game_type);
-    }
-    if (filters.country) {
-      query = query.eq('country', filters.country);
-    }
-    if (filters.city) {
-      query = query.eq('city', filters.city);
-    }
-
-    // Location-based filtering (PostGIS)
-    if (filters.location) {
-      const { lat, lng, radius } = filters.location;
-      const client = await pool.connect();
-      try {
-        const result = await client.query(
-          `
-          SELECT
-            id, name, description, game_type, location_address,
-            ST_AsGeoJSON(location_coordinates)::json as location_coordinates,
-            country, city, status, pricing_model, hourly_rate,
-            total_sessions, rating, operator_id, created_at,
-            ST_Distance(
-              location_coordinates::geography,
-              ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography
-            ) as distance
-          FROM giperarena.arenas
-          WHERE ST_DWithin(
-            location_coordinates::geography,
-            ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
-            $3
-          )
-          ORDER BY distance
-          LIMIT $4 OFFSET $5
-        `,
-          [lng, lat, radius * 1000, limit, offset]
-        );
-
-        const arenas = result.rows;
-        await redis.setex(cacheKey, 300, JSON.stringify(arenas));
-        return arenas;
-      } finally {
-        client.release();
+      // Apply filters
+      if (filters.status) {
+        paramCount++;
+        query += ` AND status = $${paramCount}`;
+        params.push(filters.status);
       }
+
+      query += ` ORDER BY created_at DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
+      params.push(limit, offset);
+
+      const result = await client.query(query, params);
+      const arenas = result.rows;
+
+      // Cache for 5 minutes
+      await redis.setex(cacheKey, 300, JSON.stringify(arenas));
+
+      return arenas;
+    } finally {
+      client.release();
     }
-
-    const { data, error } = await query
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
-
-    if (error) throw error;
-
-    // Cache for 5 minutes
-    await redis.setex(cacheKey, 300, JSON.stringify(data));
-
-    return data;
   }
 
   // Get arena by ID
