@@ -195,7 +195,9 @@ export default function ArenasPage() {
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-1">
                           <span>⭐</span>
-                          <span className="font-bold">{arena.rating?.toFixed(1) || '0.0'}</span>
+                          <span className="font-bold">
+                            {arena.rating ? parseFloat(arena.rating).toFixed(1) : '0.0'}
+                          </span>
                         </div>
                         <div className="text-muted-foreground">
                           {(arena.total_games || 0).toLocaleString()} игр
