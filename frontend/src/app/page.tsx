@@ -41,40 +41,24 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-16">
             {/* Left Column - Main Content (2/3 width) */}
             <div className="lg:col-span-2 space-y-16 lg:space-y-20">
-              {/* Trending Tournaments */}
+              {/* Trending Tournaments - топ-3 компактно */}
               <TrendingTournaments />
 
               <AnimatedGradientLine />
 
-              {/* Top Arenas Showcase */}
+              {/* Top Arenas Showcase - топ-6 */}
               <TopArenasShowcase />
 
               <GlowingDivider />
 
-              {/* Community Spotlight */}
+              {/* Community Spotlight - только достижения */}
               <CommunitySpotlight />
             </div>
 
-            {/* Right Column - Sidebar (1/3 width) */}
-            <div className="space-y-10 lg:space-y-12">
-              {/* Top Players Leaderboard */}
-              <TopPlayersLeaderboard />
-
-              <GlowingDivider subtle />
-
-              {/* Upcoming Events */}
-              <UpcomingEvents />
-
-              <GlowingDivider subtle />
-
-              {/* News Section */}
-              <NewsSection />
-
-              <GlowingDivider subtle />
-
-              {/* Token Prices Widget */}
-              <TokenPricesWidget />
-            </div>
+            {/* Right Column - Sidebar убран, контент перенесен */}
+            {/* Top Players → /leaderboard */}
+            {/* Upcoming Events → /tournaments */}
+            {/* News → /news */}
           </div>
         </div>
       </section>

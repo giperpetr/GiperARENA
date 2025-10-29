@@ -62,12 +62,15 @@ export function CommunitySpotlight() {
   ];
 
   return (
-    <div className="w-full space-y-8">
-      <h2 className="text-2xl font-bold text-white">Community Spotlight</h2>
+    <div className="w-full space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+          <TrophyIcon size={28} className="text-cyan-400" />
+          Последние достижения
+        </h2>
+      </div>
 
-      {/* Recent Achievements */}
       <div className="space-y-3">
-        <h3 className="text-lg font-semibold text-white/90 mb-4">🏆 Последние достижения</h3>
         {achievements.map((item, index) => (
           <Card
             key={index}
@@ -97,81 +100,6 @@ export function CommunitySpotlight() {
             </div>
           </Card>
         ))}
-      </div>
-
-      {/* Top Clips */}
-      <div className="space-y-3">
-        <h3 className="text-lg font-semibold text-white/90 mb-4">🎬 Популярные клипы недели</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {topClips.map((clip) => (
-            <Card
-              key={clip.id}
-              className="group bg-white/5 backdrop-blur-lg border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 cursor-pointer"
-            >
-              <div className="aspect-video bg-gradient-to-br from-cyan-900/30 to-purple-900/30 flex items-center justify-center text-5xl relative overflow-hidden">
-                {clip.thumbnail}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <PlayIcon size={48} className="text-white" />
-                </div>
-              </div>
-
-              <div className="p-3">
-                <h4 className="font-semibold text-white text-sm mb-1 truncate group-hover:text-cyan-400 transition-colors">
-                  {clip.title}
-                </h4>
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{clip.author}</span>
-                  <div className="flex items-center gap-1">
-                    <EyeIcon size={12} />
-                    <span>{clip.views}</span>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      {/* Live Streamers */}
-      <div className="space-y-3">
-        <h3 className="text-lg font-semibold text-white/90 mb-4">📺 Сейчас стримят</h3>
-        <div className="space-y-2">
-          {liveStreamers.map((streamer, index) => (
-            <Card
-              key={index}
-              className="group bg-white/5 backdrop-blur-lg border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 cursor-pointer"
-            >
-              <div className="p-3 flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 flex items-center justify-center text-xl">
-                    {streamer.emoji}
-                  </div>
-                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                  </span>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-white text-sm truncate">{streamer.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{streamer.game}</p>
-                </div>
-
-                <div className="flex items-center gap-1 text-xs text-red-400">
-                  <EyeIcon size={14} />
-                  <span className="font-semibold">{streamer.viewers}</span>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-
-        <Button
-          variant="outline"
-          className="w-full border-white/20 hover:bg-white/10 font-semibold"
-        >
-          Смотреть все стримы
-        </Button>
       </div>
     </div>
   );

@@ -1,120 +1,135 @@
 'use client';
 
-
 import { useState } from 'react';
 import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { UserIcon, WalletIcon, CheckIcon } from '@/components/ui/icons';
+
+type RegistrationStep = 'method' | 'form' | 'success';
 
 export default function RegisterPage() {
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
+  const [step, setStep] = useState<RegistrationStep>('method');
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [captchaVerified, setCaptchaVerified] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
 
-  const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleEmailRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
+    if (password !== confirmPassword) {
       alert('Пароли не совпадают');
       return;
     }
 
-    if (!acceptTerms) {
-      alert('Примите условия использования');
+    if (!captchaVerified) {
+      alert('Пожалуйста, пройдите проверку капчи');
+      return;
+    }
+
+    if (!agreedToTerms) {
+      alert('Пожалуйста, примите условия использования');
       return;
     }
 
     setIsLoading(true);
-
-    // Mock registration
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    console.log('Register:', formData);
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     setIsLoading(false);
+    setStep('success');
   };
 
-  const handleWalletConnect = async () => {
-    setIsLoading(true);
-
-    // Mock wallet connect
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    console.log('Wallet connected');
-    setIsLoading(false);
+  const handleSocialLogin = (provider: string) => {
+    alert(\`OAuth регистрация через \${provider} будет реализована с использованием Supabase Auth\`);
   };
 
-  return (
-    <main className="min-h-screen flex items-center justify-center px-6 py-24 relative overflow-hidden">
-      {/* Animated background */}
-      <div className="absolute inset-0 bg-gradient-radial opacity-30"></div>
-
-      <div className="relative z-10 w-full max-w-md">
-        {/* Logo/Title */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2">
-            <span className="text-gradient-cyan-purple">ArenaHUB</span>
-          </h1>
-          <p className="text-muted-foreground">
-            Создайте аккаунт и начните играть
-          </p>
-        </div>
-
-        {/* Register Card */}
-        <Card glow className="glass">
-          <CardHeader>
-            <CardTitle className="text-2xl">Регистрация</CardTitle>
-            <CardDescription>
-              Заполните форму для создания аккаунта
+  if (step === 'success') {
+    return (
+      <main className="min-h-screen flex items-center justify-center px-6 py-24">
+        <Card glow className="glass w-full max-w-md border-green-500/50">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-green-500/20 flex items-center justify-center">
+              <CheckIcon size={32} className="text-green-400" />
+            </div>
+            <CardTitle className="text-3xl">Регистрация успешна!</CardTitle>
+            <CardDescription className="text-base">
+              Добро пожаловать в ArenaHUB, {username}!
             </CardDescription>
           </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 rounded-lg bg-cyan-500/10 border border-cyan-500/30">
+              <p className="text-sm text-cyan-400">
+                📧 Мы отправили письмо с подтверждением на <strong>{email}</strong>
+              </p>
+            </div>
+            <p className="text-sm text-muted-foreground text-center">
+              Пожалуйста, подтвердите ваш email, чтобы начать играть в арены
+            </p>
+            <Button variant="neon" className="w-full" asChild>
+              <Link href="/profile">Перейти в профиль</Link>
+            </Button>
+            <Button variant="outline" className="w-full" asChild>
+              <Link href="/">На главную</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
+    );
+  }
 
+  if (step === 'form') {
+    return (
+      <main className="min-h-screen flex items-center justify-center px-6 py-24">
+        <Card glow className="glass w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-3xl">Регистрация игрока</CardTitle>
+            <CardDescription className="text-base">
+              Создайте аккаунт, чтобы начать играть
+            </CardDescription>
+          </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Username */}
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium mb-2">
-                  Имя пользователя
-                </label>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="username123"
-                  value={formData.username}
-                  onChange={(e) => handleChange('username', e.target.value)}
-                  required
-                  disabled={isLoading}
-                  minLength={3}
-                  maxLength={20}
-                />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  3-20 символов, только буквы, цифры и подчеркивания
-                </p>
-              </div>
-
+            <form onSubmit={handleEmailRegister} className="space-y-4">
               {/* Email */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium mb-2">
                   Email
                 </label>
-                <Input
+                <input
                   id="email"
                   type="email"
-                  placeholder="your@email.com"
-                  value={formData.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
-                  disabled={isLoading}
+                  className="w-full h-12 px-4 bg-space-medium-gray/40 border border-border/50 rounded-lg text-sm focus:outline-none focus:border-cyan-500/50 transition-colors"
+                  placeholder="your@email.com"
                 />
+              </div>
+
+              {/* Username */}
+              <div>
+                <label htmlFor="username" className="block text-sm font-medium mb-2">
+                  Имя пользователя
+                </label>
+                <input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  minLength={3}
+                  maxLength={20}
+                  pattern="[a-zA-Z0-9_]+"
+                  className="w-full h-12 px-4 bg-space-medium-gray/40 border border-border/50 rounded-lg text-sm focus:outline-none focus:border-cyan-500/50 transition-colors"
+                  placeholder="YourUsername"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  3-20 символов, только буквы, цифры и _
+                </p>
               </div>
 
               {/* Password */}
@@ -122,19 +137,17 @@ export default function RegisterPage() {
                 <label htmlFor="password" className="block text-sm font-medium mb-2">
                   Пароль
                 </label>
-                <Input
+                <input
                   id="password"
                   type="password"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={(e) => handleChange('password', e.target.value)}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
-                  disabled={isLoading}
                   minLength={8}
+                  className="w-full h-12 px-4 bg-space-medium-gray/40 border border-border/50 rounded-lg text-sm focus:outline-none focus:border-cyan-500/50 transition-colors"
+                  placeholder="••••••••"
                 />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Минимум 8 символов
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">Минимум 8 символов</p>
               </div>
 
               {/* Confirm Password */}
@@ -142,129 +155,229 @@ export default function RegisterPage() {
                 <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">
                   Подтвердите пароль
                 </label>
-                <Input
+                <input
                   id="confirmPassword"
                   type="password"
-                  placeholder="••••••••"
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  disabled={isLoading}
-                  minLength={8}
+                  className="w-full h-12 px-4 bg-space-medium-gray/40 border border-border/50 rounded-lg text-sm focus:outline-none focus:border-cyan-500/50 transition-colors"
+                  placeholder="••••••••"
                 />
               </div>
 
-              {/* Terms Checkbox */}
-              <div className="flex items-start space-x-2">
+              {/* Captcha (Mock) */}
+              <div className="p-4 border border-border/50 rounded-lg bg-space-dark-gray/50">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="captcha"
+                    checked={captchaVerified}
+                    onChange={(e) => setCaptchaVerified(e.target.checked)}
+                    className="w-5 h-5 rounded border-border/50 bg-space-medium-gray/40"
+                  />
+                  <label htmlFor="captcha" className="text-sm">
+                    Я не робот 🤖
+                  </label>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  В production будет использоваться hCaptcha или reCAPTCHA
+                </p>
+              </div>
+
+              {/* Terms */}
+              <div className="flex items-start gap-3">
                 <input
                   type="checkbox"
                   id="terms"
-                  checked={acceptTerms}
-                  onChange={(e) => setAcceptTerms(e.target.checked)}
-                  className="mt-1"
-                  disabled={isLoading}
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  className="mt-1 w-4 h-4 rounded border-border/50 bg-space-medium-gray/40"
                 />
                 <label htmlFor="terms" className="text-sm text-muted-foreground">
                   Я принимаю{' '}
-                  <Link href="/terms" className="text-primary hover:underline">
-                    Условия использования
+                  <Link href="/terms" className="text-cyan-400 hover:underline">
+                    условия использования
                   </Link>{' '}
                   и{' '}
-                  <Link href="/privacy" className="text-primary hover:underline">
-                    Политику конфиденциальности
+                  <Link href="/privacy" className="text-cyan-400 hover:underline">
+                    политику конфиденциальности
                   </Link>
                 </label>
               </div>
 
-              {/* Register Button */}
+              {/* Submit */}
               <Button
                 type="submit"
                 variant="neon"
                 className="w-full"
-                disabled={isLoading || !acceptTerms}
+                disabled={isLoading || !captchaVerified || !agreedToTerms}
               >
                 {isLoading ? 'Регистрация...' : 'Создать аккаунт'}
               </Button>
-            </form>
 
-            {/* Divider */}
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border/40"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-space-dark-gray px-4 text-muted-foreground">
-                  или
-                </span>
-              </div>
-            </div>
-
-            {/* Wallet Connect */}
-            <Button
-              variant="glass"
-              className="w-full"
-              onClick={handleWalletConnect}
-              disabled={isLoading}
-            >
-              <span className="mr-2">👛</span>
-              Подключить кошелек
-            </Button>
-
-            {/* Social Registration */}
-            <div className="mt-4 grid grid-cols-2 gap-4">
+              {/* Back */}
               <Button
+                type="button"
                 variant="outline"
                 className="w-full"
-                disabled={isLoading}
+                onClick={() => setStep('method')}
               >
-                <span className="mr-2">G</span>
+                Назад
+              </Button>
+            </form>
+
+            {/* Login Link */}
+            <div className="mt-6 text-center text-sm text-muted-foreground">
+              Уже есть аккаунт?{' '}
+              <Link href="/auth/login" className="text-cyan-400 hover:underline font-medium">
+                Войти
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </main>
+    );
+  }
+
+  // Step: Choose registration method
+  return (
+    <main className="min-h-screen flex items-center justify-center px-6 py-24">
+      <div className="w-full max-w-4xl">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-bold mb-4">
+            <span className="text-gradient-cyan-purple">Присоединяйтесь к ArenaHUB</span>
+          </h1>
+          <p className="text-xl text-muted-foreground">
+            Выберите способ регистрации и начните играть
+          </p>
+        </div>
+
+        {/* Registration Options */}
+        <div className="grid gap-6 lg:grid-cols-2 mb-8">
+          {/* Player Registration */}
+          <Card glow className="glass border-cyan-500/50 hover:border-cyan-500 transition-all cursor-pointer">
+            <CardHeader>
+              <div className="h-16 w-16 rounded-full bg-cyan-500/20 flex items-center justify-center mb-4">
+                <UserIcon size={32} className="text-cyan-400" />
+              </div>
+              <CardTitle className="text-2xl">Регистрация игрока</CardTitle>
+              <CardDescription className="text-base">
+                Быстрая регистрация для игры в аренах
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 mb-6">
+                <li className="text-sm flex items-center gap-2">
+                  <CheckIcon size={16} className="text-green-400" />
+                  <span>Управляйте роботами и дронами</span>
+                </li>
+                <li className="text-sm flex items-center gap-2">
+                  <CheckIcon size={16} className="text-green-400" />
+                  <span>Участвуйте в турнирах</span>
+                </li>
+                <li className="text-sm flex items-center gap-2">
+                  <CheckIcon size={16} className="text-green-400" />
+                  <span>Зарабатывайте PAC токены</span>
+                </li>
+              </ul>
+              <Button variant="neon" className="w-full" onClick={() => setStep('form')}>
+                Зарегистрироваться как игрок
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Arena Owner Registration */}
+          <Card glow className="glass border-purple-500/50 hover:border-purple-500 transition-all">
+            <CardHeader>
+              <div className="h-16 w-16 rounded-full bg-purple-500/20 flex items-center justify-center mb-4">
+                <WalletIcon size={32} className="text-purple-400" />
+              </div>
+              <CardTitle className="text-2xl">Владелец арены</CardTitle>
+              <CardDescription className="text-base">
+                Расширенная регистрация с верификацией
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 mb-6">
+                <li className="text-sm flex items-center gap-2">
+                  <CheckIcon size={16} className="text-green-400" />
+                  <span>Создавайте и управляйте аренами</span>
+                </li>
+                <li className="text-sm flex items-center gap-2">
+                  <CheckIcon size={16} className="text-green-400" />
+                  <span>Организуйте турниры</span>
+                </li>
+                <li className="text-sm flex items-center gap-2">
+                  <CheckIcon size={16} className="text-green-400" />
+                  <span>Монетизируйте оборудование</span>
+                </li>
+              </ul>
+              <Badge variant="secondary" className="mb-4">
+                Требуется верификация личности и бизнеса
+              </Badge>
+              <Button variant="outline" className="w-full" asChild>
+                <Link href="/auth/register/arena-owner">
+                  Зарегистрироваться как владелец
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* OAuth Options */}
+        <Card glow className="glass">
+          <CardHeader>
+            <CardTitle>Быстрая регистрация через соцсети</CardTitle>
+            <CardDescription>OAuth провайдеры (будет реализовано с Supabase Auth)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Button
+                variant="outline"
+                onClick={() => handleSocialLogin('Google')}
+                className="w-full"
+              >
                 Google
               </Button>
               <Button
                 variant="outline"
+                onClick={() => handleSocialLogin('Facebook')}
                 className="w-full"
-                disabled={isLoading}
               >
-                <span className="mr-2">D</span>
+                Facebook
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleSocialLogin('Discord')}
+                className="w-full"
+              >
                 Discord
               </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleSocialLogin('Twitch')}
+                className="w-full"
+              >
+                Twitch
+              </Button>
             </div>
-          </CardContent>
-
-          <CardFooter className="flex flex-col space-y-4">
-            <div className="text-center text-sm text-muted-foreground">
-              Уже есть аккаунт?{' '}
-              <Link href="/auth/login" className="text-primary hover:underline font-medium">
-                Войти
-              </Link>
-            </div>
-          </CardFooter>
-        </Card>
-
-        {/* Benefits */}
-        <Card glow className="glass mt-6">
-          <CardHeader>
-            <CardTitle className="text-lg">Преимущества регистрации</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="text-primary">✓</span>
-              <span>Доступ ко всем аренам и турнирам</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-primary">✓</span>
-              <span>Покупка и продажа NFT</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-primary">✓</span>
-              <span>Стейкинг токенов с APY до 120%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-primary">✓</span>
-              <span>Участие в глобальном рейтинге</span>
+            <div className="mt-4 text-center">
+              <p className="text-xs text-muted-foreground">
+                Для России: Yandex, VK | Для Китая: WeChat, QQ
+              </p>
             </div>
           </CardContent>
         </Card>
+
+        {/* Login Link */}
+        <div className="mt-8 text-center text-muted-foreground">
+          Уже есть аккаунт?{' '}
+          <Link href="/auth/login" className="text-cyan-400 hover:underline font-medium">
+            Войти
+          </Link>
+        </div>
       </div>
     </main>
   );

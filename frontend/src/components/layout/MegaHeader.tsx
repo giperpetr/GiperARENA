@@ -82,7 +82,7 @@ export function MegaHeader() {
           </button>
 
           {showBrowseMenu && (
-            <div className="absolute left-0 top-full mt-2 w-64 glass border border-border/50 rounded-lg p-4 shadow-xl">
+            <div className="absolute left-0 top-full mt-2 w-64 bg-background/95 backdrop-blur-3xl border border-border/50 rounded-lg p-4 shadow-xl">
               <div className="space-y-4">
                 {/* Discover Section */}
                 <div>
@@ -261,7 +261,7 @@ export function MegaHeader() {
             </button>
 
             {showProfileMenu && (
-              <div className="absolute right-0 top-full mt-2 w-48 glass border border-border/50 rounded-lg p-2 shadow-xl">
+              <div className="absolute right-0 top-full mt-2 w-48 bg-background/95 backdrop-blur-3xl border border-border/50 rounded-lg p-2 shadow-xl">
                 <Link
                   href="/profile"
                   onClick={handleProfileMenuLinkClick}
