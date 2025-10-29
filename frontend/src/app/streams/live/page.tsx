@@ -1,201 +1,325 @@
 'use client';
 
-import { Card } from '@/components/ui/card';
+import { useState } from 'react';
+import Link from 'next/link';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  EyeIcon,
-  PlayIcon,
-  UsersIcon,
-  TrophyIcon
-} from '@/components/ui/icons';
+import { EyeIcon, PlayIcon, FireIcon, UsersIcon, VideoIcon } from '@/components/ui/icons';
 
-const LIVE_STREAMS = [
+interface LiveStream {
+  id: string;
+  streamerName: string;
+  streamerAvatar: string;
+  arenaName: string;
+  gameType: 'drone' | 'robot' | 'crawler';
+  viewers: number;
+  duration: string;
+  thumbnailUrl?: string;
+  isHot: boolean;
+}
+
+const MOCK_LIVE_STREAMS: LiveStream[] = [
   {
-    id: 1,
-    streamer: 'ProGamer_Elite',
-    title: 'Championship Finals - Tank Battle',
-    game: 'Tank Battle Royale',
-    emoji: '🚜',
-    viewers: 3542,
+    id: '1',
+    streamerName: 'DroneMaster_Pro',
+    streamerAvatar: '🚁',
+    arenaName: 'Tokyo Cyber Arena',
+    gameType: 'drone',
+    viewers: 2345,
+    duration: '1:23:45',
+    isHot: true,
+  },
+  {
+    id: '2',
+    streamerName: 'RobotKing_42',
+    streamerAvatar: '🤖',
+    arenaName: 'Berlin Battle Zone',
+    gameType: 'robot',
+    viewers: 1876,
+    duration: '0:45:12',
+    isHot: true,
+  },
+  {
+    id: '3',
+    streamerName: 'SpeedRacer_Moscow',
+    streamerAvatar: '🏎️',
+    arenaName: 'Moscow Sky Arena',
+    gameType: 'crawler',
+    viewers: 1234,
+    duration: '0:32:08',
+    isHot: false,
+  },
+  {
+    id: '4',
+    streamerName: 'AerialAce',
+    streamerAvatar: '✈️',
+    arenaName: 'Dubai Future Arena',
+    gameType: 'drone',
+    viewers: 987,
     duration: '2:15:30',
-    category: 'Tournament'
+    isHot: false,
   },
   {
-    id: 2,
-    streamer: 'RacingMaster_X',
-    title: 'Speed Records Attempt',
-    game: 'Drone Racing',
-    emoji: '🚁',
-    viewers: 1897,
-    duration: '1:45:12',
-    category: 'Speedrun'
+    id: '5',
+    streamerName: 'MechWarrior_NYC',
+    streamerAvatar: '⚙️',
+    arenaName: 'New York Battle Zone',
+    gameType: 'robot',
+    viewers: 856,
+    duration: '0:18:45',
+    isHot: false,
   },
   {
-    id: 3,
-    streamer: 'TechWizard_99',
-    title: 'Teaching Beginner Tactics',
-    game: 'Robot Arena Battle',
-    emoji: '🤖',
-    viewers: 892,
-    duration: '0:52:08',
-    category: 'Tutorial'
+    id: '6',
+    streamerName: 'TurboDriver',
+    streamerAvatar: '🏁',
+    arenaName: 'LA Speed Track',
+    gameType: 'crawler',
+    viewers: 654,
+    duration: '1:05:20',
+    isHot: false,
   },
   {
-    id: 4,
-    streamer: 'NightRider_77',
-    title: 'Late Night Ranked Grind',
-    game: 'Parkour Runner',
-    emoji: '🏃',
-    viewers: 567,
-    duration: '3:22:45',
-    category: 'Casual'
-  }
+    id: '7',
+    streamerName: 'SkyDancer_Seoul',
+    streamerAvatar: '🎯',
+    arenaName: 'Seoul Tech Arena',
+    gameType: 'drone',
+    viewers: 543,
+    duration: '0:12:33',
+    isHot: false,
+  },
+  {
+    id: '8',
+    streamerName: 'IronGiant',
+    streamerAvatar: '🦾',
+    arenaName: 'Paris Circuit',
+    gameType: 'robot',
+    viewers: 432,
+    duration: '0:55:18',
+    isHot: false,
+  },
 ];
 
+const GAME_TYPE_CONFIG = {
+  drone: { label: 'Дроны', icon: '🚁', color: 'bg-cyan-500/20 text-cyan-400' },
+  robot: { label: 'Роботы', icon: '🤖', color: 'bg-purple-500/20 text-purple-400' },
+  crawler: { label: 'RC Машины', icon: '🏎️', color: 'bg-orange-500/20 text-orange-400' },
+};
+
 export default function LiveStreamsPage() {
+  const [selectedGameType, setSelectedGameType] = useState<string | null>(null);
+
+  const filteredStreams = selectedGameType
+    ? MOCK_LIVE_STREAMS.filter((stream) => stream.gameType === selectedGameType)
+    : MOCK_LIVE_STREAMS;
+
+  const totalViewers = MOCK_LIVE_STREAMS.reduce((sum, stream) => sum + stream.viewers, 0);
+
   return (
-    <div className="min-h-screen py-12 px-4 md:px-6">
-      <div className="container mx-auto max-w-7xl">
+    <main className="min-h-screen px-6 py-24">
+      <div className="mx-auto max-w-7xl">
         {/* Header */}
-        <div className="mb-10 lg:mb-12">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gradient-cyan-purple">
-              Live Streams
-            </h1>
-          </div>
-          <p className="text-lg text-muted-foreground max-w-2xl">
-            Watch top players stream their gameplay, learn tactics, and join the community
+        <div className="mb-12">
+          <h1 className="mb-4 text-5xl font-bold flex items-center gap-4">
+            <VideoIcon size={48} className="text-red-500 animate-pulse" />
+            <span className="text-gradient-cyan-purple">Живые трансляции</span>
+          </h1>
+          <p className="text-xl text-muted-foreground">
+            Смотрите игры в реальном времени с арен по всему миру
           </p>
         </div>
 
-        {/* Featured Stream */}
-        <Card className="glass-hover mb-10 overflow-hidden group cursor-pointer">
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Stream Preview */}
-            <div className="relative aspect-video md:aspect-auto">
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/30 to-purple-900/30 flex items-center justify-center text-9xl">
-                {LIVE_STREAMS[0].emoji}
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-
-              {/* Live Badge */}
-              <Badge className="absolute top-4 left-4 bg-red-500 text-white flex items-center gap-1.5 px-3 py-1">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                LIVE
-              </Badge>
-
-              {/* Viewers */}
-              <div className="absolute top-4 right-4 glass text-white flex items-center gap-2 px-3 py-1 rounded-full">
-                <EyeIcon size={16} />
-                <span className="font-bold">{LIVE_STREAMS[0].viewers.toLocaleString()}</span>
-              </div>
-
-              {/* Play Overlay */}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                  <PlayIcon size={40} className="text-white ml-1" />
-                </div>
-              </div>
-            </div>
-
-            {/* Stream Info */}
-            <div className="p-6 flex flex-col justify-between">
-              <div className="space-y-4">
-                <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
-                  FEATURED
-                </Badge>
+        {/* Stats */}
+        <div className="mb-12 grid gap-6 md:grid-cols-3">
+          <Card glow className="glass border-red-500/50">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-3xl font-bold text-white group-hover:text-cyan-400 transition-colors mb-2">
-                    {LIVE_STREAMS[0].title}
-                  </h2>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <div className="w-10 h-10 bg-gradient-to-br from-cyan-600 to-purple-600 rounded-full flex items-center justify-center text-sm font-bold">
-                      {LIVE_STREAMS[0].streamer[0]}
-                    </div>
-                    <span className="font-medium text-white">{LIVE_STREAMS[0].streamer}</span>
-                  </div>
+                  <p className="text-sm text-muted-foreground">Активных стримов</p>
+                  <p className="text-3xl font-bold text-red-400">{MOCK_LIVE_STREAMS.length}</p>
                 </div>
-
-                <div className="flex flex-wrap gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <PlayIcon size={16} className="text-cyan-400" />
-                    <span className="text-muted-foreground">{LIVE_STREAMS[0].game}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <TrophyIcon size={16} className="text-purple-400" />
-                    <span className="text-muted-foreground">{LIVE_STREAMS[0].category}</span>
-                  </div>
+                <div className="h-12 w-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                  <PlayIcon size={24} className="text-red-400" />
                 </div>
               </div>
+            </CardContent>
+          </Card>
 
-              <Button variant="neon" size="lg" className="w-full mt-4">
-                <PlayIcon size={18} className="mr-2" />
-                Watch Stream
-              </Button>
-            </div>
-          </div>
-        </Card>
+          <Card glow className="glass border-cyan-500/50">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Всего зрителей</p>
+                  <p className="text-3xl font-bold text-cyan-400">{totalViewers.toLocaleString()}</p>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-cyan-500/20 flex items-center justify-center">
+                  <EyeIcon size={24} className="text-cyan-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Other Live Streams */}
-        <h2 className="text-2xl font-bold text-white mb-6">Other Live Streams</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {LIVE_STREAMS.slice(1).map((stream) => (
-            <Card
-              key={stream.id}
-              className="glass-hover hover-lift cursor-pointer group"
-            >
-              <div className="space-y-4">
-                {/* Stream Thumbnail */}
-                <div className="relative aspect-video bg-gradient-to-br from-cyan-900/30 to-purple-900/30 flex items-center justify-center text-6xl rounded-t-lg overflow-hidden">
-                  <span>{stream.emoji}</span>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <Card glow className="glass border-orange-500/50">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Горячие стримы</p>
+                  <p className="text-3xl font-bold text-orange-400">
+                    {MOCK_LIVE_STREAMS.filter((s) => s.isHot).length}
+                  </p>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-orange-500/20 flex items-center justify-center">
+                  <FireIcon size={24} className="text-orange-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
+        {/* Filters */}
+        <div className="mb-8">
+          <Card glow className="glass">
+            <CardHeader>
+              <CardTitle>Фильтры</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant={selectedGameType === null ? 'neon' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedGameType(null)}
+                >
+                  Все игры ({MOCK_LIVE_STREAMS.length})
+                </Button>
+                <Button
+                  variant={selectedGameType === 'drone' ? 'neon' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedGameType('drone')}
+                >
+                  🚁 Дроны ({MOCK_LIVE_STREAMS.filter((s) => s.gameType === 'drone').length})
+                </Button>
+                <Button
+                  variant={selectedGameType === 'robot' ? 'neon' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedGameType('robot')}
+                >
+                  🤖 Роботы ({MOCK_LIVE_STREAMS.filter((s) => s.gameType === 'robot').length})
+                </Button>
+                <Button
+                  variant={selectedGameType === 'crawler' ? 'neon' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedGameType('crawler')}
+                >
+                  🏎️ RC Машины ({MOCK_LIVE_STREAMS.filter((s) => s.gameType === 'crawler').length})
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Live Streams Grid */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredStreams.map((stream) => (
+            <Card key={stream.id} glow className="glass hover:border-red-500/50 transition-all hover-lift group">
+              <CardContent className="p-0">
+                {/* Thumbnail */}
+                <div className="relative aspect-video bg-gradient-to-br from-space-dark-gray to-space-medium-gray rounded-t-lg overflow-hidden">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-6xl">{stream.streamerAvatar}</div>
+                  </div>
+                  
                   {/* Live Badge */}
-                  <Badge className="absolute top-3 left-3 bg-red-500 text-white flex items-center gap-1 px-2 py-0.5 text-xs">
-                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                    LIVE
-                  </Badge>
+                  <div className="absolute top-3 left-3">
+                    <Badge className="bg-red-500 text-white animate-pulse">
+                      <div className="w-2 h-2 rounded-full bg-white mr-2" />
+                      LIVE
+                    </Badge>
+                  </div>
+
+                  {/* Hot Badge */}
+                  {stream.isHot && (
+                    <div className="absolute top-3 right-3">
+                      <Badge className="bg-orange-500/90 text-white">
+                        <FireIcon size={14} className="mr-1" />
+                        HOT
+                      </Badge>
+                    </div>
+                  )}
+
+                  {/* Duration */}
+                  <div className="absolute bottom-3 right-3">
+                    <Badge variant="secondary" className="bg-black/80">
+                      {stream.duration}
+                    </Badge>
+                  </div>
 
                   {/* Viewers */}
-                  <Badge className="absolute top-3 right-3 glass text-white flex items-center gap-1 px-2 py-0.5 text-xs">
-                    <EyeIcon size={12} />
-                    {stream.viewers.toLocaleString()}
-                  </Badge>
+                  <div className="absolute bottom-3 left-3">
+                    <Badge variant="secondary" className="bg-black/80 flex items-center gap-1">
+                      <EyeIcon size={14} />
+                      {stream.viewers.toLocaleString()}
+                    </Badge>
+                  </div>
 
                   {/* Play Overlay */}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                      <PlayIcon size={24} className="text-white ml-0.5" />
+                    <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <PlayIcon size={32} className="text-white ml-1" />
                     </div>
                   </div>
                 </div>
 
-                {/* Stream Info */}
-                <div className="p-4 pt-0 space-y-3">
-                  <div>
-                    <h3 className="font-bold text-lg text-white group-hover:text-cyan-400 transition-colors line-clamp-2">
-                      {stream.title}
-                    </h3>
-                    <div className="flex items-center gap-2 mt-2">
-                      <div className="w-6 h-6 bg-gradient-to-br from-cyan-600 to-purple-600 rounded-full flex items-center justify-center text-xs font-bold">
-                        {stream.streamer[0]}
-                      </div>
-                      <span className="text-sm text-muted-foreground">{stream.streamer}</span>
-                    </div>
+                {/* Info */}
+                <div className="p-4">
+                  <h3 className="font-bold text-white mb-2 truncate">{stream.streamerName}</h3>
+                  
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge className={GAME_TYPE_CONFIG[stream.gameType].color}>
+                      {GAME_TYPE_CONFIG[stream.gameType].icon} {GAME_TYPE_CONFIG[stream.gameType].label}
+                    </Badge>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{stream.game}</span>
-                    <Badge variant="outline" className="text-xs">{stream.category}</Badge>
-                  </div>
+                  <p className="text-sm text-muted-foreground truncate mb-3">{stream.arenaName}</p>
+
+                  <Button variant="neon" size="sm" className="w-full" asChild>
+                    <Link href={`/streams/${stream.id}`}>
+                      <PlayIcon size={16} className="mr-2" />
+                      Смотреть
+                    </Link>
+                  </Button>
                 </div>
-              </div>
+              </CardContent>
             </Card>
           ))}
         </div>
+
+        {filteredStreams.length === 0 && (
+          <Card glow className="glass">
+            <CardContent className="py-12 text-center">
+              <p className="text-lg text-muted-foreground">
+                Сейчас нет активных стримов в этой категории
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* CTA Section */}
+        <div className="mt-12">
+          <Card glow className="glass border-purple-500/50">
+            <CardContent className="p-8 text-center">
+              <h2 className="text-3xl font-bold mb-4">Хотите стримить свои игры?</h2>
+              <p className="text-muted-foreground mb-6">
+                Подключите свой аккаунт и начните транслировать игры с арен ArenaHUB
+              </p>
+              <Button variant="neon" size="lg" asChild>
+                <Link href="/settings/streaming">Настроить стриминг</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
