@@ -1,70 +1,69 @@
 'use client';
 
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen items-center justify-center px-6">
-      <Card glow className="glass max-w-md text-center">
-        <CardHeader>
-          {/* 404 icon */}
-          <div className="mx-auto mb-4 text-8xl">🔍</div>
-          <CardTitle className="text-6xl font-bold text-gradient-cyan-purple mb-4">
-            404
-          </CardTitle>
-          <CardDescription className="text-xl">
-            Страница не найдена
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent>
-          <p className="text-muted-foreground">
-            Запрашиваемая страница не существует или была удалена.
-            Проверьте URL или вернитесь на главную страницу.
-          </p>
-
-          {/* Quick links */}
-          <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
-            <Link href="/arenas" className="rounded-lg border border-border/40 p-3 hover:border-primary/30 transition-colors">
-              <div className="text-2xl mb-1">🏟️</div>
-              <div className="font-medium">Арены</div>
-            </Link>
-            <Link href="/tournaments" className="rounded-lg border border-border/40 p-3 hover:border-primary/30 transition-colors">
-              <div className="text-2xl mb-1">🏆</div>
-              <div className="font-medium">Турниры</div>
-            </Link>
-            <Link href="/marketplace" className="rounded-lg border border-border/40 p-3 hover:border-primary/30 transition-colors">
-              <div className="text-2xl mb-1">🎴</div>
-              <div className="font-medium">NFT</div>
-            </Link>
-            <Link href="/leaderboard" className="rounded-lg border border-border/40 p-3 hover:border-primary/30 transition-colors">
-              <div className="text-2xl mb-1">📊</div>
-              <div className="font-medium">Рейтинг</div>
-            </Link>
-          </div>
-        </CardContent>
-
-        <CardFooter className="flex gap-4">
-          <Button
-            variant="neon"
-            className="flex-1"
-            asChild
-          >
-            <Link href="/">
+    <html lang="ru">
+      <body>
+        <div style={{
+          display: 'flex',
+          minHeight: '100vh',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '24px',
+          background: '#0a0a0a',
+          color: '#fff',
+          fontFamily: 'system-ui, sans-serif'
+        }}>
+          <div style={{
+            maxWidth: '500px',
+            textAlign: 'center',
+            background: 'rgba(255,255,255,0.05)',
+            padding: '40px',
+            borderRadius: '16px',
+            border: '1px solid rgba(255,255,255,0.1)'
+          }}>
+            <div style={{ fontSize: '64px', marginBottom: '20px' }}>🔍</div>
+            <h1 style={{ fontSize: '48px', marginBottom: '16px', color: '#06b6d4' }}>
+              404
+            </h1>
+            <p style={{ fontSize: '20px', color: '#9ca3af', marginBottom: '24px' }}>
+              Страница не найдена
+            </p>
+            <p style={{ color: '#6b7280', marginBottom: '32px' }}>
+              Запрашиваемая страница не существует или была удалена.
+            </p>
+            <a
+              href="/"
+              style={{
+                display: 'inline-block',
+                padding: '12px 24px',
+                background: '#06b6d4',
+                color: '#fff',
+                textDecoration: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                marginRight: '12px'
+              }}
+            >
               На главную
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            className="flex-1"
-            onClick={() => window.history.back()}
-          >
-            Назад
-          </Button>
-        </CardFooter>
-      </Card>
-    </div>
+            </a>
+            <button
+              onClick={() => window.history.back()}
+              style={{
+                padding: '12px 24px',
+                background: 'transparent',
+                color: '#fff',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              Назад
+            </button>
+          </div>
+        </div>
+      </body>
+    </html>
   );
 }
