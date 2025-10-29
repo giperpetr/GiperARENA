@@ -42,9 +42,9 @@ ArenaHUB - это революционная платформа, которая 
 └── proxy/            # Traefik reverse proxy
 ```
 
-### ArenaHUB проект (НОВЫЙ)
+### GiperARENA проект (НОВЫЙ)
 ```
-/root/arenahub/
+/root/giperarena/
 ├── frontend/          # Next.js 15 + React 19
 ├── backend/           # Node.js API server
 ├── realtime/          # Socket.io WebSocket server

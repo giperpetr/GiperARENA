@@ -221,7 +221,7 @@ This project is deployed on a remote server with the following structure:
 
 1. **Docker Compose Paths:**
    - All `docker-compose.yml` files use **relative paths from their location**
-   - ArenaHUB: `/root/arenahub/docker-compose.yml`
+   - GiperARENA: `/root/giperarena/docker-compose.yml`
    - Supabase: `/root/server/supabase/docker-compose.yml`
    - Monitoring: `/root/server/monitoring/docker-compose.yml`
 
@@ -266,7 +266,7 @@ This project is deployed on a remote server with the following structure:
 
 **Production Server:**
 ```
-/root/arenahub/                 # Deployed from Git
+/root/giperarena/               # Deployed from Git
 ├── docker-compose.yml          # Production configuration
 └── .env                        # Production secrets
 ```
@@ -276,7 +276,7 @@ This project is deployed on a remote server with the following structure:
 1. **Develop locally** in this directory
 2. **Commit to Git** (repository)
 3. **SSH to server:** `ssh root@your-server.com`
-4. **Navigate:** `cd /root/arenahub`
+4. **Navigate:** `cd /root/giperarena`
 5. **Pull updates:** `git pull origin main`
 6. **Rebuild:** `docker compose build`
 7. **Deploy:** `docker compose up -d`
@@ -287,7 +287,7 @@ This project is deployed on a remote server with the following structure:
 - `/root/server/proxy/` - Traefik configuration
 
 ### **ALWAYS WORK IN:**
-- `/root/arenahub/` - This project only
+- `/root/giperarena/` - This project only
 
 ### Key Technologies
 

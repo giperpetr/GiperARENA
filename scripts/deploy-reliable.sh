@@ -6,7 +6,7 @@ set -e
 
 PROJECT_DIR="/Users/giperpetr/Documents/Programming/ArenaHUB"
 SERVER="root@83.222.20.168"
-SERVER_DIR="/root/giperarena"  # ПРАВИЛЬНЫЙ ПУТЬ НА СЕРВЕРЕ
+SERVER_DIR="/root/giperarena"  # ПРАВИЛЬНЫЙ ПУТЬ НА СЕРВЕРЕ!
 SSH_KEY="$HOME/.ssh/giperarena_deploy"
 DOCKER_USER="giperpetr"
 DOCKER_TOKEN="${DOCKER_HUB_TOKEN:-}"  # Set via: export DOCKER_HUB_TOKEN=dckr_pat_...
@@ -42,24 +42,17 @@ docker buildx build \
 echo "✅ Frontend образ собран: $GIT_SHA"
 echo ""
 
-# Шаг 4: Сборка backend
-echo "🏗️  Шаг 4/7: Сборка backend образа..."
-docker buildx build \
-  --no-cache \
-  --platform linux/amd64 \
-  -t giperpetr/giperarena-backend:${GIT_SHA} \
-  -t giperpetr/giperarena-backend:latest \
-  -f backend/Dockerfile \
-  --push .
-
-echo "✅ Backend образ собран: $GIT_SHA"
+# Шаг 4: Обновление docker-compose.prod.yml с новым SHA
+echo "📝 Шаг 4/7: Обновление docker-compose.prod.yml..."
+sed -i '' "s|giperpetr/giperarena-frontend:.*|giperpetr/giperarena-frontend:${GIT_SHA}|" docker-compose.prod.yml
+echo "✅ docker-compose.prod.yml обновлён"
 echo ""
 
-# Шаг 5: Загрузка конфигов на сервер
-echo "📤 Шаг 5/7: Загрузка конфигов на сервер..."
+# Шаг 5: Загрузка docker-compose.prod.yml на сервер
+echo "📤 Шаг 5/7: Загрузка docker-compose.prod.yml на сервер..."
 scp -i "$SSH_KEY" docker-compose.prod.yml "$SERVER:$SERVER_DIR/"
-scp -i "$SSH_KEY" .env "$SERVER:$SERVER_DIR/"
-echo "✅ Конфиги загружены"
+echo "✅ docker-compose.prod.yml загружен"
+echo "⚠️  .env НЕ загружается - используем существующий production .env"
 echo ""
 
 # Шаг 6: Деплой на сервер с ПРИНУДИТЕЛЬНЫМ обновлением
@@ -68,16 +61,14 @@ ssh -i "$SSH_KEY" "$SERVER" bash << ENDSSH
 set -e
 cd $SERVER_DIR
 
-echo "🗑️  Удаление старых образов..."
+echo "🗑️  Удаление старых frontend образов..."
 docker rmi giperpetr/giperarena-frontend:latest -f 2>/dev/null || true
-docker rmi giperpetr/giperarena-backend:latest -f 2>/dev/null || true
 
-echo "📥 Pull новых образов (версия: ${GIT_SHA})..."
-docker compose -f docker-compose.prod.yml pull
+echo "📥 Pull нового frontend образа БЕЗ КЭША (версия: ${GIT_SHA})..."
+docker compose -f docker-compose.prod.yml pull --no-cache frontend
 
-echo "🔄 Пересоздание контейнеров..."
-docker compose -f docker-compose.prod.yml down
-docker compose -f docker-compose.prod.yml up -d --force-recreate
+echo "🔄 Пересоздание frontend контейнера с --force-recreate..."
+docker compose -f docker-compose.prod.yml up -d --force-recreate frontend
 
 echo "⏳ Ожидание запуска (45 секунд)..."
 sleep 45

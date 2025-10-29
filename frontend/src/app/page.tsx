@@ -27,6 +27,13 @@ export default function HomePage() {
       {/* 2. Quick Stats Banner */}
       <QuickStatsBanner />
 
+      {/* 2.5. Token Prices Widget */}
+      <section className="relative px-6 py-12">
+        <div className="container mx-auto max-w-4xl">
+          <TokenPricesWidget />
+        </div>
+      </section>
+
       {/* 3. Live Games Carousel */}
       <section className="relative px-6 py-16 lg:py-20 border-b border-border/20">
         <LiveGamesCarousel />
@@ -35,30 +42,22 @@ export default function HomePage() {
       {/* 4. Featured Tournament Hero */}
       <FeaturedTournamentHero />
 
-      {/* 5. Main Content Grid */}
+      {/* 5. Main Content - Centered */}
       <section className="relative px-6 py-16 lg:py-24">
-        <div className="container mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-16">
-            {/* Left Column - Main Content (2/3 width) */}
-            <div className="lg:col-span-2 space-y-16 lg:space-y-20">
-              {/* Trending Tournaments - топ-3 компактно */}
-              <TrendingTournaments />
+        <div className="container mx-auto max-w-6xl">
+          <div className="space-y-20 lg:space-y-24">
+            {/* Trending Tournaments - топ-3 компактно */}
+            <TrendingTournaments />
 
-              <AnimatedGradientLine />
+            <AnimatedGradientLine />
 
-              {/* Top Arenas Showcase - топ-6 */}
-              <TopArenasShowcase />
+            {/* Top Arenas Showcase - топ-6 */}
+            <TopArenasShowcase />
 
-              <GlowingDivider />
+            <GlowingDivider />
 
-              {/* Community Spotlight - только достижения */}
-              <CommunitySpotlight />
-            </div>
-
-            {/* Right Column - Sidebar убран, контент перенесен */}
-            {/* Top Players → /leaderboard */}
-            {/* Upcoming Events → /tournaments */}
-            {/* News → /news */}
+            {/* Community Spotlight - только достижения */}
+            <CommunitySpotlight />
           </div>
         </div>
       </section>

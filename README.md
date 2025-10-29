@@ -231,7 +231,7 @@ npm run seed
 ssh root@your-server.com
 
 # Navigate to project directory
-cd /root/arenahub
+cd /root/giperarena
 
 # Pull latest changes
 git pull origin main
