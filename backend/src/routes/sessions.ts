@@ -10,11 +10,11 @@ const gameSessionsController = new GameSessionsController();
 // Apply rate limiting to all routes
 router.use(apiLimiter);
 
-// All session routes require authentication
-router.use(authenticate);
-
-// Get all game sessions (with filters)
+// Get all game sessions (with filters) - PUBLIC (for live games list)
 router.get('/', (req, res) => gameSessionsController.getGameSessions(req, res));
+
+// All other session routes require authentication
+router.use(authenticate);
 
 // Get game session by ID
 router.get('/:sessionId', (req, res) =>

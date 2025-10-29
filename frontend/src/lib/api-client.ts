@@ -143,6 +143,24 @@ class ApiClient {
     return this.request(`/sessions/user/${userId}`);
   }
 
+  async getGameSessions(filters?: {
+    status?: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+    arena_id?: string;
+    player_id?: string;
+    limit?: number;
+    offset?: number;
+  }) {
+    const params = new URLSearchParams();
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.arena_id) params.append('arena_id', filters.arena_id);
+    if (filters?.player_id) params.append('player_id', filters.player_id);
+    if (filters?.limit) params.append('limit', filters.limit.toString());
+    if (filters?.offset) params.append('offset', filters.offset.toString());
+
+    const response: any = await this.request(`/sessions?${params}`);
+    return response.data || response;
+  }
+
   // ==========================================
   // TOURNAMENTS
   // ==========================================

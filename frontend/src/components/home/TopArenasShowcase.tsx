@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { MOCK_ARENAS } from '@/lib/mock-data';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -141,9 +142,11 @@ export function TopArenasShowcase() {
 
                 {/* Action Buttons */}
                 <div className="flex gap-2">
-                  <Button className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0 font-semibold">
-                    PLAY
-                  </Button>
+                  <Link href={`/arenas/${arena.id}`} className="flex-1">
+                    <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-0 font-semibold">
+                      PLAY
+                    </Button>
+                  </Link>
                   <Button className="w-10 h-10 p-0 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xl">
                     +
                   </Button>
