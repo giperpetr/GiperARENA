@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE IF NOT EXISTS arenahub.users (
+CREATE TABLE IF NOT EXISTS giperarena.users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -14,13 +14,13 @@ CREATE TABLE IF NOT EXISTS arenahub.users (
 );
 
 -- Create indexes
-CREATE INDEX idx_users_username ON arenahub.users(username);
-CREATE INDEX idx_users_email ON arenahub.users(email);
-CREATE INDEX idx_users_wallet_address ON arenahub.users(wallet_address) WHERE wallet_address IS NOT NULL;
-CREATE INDEX idx_users_created_at ON arenahub.users(created_at DESC);
+CREATE INDEX idx_users_username ON giperarena.users(username);
+CREATE INDEX idx_users_email ON giperarena.users(email);
+CREATE INDEX idx_users_wallet_address ON giperarena.users(wallet_address) WHERE wallet_address IS NOT NULL;
+CREATE INDEX idx_users_created_at ON giperarena.users(created_at DESC);
 
 -- Create updated_at trigger
-CREATE OR REPLACE FUNCTION arenahub.update_updated_at_column()
+CREATE OR REPLACE FUNCTION giperarena.update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
     NEW.updated_at = NOW();
@@ -29,22 +29,22 @@ END;
 $$ language 'plpgsql';
 
 CREATE TRIGGER update_users_updated_at
-    BEFORE UPDATE ON arenahub.users
+    BEFORE UPDATE ON giperarena.users
     FOR EACH ROW
-    EXECUTE FUNCTION arenahub.update_updated_at_column();
+    EXECUTE FUNCTION giperarena.update_updated_at_column();
 
 -- Add comments
-COMMENT ON TABLE arenahub.users IS 'User accounts and profiles';
-COMMENT ON COLUMN arenahub.users.id IS 'Unique user identifier (UUID)';
-COMMENT ON COLUMN arenahub.users.username IS 'Unique username for display';
-COMMENT ON COLUMN arenahub.users.email IS 'User email address';
-COMMENT ON COLUMN arenahub.users.wallet_address IS 'Solana wallet address (optional)';
-COMMENT ON COLUMN arenahub.users.metadata IS 'Additional user metadata (JSON)';
+COMMENT ON TABLE giperarena.users IS 'User accounts and profiles';
+COMMENT ON COLUMN giperarena.users.id IS 'Unique user identifier (UUID)';
+COMMENT ON COLUMN giperarena.users.username IS 'Unique username for display';
+COMMENT ON COLUMN giperarena.users.email IS 'User email address';
+COMMENT ON COLUMN giperarena.users.wallet_address IS 'Solana wallet address (optional)';
+COMMENT ON COLUMN giperarena.users.metadata IS 'Additional user metadata (JSON)';
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TRIGGER IF EXISTS update_users_updated_at ON arenahub.users;
-DROP FUNCTION IF EXISTS arenahub.update_updated_at_column();
-DROP TABLE IF EXISTS arenahub.users CASCADE;
+DROP TRIGGER IF EXISTS update_users_updated_at ON giperarena.users;
+DROP FUNCTION IF EXISTS giperarena.update_updated_at_column();
+DROP TABLE IF EXISTS giperarena.users CASCADE;
 -- +goose StatementEnd

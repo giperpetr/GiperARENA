@@ -1,11 +1,11 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE IF NOT EXISTS arenahub.tournaments (
+CREATE TABLE IF NOT EXISTS giperarena.tournaments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     description TEXT,
-    organizer_id UUID NOT NULL REFERENCES arenahub.users(id),
-    arena_id UUID REFERENCES arenahub.arenas(id),
+    organizer_id UUID NOT NULL REFERENCES giperarena.users(id),
+    arena_id UUID REFERENCES giperarena.arenas(id),
     tournament_type VARCHAR(50) CHECK (tournament_type IN ('single_elimination', 'double_elimination', 'round_robin', 'swiss')),
     status VARCHAR(20) DEFAULT 'upcoming' CHECK (status IN ('upcoming', 'registration', 'in_progress', 'completed', 'cancelled')),
     entry_fee DECIMAL(10, 2),
@@ -22,17 +22,17 @@ CREATE TABLE IF NOT EXISTS arenahub.tournaments (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_tournaments_status ON arenahub.tournaments(status);
-CREATE INDEX idx_tournaments_start_date ON arenahub.tournaments(start_date DESC);
-CREATE INDEX idx_tournaments_organizer_id ON arenahub.tournaments(organizer_id);
+CREATE INDEX idx_tournaments_status ON giperarena.tournaments(status);
+CREATE INDEX idx_tournaments_start_date ON giperarena.tournaments(start_date DESC);
+CREATE INDEX idx_tournaments_organizer_id ON giperarena.tournaments(organizer_id);
 
 CREATE TRIGGER update_tournaments_updated_at
-    BEFORE UPDATE ON arenahub.tournaments
+    BEFORE UPDATE ON giperarena.tournaments
     FOR EACH ROW
-    EXECUTE FUNCTION arenahub.update_updated_at_column();
+    EXECUTE FUNCTION giperarena.update_updated_at_column();
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE IF EXISTS arenahub.tournaments CASCADE;
+DROP TABLE IF EXISTS giperarena.tournaments CASCADE;
 -- +goose StatementEnd
