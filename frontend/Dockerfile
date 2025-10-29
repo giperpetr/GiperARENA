@@ -41,10 +41,10 @@ COPY frontend ./frontend
 WORKDIR /app/shared
 RUN corepack enable pnpm && pnpm run build
 
-# Build frontend (PRODUCTION BUILD with Next.js 15 + React 19)
+# Build frontend (DEV MODE - production build crashes with 60+ onClick errors)
 WORKDIR /app/frontend
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
+ENV NODE_ENV=development
 RUN corepack enable pnpm && pnpm run build
 
 # =========================================
