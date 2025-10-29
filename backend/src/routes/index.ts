@@ -7,6 +7,7 @@ import walletsRoutes from './wallets';
 import tournamentsRoutes from './tournaments';
 import betsRoutes from './bets';
 import nftsRoutes from './nfts';
+// import mediaRoutes from './media'; // Temporarily disabled - TS errors
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use('/wallets', walletsRoutes);
 router.use('/tournaments', tournamentsRoutes);
 router.use('/bets', betsRoutes);
 router.use('/nfts', nftsRoutes);
+// router.use('/media', mediaRoutes); // Temporarily disabled - TS errors
 
 export default router;
