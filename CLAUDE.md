@@ -6,46 +6,73 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 🚀 DEPLOYMENT WORKFLOW (MANDATORY)
 
-**✅ СТАТУС:** Работает! Последний успешный деплой: commit `c8a7c3f` (27 октября 2025)
-**🌐 САЙТ:** https://giperarena.space (HTTP 200 ✅)
-**📦 GIT TAG:** `v1.0.0-successful-deploy`
+**⚠️⚠️⚠️ КРИТИЧЕСКИ ВАЖНО! ЧИТАЙ И СЛЕДУЙ ТОЧНО! ⚠️⚠️⚠️**
 
-**⚠️ CRITICAL: GitHub Actions НЕ ИСПОЛЬЗУЮТСЯ! Только Docker Hub + SSH!**
+**ЕСТЬ ТОЛЬКО ОДИН ПРАВИЛЬНЫЙ СПОСОБ ДЕПЛОЯ! НИ ОДИН ДРУГОЙ НЕ РАБОТАЕТ!!!**
 
-### ⭐ РАБОЧИЙ СПОСОБ ДЕПЛОЯ (27 октября 2025):
+### ⭐ ЕДИНСТВЕННЫЙ РАБОЧИЙ СПОСОБ ДЕПЛОЯ:
 
 ```bash
+# ВСЕГДА выполнять именно эти команды в ТОЧНОСТИ!!!
 cd /Users/giperpetr/Documents/Programming/ArenaHUB
-chmod +x scripts/deploy.sh
-./scripts/deploy.sh
+export DOCKER_HUB_TOKEN="dckr_pat_W2slXQiZOhpiOj9CX-DnITmfVro"
+./scripts/deploy-reliable.sh
 ```
 
-### 📋 Что делает НОВЫЙ модульный `scripts/deploy.sh`:
+**ЭТО ВЕСЬ ДЕПЛОЙ! БОЛЬШЕ НИЧЕГО НЕ НУЖНО!!!**
 
-1. **build-amd64.sh** → собирает Docker образ для AMD64 с `--no-cache`
-2. **docker push** → загружает образ в Docker Hub с SHA тегом
-3. **update-compose.sh** → обновляет `docker-compose.prod.yml` с новым SHA
-4. **deploy-to-server.sh** → копирует файлы на сервер и запускает контейнеры
+### 📋 Что делает `scripts/deploy-reliable.sh`:
 
-### 🎯 Ключевые особенности:
+1. **Получает текущий SHA** из git (без нового коммита!)
+2. **Docker Hub login** с токеном
+3. **Собирает frontend** с `--no-cache` и SHA тегом
+4. **Собирает backend** с `--no-cache` и SHA тегом
+5. **Копирует конфиги** на сервер `/root/giperarena/`
+6. **SSH на сервер** и выполняет:
+   - `docker rmi` старых образов
+   - `docker compose pull` новых образов (БЕЗ `--no-cache` флага!)
+   - `docker compose up -d --force-recreate`
+7. **Проверяет** что контейнеры запустились
+8. **Верифицирует** HTTP статус сайта
 
-- ✅ **SHA версионирование** образов (giperpetr/giperarena-frontend:c8a7c3f)
-- ✅ **--no-cache** при сборке (избегает старого кэша Docker)
-- ✅ **Модульная система** (4 скрипта вместо монолитного)
-- ✅ **NODE_ENV=development** в production (Next.js production build падает)
+### 🎯 Ключевые параметры (НЕ МЕНЯТЬ!!!):
 
-### ❌ НИКОГДА НЕ ДЕЛАЙ:
+- ✅ **SHA версионирование**: `giperpetr/giperarena-frontend:89a12c8`
+- ✅ **--no-cache** при `docker build` (избегает кэша)
+- ✅ **БЕЗ --no-cache** при `docker compose pull` (не поддерживается!)
+- ✅ **SERVER_DIR=/root/giperarena** (НЕ /root/arenahub!!!)
+- ✅ **docker-compose.prod.yml** (НЕ просто docker-compose.yml!!!)
+- ✅ **NODE_ENV=development** в production (production build падает)
 
-- ❌ GitHub Actions workflows (минуты кончились!)
-- ❌ `scripts/deploy-reliable.sh` (устаревший монолитный скрипт от 25 октября)
-- ❌ `scripts/deploy-dockerhub.sh` (устаревший от 24 октября)
-- ❌ Любые скрипты из `frontend/scripts/` (дубликаты, используй `scripts/`)
-- ❌ Деплой без SHA тега в docker-compose.prod.yml
-- ❌ `NODE_ENV=production` для frontend (падает с onClick errors)
+### ⛔ АБСОЛЮТНЫЕ ЗАПРЕТЫ (НАРУШЕНИЕ = ПИЗДЕЦ!!!):
 
-### 📚 Полная документация:
+1. **❌ НИКОГДА НЕ СОЗДАВАТЬ НОВЫЕ СКРИПТЫ** в `/tmp/` или где-либо ещё!!!
+2. **❌ НИКОГДА НЕ ИСПОЛЬЗОВАТЬ** `giperpetr/giperarena-frontend:latest`!!!
+3. **❌ НИКОГДА НЕ ИСПОЛЬЗОВАТЬ** `docker compose pull --no-cache`!!!
+4. **❌ НИКОГДА НЕ ИЗМЕНЯТЬ** путь сервера с `/root/giperarena`!!!
+5. **❌ НИКОГДА НЕ ИСПОЛЬЗОВАТЬ** GitHub Actions (минуты кончились!)
+6. **❌ НИКОГДА НЕ ЗАПУСКАТЬ** деплой в фоне (`&` или `run_in_background`)!!!
+7. **❌ НИКОГДА НЕ СОЗДАВАТЬ** альтернативные версии скрипта!!!
+8. **❌ НИКОГДА НЕ РЕДАКТИРОВАТЬ** `scripts/deploy-reliable.sh` без согласования!!!
 
-См. [DEPLOYMENT_WORKING.md](./DEPLOYMENT_WORKING.md) для детальной схемы деплоя.
+### 🔥 ЕСЛИ ТЫ (CLAUDE) НАРУШИШЬ ЛЮБОЙ ЗАПРЕТ:
+
+**Ты создашь 10+ фоновых процессов, которые будут висеть вечно, собирать старые SHA, и заполнят Docker Hub мусором! Пользователь РАЗОЗЛИТСЯ!!!**
+
+### ✅ Правильная последовательность при проблемах:
+
+1. **НЕ ПАНИКУЙ** и **НЕ СОЗДАВАЙ НОВЫЕ СКРИПТЫ**!!!
+2. Проверь что `scripts/deploy-reliable.sh` существует и исполняемый
+3. Проверь что `DOCKER_HUB_TOKEN` установлен
+4. Запусти скрипт **БЕЗ ФОНА** и дождись завершения (5-10 минут)
+5. Если упало - покажи ПОЛНЫЕ логи пользователю
+6. **НЕ ПЫТАЙСЯ ИСПРАВИТЬ САМ** - спроси у пользователя!
+
+### 📚 Документация:
+
+- Полная схема: [DEPLOYMENT_WORKING.md](./DEPLOYMENT_WORKING.md)
+- История деплоев: см. git log
+- Последний успешный: commit `89a12c8` (29 октября 2025)
 
 ---
 
