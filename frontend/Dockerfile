@@ -41,11 +41,9 @@ COPY frontend ./frontend
 WORKDIR /app/shared
 RUN corepack enable pnpm && pnpm run build
 
-# Build frontend (DEV MODE - production build crashes with 60+ onClick errors)
+# Skip frontend build - we'll use dev mode in production
 WORKDIR /app/frontend
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=development
-RUN corepack enable pnpm && pnpm run build
 
 # =========================================
 # Stage 3: Production Runtime
@@ -69,12 +67,8 @@ COPY --from=builder /app/frontend/node_modules ./frontend/node_modules
 COPY --from=builder /app/shared/dist ./shared/dist
 COPY --from=builder /app/shared/package.json ./shared/package.json
 
-# Copy built frontend (.next folder + public + next.config.js)
-COPY --from=builder /app/frontend/.next ./frontend/.next
-COPY --from=builder /app/frontend/public ./frontend/public
-COPY --from=builder /app/frontend/next.config.js ./frontend/next.config.js
-COPY --from=builder /app/frontend/package.json ./frontend/package.json
-COPY --from=builder /app/frontend/tsconfig.json ./frontend/tsconfig.json
+# Copy frontend SOURCE CODE (dev mode in production)
+COPY --from=builder /app/frontend ./frontend
 
 
 # Create non-root user
@@ -90,11 +84,11 @@ EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-ENV NODE_ENV=production
+ENV NODE_ENV=development
 ENV NEXT_TELEMETRY_DISABLED=1
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:3000/ || exit 1
 
-# Start production server
-CMD ["npx", "next", "start"]
+# Start DEV server (production build crashes with 60+ onClick errors)
+CMD ["npx", "next", "dev"]
