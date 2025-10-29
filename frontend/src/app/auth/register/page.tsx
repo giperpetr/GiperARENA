@@ -45,7 +45,7 @@ export default function RegisterPage() {
   };
 
   const handleSocialLogin = (provider: string) => {
-    alert(\`OAuth регистрация через \${provider} будет реализована с использованием Supabase Auth\`);
+    alert(`OAuth регистрация через ${provider} будет реализована с использованием Supabase Auth`);
   };
 
   if (step === 'success') {
