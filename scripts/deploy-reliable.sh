@@ -4,7 +4,7 @@
 
 set -e
 
-PROJECT_DIR="/Users/giperpetr/Documents/Programming/ArenaHUB"
+PROJECT_DIR="/Users/giperpetr/Documents/Programming/GiperARENA"
 SERVER="root@83.222.20.168"
 SERVER_DIR="/root/giperarena"  # ПРАВИЛЬНЫЙ ПУТЬ НА СЕРВЕРЕ!
 SSH_KEY="$HOME/.ssh/giperarena_deploy"
@@ -29,8 +29,10 @@ echo "🔐 Шаг 2/7: Docker Hub login..."
 echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USER" --password-stdin
 echo ""
 
-# Шаг 3: Сборка образа БЕЗ КЭША с SHA тегом
-echo "🏗️  Шаг 3/7: Сборка frontend образа (NO CACHE)..."
+# Шаг 3: Сборка образов БЕЗ КЭША с SHA тегом
+echo "🏗️  Шаг 3/7: Сборка образов (NO CACHE)..."
+
+echo "📦 Сборка frontend..."
 docker buildx build \
   --no-cache \
   --platform linux/amd64 \
@@ -40,12 +42,24 @@ docker buildx build \
   --push .
 
 echo "✅ Frontend образ собран: $GIT_SHA"
+
+echo "📦 Сборка backend..."
+docker buildx build \
+  --no-cache \
+  --platform linux/amd64 \
+  -t giperpetr/giperarena-backend:${GIT_SHA} \
+  -t giperpetr/giperarena-backend:latest \
+  -f backend/Dockerfile \
+  --push .
+
+echo "✅ Backend образ собран: $GIT_SHA"
 echo ""
 
 # Шаг 4: Обновление docker-compose.prod.yml с новым SHA
 echo "📝 Шаг 4/7: Обновление docker-compose.prod.yml..."
 sed -i '' "s|giperpetr/giperarena-frontend:.*|giperpetr/giperarena-frontend:${GIT_SHA}|" docker-compose.prod.yml
-echo "✅ docker-compose.prod.yml обновлён"
+sed -i '' "s|giperpetr/giperarena-backend:.*|giperpetr/giperarena-backend:${GIT_SHA}|" docker-compose.prod.yml
+echo "✅ docker-compose.prod.yml обновлён (frontend & backend)"
 echo ""
 
 # Шаг 5: Загрузка docker-compose.prod.yml на сервер
@@ -61,14 +75,15 @@ ssh -i "$SSH_KEY" "$SERVER" bash << ENDSSH
 set -e
 cd $SERVER_DIR
 
-echo "🗑️  Удаление старых frontend образов..."
+echo "🗑️  Удаление старых образов..."
 docker rmi giperpetr/giperarena-frontend:latest -f 2>/dev/null || true
+docker rmi giperpetr/giperarena-backend:latest -f 2>/dev/null || true
 
-echo "📥 Pull нового frontend образа (версия: ${GIT_SHA})..."
-docker compose -f docker-compose.prod.yml pull frontend
+echo "📥 Pull новых образов (версия: ${GIT_SHA})..."
+docker compose -f docker-compose.prod.yml pull frontend backend
 
-echo "🔄 Пересоздание frontend контейнера с --force-recreate..."
-docker compose -f docker-compose.prod.yml up -d --force-recreate frontend
+echo "🔄 Пересоздание контейнеров с --force-recreate..."
+docker compose -f docker-compose.prod.yml up -d --force-recreate frontend backend
 
 echo "⏳ Ожидание запуска (45 секунд)..."
 sleep 45
@@ -79,7 +94,11 @@ docker compose -f docker-compose.prod.yml ps
 
 echo ""
 echo "📋 Логи frontend:"
-docker compose -f docker-compose.prod.yml logs --tail=50 frontend | tail -30
+docker compose -f docker-compose.prod.yml logs --tail=30 frontend
+
+echo ""
+echo "📋 Логи backend:"
+docker compose -f docker-compose.prod.yml logs --tail=30 backend
 ENDSSH
 
 echo ""
