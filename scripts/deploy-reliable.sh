@@ -6,6 +6,7 @@ set -e
 
 PROJECT_DIR="/Users/giperpetr/Documents/Programming/ArenaHUB"
 SERVER="root@83.222.20.168"
+SERVER_DIR="/root/giperarena"  # ПРАВИЛЬНЫЙ ПУТЬ НА СЕРВЕРЕ
 SSH_KEY="$HOME/.ssh/giperarena_deploy"
 DOCKER_USER="giperpetr"
 DOCKER_TOKEN="${DOCKER_HUB_TOKEN:-}"  # Set via: export DOCKER_HUB_TOKEN=dckr_pat_...
@@ -62,8 +63,8 @@ echo ""
 
 # Шаг 5: Загрузка конфигов на сервер
 echo "📤 Шаг 5/7: Загрузка конфигов на сервер..."
-scp -i "$SSH_KEY" docker-compose.prod.yml "$SERVER:/root/giperarena/"
-scp -i "$SSH_KEY" .env "$SERVER:/root/giperarena/"
+scp -i "$SSH_KEY" docker-compose.prod.yml "$SERVER:$SERVER_DIR/"
+scp -i "$SSH_KEY" .env "$SERVER:$SERVER_DIR/"
 echo "✅ Конфиги загружены"
 echo ""
 
@@ -71,14 +72,14 @@ echo ""
 echo "🚀 Шаг 6/7: Деплой на сервер..."
 ssh -i "$SSH_KEY" "$SERVER" bash << ENDSSH
 set -e
-cd /root/giperarena
+cd $SERVER_DIR
 
 echo "🗑️  Удаление старых образов..."
 docker rmi giperpetr/giperarena-frontend:latest -f 2>/dev/null || true
 docker rmi giperpetr/giperarena-backend:latest -f 2>/dev/null || true
 
 echo "📥 Pull новых образов (версия: ${GIT_SHA})..."
-docker compose -f docker-compose.prod.yml pull --no-cache
+docker compose -f docker-compose.prod.yml pull
 
 echo "🔄 Пересоздание контейнеров..."
 docker compose -f docker-compose.prod.yml down
