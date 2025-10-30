@@ -1,5 +1,4 @@
 // API Client for GiperARENA - connects to backend REST API and Supabase
-import { supabase } from './supabase';
 import type { Arena, GameSession, Tournament, User, Wallet, Device, MediaFile } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.giperarena.space/api/v1';
@@ -15,9 +14,18 @@ class ApiClient {
   }
 
   /**
+   * Lazy import supabase to avoid initialization during build
+   */
+  private async getSupabase() {
+    const { supabase } = await import('./supabase');
+    return supabase;
+  }
+
+  /**
    * Get authorization header with current user token
    */
   private async getAuthHeader(): Promise<{ Authorization?: string }> {
+    const supabase = await this.getSupabase();
     const {
       data: { session },
     } = await supabase.auth.getSession();
