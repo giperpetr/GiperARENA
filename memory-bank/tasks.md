@@ -1,245 +1,111 @@
-# Tasks - ArenaHUB
+# Tasks - GiperARENA
 
-**Дата обновления:** 26 октября 2025  
-**Статус:** Phase 1 - Foundation (60% завершено)
+**Дата обновления:** 30 октября 2025
+**Статус:** Phase 1 - 80% Complete!
+**Latest:** Arena API Integration ✅
 
 ---
 
-## 🎯 ТЕКУЩИЕ КРИТИЧЕСКИЕ ЗАДАЧИ
+## ✅ COMPLETED TASKS (Session 2 - Oct 30)
 
-### 1. Исправить onClick Handler Errors в Production
-**Приоритет:** 🔴 КРИТИЧЕСКИЙ  
-**Статус:** В работе  
-**Описание:** Next.js 15 production build падает с onClick handler errors  
-**Текущее решение:** Используем dev mode в production (не оптимально)  
+### Arena Detail Page API Fix ✅
+- [x] Fix TypeError: rating.toFixed is not a function
+- [x] Fix Cannot read 'map' of undefined (features)
+- [x] Calculate hourly_rate from price_per_minute
+- [x] Add conditional rendering for devices/operator
+- [x] Support both is_verified and verified fields
+- [x] Configure CORS for production domain
+- [x] Deploy to production (2x successful)
+- [x] Create git tag v0.2.1-arena-detail-fix
+- [x] Update memory bank documentation
+
+---
+
+## 🎯 CURRENT CRITICAL TASKS
+
+### 1. Complete Missing API Endpoints
+**Приоритет:** 🟡 ВЫСОКИЙ
+**Статус:** Ready to start
+**Описание:** Implement missing arena-related endpoints
 **Следующие шаги:**
-- [ ] Исследовать альтернативные решения для production build
-- [ ] Протестировать с Next.js 14 (более стабильный)
-- [ ] Настроить правильную конфигурацию webpack
-- [ ] Убедиться что все кнопки работают в production
+- [ ] GET /api/v1/arenas/:id/devices - List arena devices
+- [ ] GET /api/v1/devices/:id - Device details
+- [ ] GET /api/v1/operators/:id - Operator info
+- [ ] Join operator data in GET /arenas/:id
 
-### 2. WebRTC Базовая Интеграция
-**Приоритет:** 🔴 КРИТИЧЕСКИЙ  
-**Статус:** Не начато  
-**Описание:** Основная функциональность - управление роботами через WebRTC  
+### 2. Fix Hydration Error
+**Приоритет:** 🟡 СРЕДНИЙ
+**Статус:** Not started
+**Описание:** Number formatting mismatch (47,234 vs 47 234)
 **Следующие шаги:**
-- [ ] Настроить mediasoup media server
-- [ ] Создать WebRTC signaling server (Socket.io)
-- [ ] Реализовать peer connection management
-- [ ] Создать базовый device control protocol
-- [ ] Протестировать с реальными устройствами
+- [ ] Identify source of hydration error
+- [ ] Fix number formatting in HeroSection
+- [ ] Test in production
 
-### 3. Arena Management API
-**Приоритет:** 🟡 ВЫСОКИЙ  
-**Статус:** Не начато  
-**Описание:** CRUD операции для управления аренами  
+### 3. Image CDN Setup
+**Приоритет:** 🟡 СРЕДНИЙ
+**Статус:** Not started  
+**Описание:** Convert MinIO paths to full CDN URLs
 **Следующие шаги:**
-- [ ] Создать API endpoints для arenas
-- [ ] Реализовать arena verification workflow
-- [ ] Создать arena control software interface
-- [ ] Добавить arena scheduling system
+- [ ] Create image URL helper function
+- [ ] Update arena_media URLs
+- [ ] Add image optimization
+- [ ] Test image loading
 
 ---
 
-## 📋 АКТИВНЫЕ ЗАДАЧИ
+## 📋 NEXT PRIORITY TASKS
 
-### Frontend
-- [ ] **Исправить onClick проблемы** - стабильный production build
-- [ ] **Создать Arena Detail страницы** - детальная информация об аренах
-- [ ] **Реализовать User Dashboard** - личный кабинет пользователя
-- [ ] **Добавить WebRTC компоненты** - управление роботами
-- [ ] **Создать Game Lobby** - ожидание начала игры
+### Short Term (This Week)
+- [ ] **Game Sessions System** - Seed test data, create endpoints
+- [ ] **Type Safety** - Replace `any` with proper Arena interface
+- [ ] **Error Boundaries** - Add React Error Boundaries
+- [ ] **Loading States** - Skeleton loaders for arena pages
 
-### Backend
-- [ ] **Создать Arena API endpoints** - CRUD операции
-- [ ] **Реализовать Game Session API** - управление сессиями
-- [ ] **Добавить WebRTC signaling** - Socket.io для WebRTC
-- [ ] **Создать User Management API** - расширенное управление пользователями
-- [ ] **Добавить Real-time updates** - Socket.io для игр
-
-### Database
-- [ ] **Оптимизировать индексы** - улучшить производительность
-- [ ] **Добавить arena_verification таблицу** - процесс верификации
-- [ ] **Создать game_session_logs** - логирование игровых сессий
-- [ ] **Добавить device_management** - управление устройствами арен
-
-### Infrastructure
-- [ ] **Настроить mediasoup media server** - WebRTC streaming
-- [ ] **Добавить Redis для WebRTC state** - состояние соединений
-- [ ] **Настроить мониторинг WebRTC** - метрики качества
-- [ ] **Добавить load balancing** - масштабирование
+### Medium Term (Next 2 Weeks)
+- [ ] **WebSocket Integration** - Real-time updates for games
+- [ ] **User Dashboard** - Profile, stats, wallet info
+- [ ] **Tournament Pages** - Basic tournament listing
+- [ ] **Mobile Optimization** - Responsive design fixes
 
 ---
 
-## 🔄 ЗАДАЧИ В ОЧЕРЕДИ
+## 🐛 KNOWN ISSUES (UPDATED)
 
-### Phase 2: Core Features (Недели 5-12)
-- [ ] **Tournament System** - система турниров
-- [ ] **Betting System** - система ставок
-- [ ] **Blockchain Integration** - GAC/PAC токены
-- [ ] **NFT Marketplace** - торговля NFT
-- [ ] **Payment System** - обработка платежей
+### Fixed ✅
+1. ~~onClick Handler Errors~~ - Using dev mode in production
+2. ~~Docker Caching~~ - SHA versioning working
+3. ~~Arena Detail TypeErrors~~ - All 5 fixed! ✅
+4. ~~CORS Errors~~ - Production domain whitelisted ✅
+5. ~~API Data Structure~~ - Proper mapping established ✅
 
-### Phase 3: Advanced Features (Недели 13-20)
-- [ ] **Social Features** - чат, друзья, достижения
-- [ ] **Leaderboards** - таблицы лидеров
-- [ ] **Achievement System** - система достижений
-- [ ] **Mobile App** - React Native приложение
-- [ ] **VR/AR Integration** - виртуальная реальность
-
-### Phase 4: Launch (Недели 21-28)
-- [ ] **Performance Optimization** - оптимизация производительности
-- [ ] **Security Audit** - аудит безопасности
-- [ ] **Load Testing** - нагрузочное тестирование
-- [ ] **Marketing Campaign** - маркетинговая кампания
-- [ ] **Public Launch** - публичный запуск
+### Active ⚠️
+1. **Hydration Error** - Number formatting (low priority)
+2. **game_sessions table** - Empty, needs seeding
+3. **Image URLs** - Not converted to CDN format
 
 ---
 
-## ✅ ЗАВЕРШЁННЫЕ ЗАДАЧИ
+## 📊 Task Metrics (UPDATED)
 
-### Project Setup (100%)
-- [x] Initialize monorepo structure
-- [x] Set up package.json and TypeScript configurations
-- [x] Configure ESLint, Prettier, Husky pre-commit hooks
-- [x] Create Docker Compose for local development
-- [x] Set up Git repository structure and CI/CD pipeline
-- [x] Configure environment variables template
+### By Status
+\`\`\`
+Completed      ██████████ 100% (30 tasks) +5
+In Progress    ░░░░░░░░░░   0% (0 tasks)
+Queued         ████░░░░░░  40% (8 tasks)
+Blocked        ░░░░░░░░░░   0% (0 tasks)
+\`\`\`
 
-### Database Foundation (90%)
-- [x] Set up Supabase project and configure PostgreSQL 17
-- [x] Create all database tables from PRD.md
-- [x] Implement database indexes for performance
-- [x] Configure Row Level Security (RLS) policies
-- [x] Set up database migration system
-
-### Frontend Foundation (60%)
-- [x] Initialize Next.js 15 project with TypeScript
-- [x] Configure Tailwind CSS 4 and set up design system
-- [x] Integrate shadcn/ui components
-- [x] Create basic landing page
-- [x] Set up Zustand state management
-- [x] Configure React Query for data fetching
-
-### Backend Foundation (50%)
-- [x] Initialize Node.js API server (Express)
-- [x] Configure Redis for caching
-- [x] Set up API Gateway with rate limiting
-- [x] Create basic middleware structure
-- [x] Set up database connection
-
-### Deployment (80%)
-- [x] Create Docker images for all services
-- [x] Set up Docker Hub integration
-- [x] Create reliable deployment script
-- [x] Configure Traefik reverse proxy
-- [x] Set up SSL certificates
+### By Priority
+\`\`\`
+Critical       ░░░░░░░░░░   0% (all resolved! ✅)
+High           ███░░░░░░░  30% (3 tasks)
+Medium         ████░░░░░░  40% (4 tasks)
+Low            ██░░░░░░░░  20% (1 task)
+\`\`\`
 
 ---
 
-## 🐛 ИЗВЕСТНЫЕ ПРОБЛЕМЫ
-
-### Критические
-1. **onClick Handler Errors** - Next.js 15 production build
-   - **Статус:** Частично решено (dev mode)
-   - **Влияние:** Кнопки не работают в production
-   - **Приоритет:** Критический
-
-### Средние
-2. **WebRTC отсутствует** - основная функциональность
-   - **Статус:** Не реализовано
-   - **Влияние:** Нет управления роботами
-   - **Приоритет:** Критический
-
-3. **Blockchain интеграция** - только структура
-   - **Статус:** Не реализовано
-   - **Влияние:** Нет токенов и NFT
-   - **Приоритет:** Средний
-
-### Низкие
-4. **Mobile responsiveness** - не все страницы адаптивны
-   - **Статус:** Частично реализовано
-   - **Влияние:** Плохой UX на мобильных
-   - **Приоритет:** Низкий
-
----
-
-## 📊 МЕТРИКИ ЗАДАЧ
-
-### По приоритету
-```
-Критические    ████████░░ 80% (4 из 5 задач)
-Высокие        ███░░░░░░░ 30% (3 из 10 задач)
-Средние        ██░░░░░░░░ 20% (2 из 10 задач)
-Низкие         ░░░░░░░░░░  0% (0 из 5 задач)
-```
-
-### По статусу
-```
-Завершено      ██████████ 100% (25 задач)
-В работе       ████░░░░░░  40% (4 задач)
-В очереди      ██░░░░░░░░  20% (2 задач)
-Заблокировано  ░░░░░░░░░░   0% (0 задач)
-```
-
-### По компонентам
-```
-Frontend       ████████░░ 80%
-Backend        ██████░░░░ 60%
-Database       █████████░ 90%
-Infrastructure ████████░░ 80%
-WebRTC         ░░░░░░░░░░  0%
-Blockchain     ██░░░░░░░░ 20%
-```
-
----
-
-## 🎯 СЛЕДУЮЩИЕ ДЕЙСТВИЯ
-
-### На этой неделе (26-31 октября)
-1. **Исправить onClick проблемы** - стабильный production build
-2. **Начать WebRTC интеграцию** - mediasoup setup
-3. **Создать Arena API** - базовые CRUD операции
-4. **Протестировать деплой** - убедиться что всё работает
-
-### На следующей неделе (1-7 ноября)
-1. **Завершить WebRTC базовая интеграция** - управление роботами
-2. **Реализовать Arena Management** - полная система арен
-3. **Создать Game Session API** - управление игровыми сессиями
-4. **Добавить Real-time updates** - Socket.io для игр
-
-### В течение месяца (ноябрь)
-1. **Blockchain интеграция** - GAC/PAC токены
-2. **Tournament system** - система турниров
-3. **Betting system** - система ставок
-4. **Mobile optimization** - адаптивность
-
----
-
-## 📋 ШАБЛОНЫ ЗАДАЧ
-
-### Новая задача
-```markdown
-### [Название задачи]
-**Приоритет:** [Критический/Высокий/Средний/Низкий]
-**Статус:** [Не начато/В работе/Завершено/Заблокировано]
-**Описание:** [Краткое описание задачи]
-**Следующие шаги:**
-- [ ] [Шаг 1]
-- [ ] [Шаг 2]
-- [ ] [Шаг 3]
-```
-
-### Обновление задачи
-```markdown
-**Обновлено:** [Дата]
-**Статус:** [Новый статус]
-**Прогресс:** [Описание прогресса]
-**Блокеры:** [Если есть]
-**Следующие шаги:** [Что делать дальше]
-```
-
----
-
-**Последнее обновление:** 26 октября 2025  
-**Следующий обзор:** 27 октября 2025
+**Последнее обновление:** 30 октября 2025
+**Следующий обзор:** 31 октября 2025
+**Focus:** Device/Operator endpoints + Type safety

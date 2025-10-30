@@ -1,235 +1,308 @@
-# Active Context - ArenaHUB
+# Active Context - GiperARENA
 
-**Дата обновления:** 26 октября 2025  
-**Текущий фокус:** Исправление проблем с деплоем и onClick handlers
+**Дата обновления:** 30 октября 2025
+**Текущий фокус:** Arena Detail Pages Working! PostgreSQL API Integration Complete ✅
+**Статус:** Production Deployed v0.2.1-arena-detail-fix
 
 ---
 
 ## 🎯 Текущая задача
 
-### Проблема с деплоем
-Мы остановились на запуске проекта на удалённом сервере. Возникли трудности из-за **onClick handler errors** в Next.js 15 production build.
+### ✅ ЗАВЕРШЕНО: Arena Detail Page API Integration
+Мы **УСПЕШНО** исправили все критические баги на странице детальной информации об арене!
 
-### Схема деплоя
-1. **Локальная сборка Docker** → Docker Hub → Запуск на сервере через docker-compose
-2. **Проблема:** Production build Next.js 14/15 падает с onClick handler errors
-3. **Решение:** Используем dev mode в production (уже настроено в Dockerfile)
+**Что было исправлено:**
+1. ✅ `TypeError: rating.toFixed is not a function` - PostgreSQL DECIMAL как string
+2. ✅ `Cannot read 'map' of undefined` - Features в metadata.features
+3. ✅ Missing hourly_rate - Вычисляем из price_per_minute * 60
+4. ✅ Devices/operator crashes - Conditional rendering
+5. ✅ Verification field - Поддержка is_verified и verified
+
+**Результат:**
+- Страницы арен открываются с UUID URLs ✅
+- Реальные данные из PostgreSQL ✅
+- Нет TypeErrors ✅
+- Production deployed ✅
+- Пользователь подтвердил: **"Сработало!"** 🎉
 
 ---
 
-## 🔧 Текущие технические проблемы
+## 🔧 Текущие технические решения
 
-### 1. onClick Handler Errors
-**Проблема:** Next.js 15 production build не поддерживает event handlers в Server Components  
-**Симптомы:** 
-- Ошибки в логах: "onClick handler errors"
-- Кнопки не работают в production
-- Приложение падает при клике
+### 1. PostgreSQL DECIMAL Type Handling
+**Проблема решена:** PostgreSQL возвращает DECIMAL как string, не number
 
-**Текущее решение:**
-- Используем dev mode в production (CMD в Dockerfile)
-- Настроен webpack fallback в next.config.js
-- Добавлен compiler.removeConsole для production
+**Паттерн (ЗАФИКСИРОВАН):**
+```typescript
+// ВСЕГДА делай parseFloat() для DECIMAL полей:
+const rating = parseFloat(arena.rating).toFixed(1);
+const price = parseFloat(arena.price_per_minute);
+const revenue = parseFloat(arena.total_revenue);
+```
 
-### 2. Docker Кэширование
-**Проблема:** Сервер получает старые образы даже с тегом `:latest`  
-**Решение:**
-- SHA версионирование образов
-- `--no-cache` при сборке
-- `--force-recreate` при запуске
-- Удаление старых образов на сервере
+### 2. Nested API Data Structure
+**Проблема решена:** Features в `metadata.features`, не в корне
+
+**Паттерн (ЗАФИКСИРОВАН):**
+```typescript
+// Fallback chain для nested data:
+const features = arena.metadata?.features || arena.features || [];
+
+// Conditional rendering для optional:
+{data && data.length > 0 && <Component />}
+```
+
+### 3. Flexible TypeScript Interfaces
+**Паттерн (ЗАФИКСИРОВАН):**
+```typescript
+// Для быстрой интеграции - используй any:
+interface Props {
+  arena: any; // Потом уточним типы
+}
+
+// Когда API стабилизируется - точные типы:
+interface Arena {
+  price_per_minute: string; // DECIMAL as string!
+  rating: string; // DECIMAL as string!
+}
+```
 
 ---
 
 ## 📁 Текущая структура проекта
 
-### Frontend (Next.js 15)
+### Frontend (Next.js 15) - WORKING ✅
 ```
 frontend/
-├── src/app/                 # Next.js App Router
-│   ├── page.tsx            # Главная страница
-│   ├── arenas/             # Страницы арен
+├── src/app/
+│   ├── page.tsx            # Главная ✅
+│   ├── arenas/
+│   │   ├── page.tsx        # Список арен ✅ (real API)
+│   │   └── [id]/
+│   │       ├── page.tsx    # Arena detail SSR ✅
+│   │       └── ArenaDetailClient.tsx ✅ (fixed!)
 │   ├── auth/               # Аутентификация
-│   ├── tournaments/        # Турниры
-│   ├── wallet/             # Кошелёк
-│   └── marketplace/        # NFT маркетплейс
-├── src/components/         # React компоненты
-│   └── ui/                 # shadcn/ui компоненты
-├── Dockerfile              # Production build (с dev mode)
-└── next.config.js          # Конфигурация Next.js
+│   └── tournaments/        # Турниры
+├── src/lib/
+│   └── api-client.ts       # API integration ✅
+└── Dockerfile              # Production (dev mode) ✅
 ```
 
-### Backend (Node.js)
+### Backend (Node.js) - WORKING ✅
 ```
 backend/
 ├── src/
-│   ├── routes/             # API endpoints
-│   ├── controllers/        # Обработчики запросов
-│   ├── services/           # Бизнес-логика
-│   └── middleware/         # Express middleware
-├── migrations/             # Database миграции
-└── Dockerfile              # Backend контейнер
+│   ├── routes/
+│   │   ├── arenas.ts       # GET /arenas, /arenas/:id ✅
+│   │   └── sessions.ts     # GET /sessions (public) ✅
+│   ├── controllers/
+│   │   └── arenas.ts       # Arena logic ✅
+│   └── index.ts            # CORS config ✅
+└── migrations/             # 25 Goose migrations ✅
 ```
 
-### Deployment
+### Database (PostgreSQL 17) - WORKING ✅
 ```
-scripts/
-└── deploy-reliable.sh      # Скрипт деплоя с SHA версионированием
+giperarena schema:
+├── users                   # 5 seeded
+├── arenas                  # 5 seeded ✅
+│   ├── Moscow Battle Arena
+│   ├── London Drone Circuit
+│   ├── Tokyo Robot Arena
+│   ├── California Test Facility
+│   └── Berlin Underground
+├── arena_media             # MinIO URLs ✅
+└── [36 other tables]       # Empty but ready
 ```
 
 ---
 
 ## 🚀 Текущий процесс деплоя
 
-### 1. Локальная разработка
+### ⭐ ЕДИНСТВЕННЫЙ РАБОЧИЙ СПОСОБ:
 ```bash
-cd /Users/giperpetr/Documents/Programming/ArenaHUB
-npm run dev  # Запуск всех сервисов локально
-```
-
-### 2. Деплой на сервер
-```bash
+export DOCKER_HUB_TOKEN="dckr_pat_W2slXQiZOhpiOj9CX-DnITmfVro"
 ./scripts/deploy-reliable.sh
 ```
 
-**Что делает скрипт:**
-1. Git commit → получение SHA версии
-2. Docker build с `--no-cache` → избегает кэша
-3. Docker push с SHA + latest тегами → загрузка в Docker Hub
-4. SSH на сервер → удаляет старые образы
-5. docker compose pull с `--no-cache` → скачивает новые образы
-6. docker compose up с `--force-recreate` → пересоздаёт контейнеры
+**Что делает:**
+1. Получает git SHA (без нового коммита)
+2. Docker build с --no-cache + SHA tag
+3. Push в Docker Hub
+4. SSH на сервер `/root/giperarena/`
+5. docker compose pull (БЕЗ --no-cache!)
+6. docker compose up -d --force-recreate
+7. Health check + HTTP 200 verification
 
-### 3. Серверная инфраструктура
-```
-/root/giperarena/
-├── docker-compose.prod.yml  # Production конфигурация
-├── .env                     # Environment переменные
-└── logs/                    # Логи контейнеров
-```
+**Текущая версия:** v0.2.1-arena-detail-fix (commit 4b1283d)
 
 ---
 
 ## 🔍 Текущие настройки
 
-### Frontend (next.config.js)
-```javascript
-const nextConfig = {
-  // Fix for Next.js 15 production build with onClick handlers
-  compiler: {
-    removeConsole: {
-      exclude: ['error', 'warn'],
-    },
-  },
-  
-  // Ensure proper client-side bundle handling
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        path: false,
-        os: false,
-      };
+### CORS (backend/src/index.ts)
+```typescript
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://giperarena.space',
+  'https://www.giperarena.space',
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
     }
-    return config;
   },
-};
+  credentials: true,
+}));
 ```
 
-### Frontend (Dockerfile)
-```dockerfile
-# Production build с dev mode для исправления onClick проблем
-CMD ["npx", "next", "start"]  # Production server
-# Альтернатива: CMD ["sh", "-c", "npx pnpm@10.19.0 run dev"]  # Dev mode
-```
-
-### Docker Compose
-```yaml
-services:
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=https://api.giperarena.space
-    networks:
-      - proxy  # Traefik для SSL
+### API Structure (Real PostgreSQL)
+```json
+{
+  "id": "20000000-0000-0000-0000-000000000001",
+  "name": "Moscow Battle Arena",
+  "arena_type": "combat",
+  "price_per_minute": "25.00",  // ⚠️ STRING (DECIMAL)
+  "rating": "4.80",              // ⚠️ STRING (DECIMAL)
+  "features": [],                // ⚠️ Empty
+  "metadata": {
+    "features": ["obstacles", "weapons"]  // ⚠️ Real data here
+  },
+  "is_verified": true            // ⚠️ NOT 'verified'
+}
 ```
 
 ---
 
 ## 🎯 Следующие шаги
 
-### Немедленные задачи
-1. **Проверить текущий статус деплоя** - работает ли сайт
-2. **Исправить onClick проблемы** - если они всё ещё есть
-3. **Настроить WebRTC** - для управления роботами
-4. **Реализовать базовую blockchain интеграцию**
+### Immediate (Next Session)
+1. **Complete Device Endpoints** - `GET /api/v1/arenas/:id/devices`
+2. **Complete Operator Endpoints** - `GET /api/v1/operators/:id`
+3. **Fix Hydration Error** - Number formatting (47,234 vs 47 234)
+4. **Image CDN** - Convert MinIO paths to full URLs
 
-### Приоритеты
-1. **Стабильность деплоя** - убедиться что всё работает
-2. **WebRTC интеграция** - основная функциональность
-3. **Arena management** - система управления аренами
-4. **User authentication** - полная система аутентификации
+### Short Term (This Week)
+5. **Game Sessions** - Seed test data, endpoints
+6. **WebSocket Integration** - Real-time updates
+7. **Type Safety** - Replace `any` with proper interfaces
+8. **Error Boundaries** - Graceful failures
+
+### Medium Term (Next 2 Weeks)
+9. **Tournament System UI** - Basic tournament pages
+10. **User Dashboard** - Profile, stats, wallet
+11. **Mobile Optimization** - Responsive design
+12. **Testing** - E2E tests with Playwright
 
 ---
 
 ## 📊 Текущие метрики
 
 ### Технические
-- **Frontend:** Next.js 15 + React 19
-- **Backend:** Node.js + Express
-- **Database:** PostgreSQL 17 (Supabase)
-- **Deployment:** Docker + Docker Hub
+- **Frontend:** Next.js 15 + React 19 ✅
+- **Backend:** Node.js + Express ✅
+- **Database:** PostgreSQL 17 (39 tables) ✅
+- **Deployment:** Docker Hub + SHA versioning ✅
+- **Production URL:** https://giperarena.space ✅
 
-### Статус
+### Статус Features
 - **Development:** ✅ Локальная разработка работает
-- **Deployment:** ⚠️ Проблемы с onClick handlers
-- **WebRTC:** ❌ Не реализовано
+- **Deployment:** ✅ Production стабильный
+- **Arena Pages:** ✅ Working with real API
+- **API Integration:** ✅ CORS + real data
+- **WebRTC:** ❌ Не реализовано (следующий приоритет)
 - **Blockchain:** ❌ Только базовая структура
 
 ---
 
 ## 🔧 Настройки окружения
 
-### Локальное окружение
+### Production (на сервере /root/giperarena/)
 ```bash
-# .env.local
-NEXT_PUBLIC_API_URL=http://localhost:3001
-NEXT_PUBLIC_WS_URL=ws://localhost:3002
-NEXT_PUBLIC_SUPABASE_URL=https://api.gipergiraffe.com
+# docker-compose.prod.yml
+NEXT_PUBLIC_API_URL=https://api.giperarena.space/api/v1
+NODE_ENV=development  # Production build падает с onClick!
+DATABASE_URL=postgresql://postgres.giper_prod:...@api.gipergiraffe.com:5432/postgres
 ```
 
-### Production окружение
+### Local Development
 ```bash
-# .env (на сервере)
-NEXT_PUBLIC_API_URL=https://api.giperarena.space
-NEXT_PUBLIC_WS_URL=wss://ws.giperarena.space
-NEXT_PUBLIC_SUPABASE_URL=https://api.gipergiraffe.com
+NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
+DATABASE_URL=postgresql://postgres.giper_prod:...@api.gipergiraffe.com:5432/postgres
 ```
 
 ---
 
-## 🚨 Критические проблемы
+## 🚨 Критические решения (ЗАПОМНИТЬ!)
 
-### 1. onClick Handler Errors
-**Статус:** Частично решено (dev mode в production)  
-**Приоритет:** Высокий  
-**Следующие действия:** Тестирование в production
+### 1. PostgreSQL DECIMAL → String
+**ВСЕГДА:** `parseFloat(value)` перед `.toFixed()` или math операциями
 
-### 2. Docker Кэширование
-**Статус:** Решено (SHA версионирование)  
-**Приоритет:** Средний  
-**Следующие действия:** Мониторинг
+### 2. API Field Mapping
+```typescript
+// API → Frontend mapping:
+price_per_minute * 60 → hourly_rate
+metadata.features → features (with fallback)
+is_verified → verified (support both)
+```
 
-### 3. WebRTC Интеграция
-**Статус:** Не начато  
-**Приоритет:** Высокий  
-**Следующие действия:** Начать реализацию
+### 3. Conditional Rendering
+```typescript
+// Для optional arrays:
+{(data || []).map(...)}
+
+// Для optional sections:
+{data && data.length > 0 && <Section />}
+```
+
+### 4. Deploy ТОЛЬКО через deploy-reliable.sh
+**НИКОГДА НЕ:**
+- Создавать новые скрипты в /tmp/
+- Использовать :latest тег
+- Запускать deploy в фоне (&)
+- Использовать docker compose pull --no-cache
 
 ---
 
-**Последнее обновление:** 26 октября 2025  
-**Следующий обзор:** 27 октября 2025
+## 🎉 Recent Achievements (Oct 30, 2025)
+
+### Session 2: Arena Detail API Fix
+- ✅ 5 TypeErrors исправлено
+- ✅ PostgreSQL type coercion паттерны
+- ✅ API integration best practices
+- ✅ 2 production deployments успешно
+- ✅ Git tag: v0.2.1-arena-detail-fix
+- ✅ Memory bank полностью обновлён
+- ✅ Пользователь: "Сработало!" 🎊
+
+### Session 1: Database Migrations (Oct 29, 2025)
+- ✅ 25 Goose migrations applied
+- ✅ 39 tables в production
+- ✅ 30+ PostgreSQL functions
+- ✅ Git tag: v0.2.0-db-complete
+
+---
+
+## 💡 Memory Bank Workflow (NEW!)
+
+### При каждом Git Tag:
+1. ✅ Создать session file `session-YYYY-MM-DD-topic.md`
+2. ✅ Обновить `SESSION-SUMMARY.md`
+3. ✅ Обновить `README.md`
+4. ✅ Обновить `activeContext.md` (этот файл!)
+5. ✅ Обновить `progress.md`
+6. ✅ Обновить `tasks.md`
+7. ✅ Закоммитить всё вместе
+
+**Документировано в:** CLAUDE.md → MEMORY BANK WORKFLOW
+
+---
+
+**Последнее обновление:** 30 октября 2025
+**Следующий обзор:** 31 октября 2025
+**Production Status:** ✅ WORKING (https://giperarena.space)

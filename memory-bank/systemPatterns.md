@@ -511,3 +511,200 @@ class ArenaPage {
 
 **Последнее обновление:** 26 октября 2025  
 **Следующий обзор:** 2 ноября 2025
+
+---
+
+## 🆕 NEW PATTERNS (Oct 30, 2025) - PostgreSQL API Integration
+
+### PostgreSQL DECIMAL Type Handling Pattern
+**Проблема:** PostgreSQL возвращает DECIMAL как string, не number  
+**Использование:** Для всех DECIMAL полей (price, rating, revenue)
+
+**Реализация:**
+\`\`\`typescript
+// ПАТТЕРН: ВСЕГДА parseFloat() для DECIMAL полей
+interface Arena {
+  price_per_minute: string;  // DECIMAL as string from PostgreSQL
+  rating: string;             // DECIMAL as string
+  total_revenue: string;      // DECIMAL as string
+}
+
+// Использование:
+const rating = parseFloat(arena.rating).toFixed(1);  // "4.8"
+const hourlyRate = parseFloat(arena.price_per_minute) * 60;  // 1500
+const revenue = parseFloat(arena.total_revenue).toFixed(2);  // "1234.56"
+
+// Для отображения:
+<span>{parseFloat(arena.rating).toFixed(1)}</span>
+\`\`\`
+
+**Почему важно:**
+- PostgreSQL DECIMAL → JSON → JavaScript string
+- Без parseFloat() будет `TypeError: toFixed is not a function`
+- Применяется ко ВСЕМ числовым полям из БД
+
+---
+
+### Nested API Data Fallback Pattern
+**Проблема:** Данные могут быть в разных местах (root vs nested)  
+**Использование:** Для optional или nested полей в API responses
+
+**Реализация:**
+\`\`\`typescript
+// ПАТТЕРН: Fallback chain для nested data
+const features = arena.metadata?.features || arena.features || [];
+
+// ПАТТЕРН: Для множественных fallbacks
+const value = obj?.nested?.deep?.value || obj?.value || defaultValue;
+
+// ПАТТЕРН: Для массивов с map
+{(arena.metadata?.features || []).map(feature => (
+  <Badge key={feature}>{feature}</Badge>
+))}
+\`\`\`
+
+**Почему важно:**
+- API структуры меняются
+- Backward compatibility важна
+- Избегает `Cannot read property of undefined`
+
+---
+
+### Conditional Section Rendering Pattern
+**Проблема:** Опциональные поля могут быть undefined  
+**Использование:** Для секций UI которые зависят от данных
+
+**Реализация:**
+\`\`\`typescript
+// ПАТТЕРН: Conditional rendering для optional sections
+{data && data.length > 0 && (
+  <Section>
+    {data.map(item => <Item key={item.id} {...item} />)}
+  </Section>
+)}
+
+// ПАТТЕРН: Для optional objects
+{user?.profile && (
+  <ProfileCard profile={user.profile} />
+)}
+
+// ПАТТЕРН: Для optional arrays с fallback
+{(items || []).length > 0 && (
+  <List items={items} />
+)}
+\`\`\`
+
+**Почему важно:**
+- Предотвращает runtime errors
+- Улучшает UX (не показывает пустые секции)
+- Обрабатывает loading/error states
+
+---
+
+### Flexible TypeScript Interface Pattern
+**Проблема:** API структуры нестабильны в процессе разработки  
+**Использование:** Для быстрой интеграции с evolving APIs
+
+**Реализация:**
+\`\`\`typescript
+// ПАТТЕРН 1: Временный any для быстрой интеграции
+interface ArenaPageProps {
+  arena: any;  // TODO: Define proper Arena type
+}
+
+// ПАТТЕРН 2: Partial types для optional fields
+interface Arena {
+  id: string;
+  name: string;
+  price_per_minute?: string;  // Optional
+  metadata?: {
+    features?: string[];
+  };
+}
+
+// ПАТТЕРН 3: Постепенная типизация
+interface ArenaBase {
+  id: string;
+  name: string;
+}
+
+interface ArenaWithPricing extends ArenaBase {
+  price_per_minute: string;
+  currency: string;
+}
+
+// ПАТТЕРН 4: Runtime validation с Zod (future)
+import { z } from 'zod';
+
+const ArenaSchema = z.object({
+  id: z.string().uuid(),
+  price_per_minute: z.string().regex(/^\d+\.\d{2}$/),
+  rating: z.string().transform(val => parseFloat(val))
+});
+\`\`\`
+
+**Почему важно:**
+- Позволяет быстро интегрировать API
+- Потом можно добавить строгие типы
+- Balance между скоростью и безопасностью
+
+---
+
+### API Field Mapping Pattern
+**Проблема:** Frontend и Backend используют разные naming conventions  
+**Использование:** Для трансформации API responses
+
+**Реализация:**
+\`\`\`typescript
+// ПАТТЕРН: Вычисляемые поля из API data
+function ArenaCard({ arena }: { arena: any }) {
+  // API field → Computed field
+  const hourlyRate = arena.price_per_minute 
+    ? (parseFloat(arena.price_per_minute) * 60).toFixed(0)
+    : '0';
+  
+  // API field → Mapped field
+  const verified = arena.is_verified || arena.verified || false;
+  
+  // Nested API field → Flat field
+  const features = arena.metadata?.features || arena.features || [];
+  
+  return (
+    <div>
+      <p>{hourlyRate} {arena.currency}/hour</p>
+      {verified && <Badge>Verified</Badge>}
+      {features.map(f => <Badge key={f}>{f}</Badge>)}
+    </div>
+  );
+}
+\`\`\`
+
+**Почему важно:**
+- API и UI имеют разные требования
+- Избегает дублирования логики
+- Централизует трансформации
+
+---
+
+## 📋 Pattern Usage Guidelines (UPDATED)
+
+### Когда использовать PostgreSQL DECIMAL Pattern:
+- ✅ Любое числовое поле из PostgreSQL
+- ✅ Перед .toFixed(), math операциями
+- ✅ Для price, rating, revenue, balance
+
+### Когда использовать Nested Data Fallback:
+- ✅ API возвращает nested objects
+- ✅ Поддержка старых и новых API versions
+- ✅ Optional или conditional fields
+
+### Когда использовать Conditional Rendering:
+- ✅ Секции зависящие от наличия данных
+- ✅ Optional arrays или objects
+- ✅ Loading/error states
+
+---
+
+**Последнее обновление:** 30 октября 2025
+**Новых паттернов:** 5
+**Источник:** Session 2 - Arena Detail API Fix
