@@ -23,6 +23,13 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Declare build args for Next.js environment variables
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_WS_URL
+ARG NEXT_PUBLIC_MEDIA_URL
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+
 # Copy package files first
 COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 COPY shared/package.json ./shared/
@@ -41,10 +48,15 @@ COPY frontend ./frontend
 WORKDIR /app/shared
 RUN corepack enable pnpm && pnpm run build
 
-# Build frontend for production
+# Build frontend for production with environment variables
 WORKDIR /app/frontend
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
+ENV NEXT_PUBLIC_MEDIA_URL=$NEXT_PUBLIC_MEDIA_URL
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 RUN corepack enable pnpm && pnpm run build
 
 # =========================================

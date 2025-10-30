@@ -32,10 +32,15 @@ echo ""
 # Шаг 3: Сборка образов БЕЗ КЭША с SHA тегом
 echo "🏗️  Шаг 3/7: Сборка образов (NO CACHE)..."
 
-echo "📦 Сборка frontend..."
+echo "📦 Сборка frontend с build args..."
 docker buildx build \
   --no-cache \
   --platform linux/amd64 \
+  --build-arg NEXT_PUBLIC_API_URL="https://api.giperarena.space/api/v1" \
+  --build-arg NEXT_PUBLIC_WS_URL="wss://api.giperarena.space" \
+  --build-arg NEXT_PUBLIC_MEDIA_URL="https://media.giperarena.space" \
+  --build-arg NEXT_PUBLIC_SUPABASE_URL="https://api.gipergiraffe.com" \
+  --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYXBwX2FwaSIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzYxMTY4MTIwLCJleHAiOjE3OTI3MDQxMjB9.nH_cWoBP6DgDBBhj8ZxQs-MEf8XvLay1PjrTfgxbyy4" \
   -t giperpetr/giperarena-frontend:${GIT_SHA} \
   -t giperpetr/giperarena-frontend:latest \
   -f frontend/Dockerfile \
