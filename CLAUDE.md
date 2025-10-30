@@ -72,7 +72,109 @@ export DOCKER_HUB_TOKEN="dckr_pat_W2slXQiZOhpiOj9CX-DnITmfVro"
 
 - Полная схема: [DEPLOYMENT_WORKING.md](./DEPLOYMENT_WORKING.md)
 - История деплоев: см. git log
-- Последний успешный: commit `89a12c8` (29 октября 2025)
+- Последний успешный: commit `4b1283d` (30 октября 2025)
+
+---
+
+## 📝 MEMORY BANK WORKFLOW (MANDATORY)
+
+**⚠️⚠️⚠️ ПРИ КАЖДОМ GIT TAG - ОБНОВЛЯЕМ MEMORY BANK! ⚠️⚠️⚠️**
+
+### ⭐ ОБЯЗАТЕЛЬНЫЙ ПОРЯДОК ПРИ СОЗДАНИИ ТЕГА:
+
+1. **Завершить фичу/фикс** и протестировать
+2. **Создать git tag**: `git tag -a vX.Y.Z-description -m "Detailed message"`
+3. **ОБЯЗАТЕЛЬНО: Создать session file** в `memory-bank/session-YYYY-MM-DD-topic.md`
+4. **ОБЯЗАТЕЛЬНО: Обновить `memory-bank/SESSION-SUMMARY.md`** с последней сессией
+5. **ОБЯЗАТЕЛЬНО: Обновить `memory-bank/README.md`** с новым файлом
+6. **Закоммитить всё**: `git add memory-bank/ && git commit -m "Add session docs"`
+7. **Push tag и docs**: `git push origin vX.Y.Z-description && git push`
+
+### 📋 Что должно быть в session file:
+
+**ОБЯЗАТЕЛЬНЫЕ СЕКЦИИ:**
+1. **Заголовок** - Дата, тег, статус, commit SHA
+2. **What Was Accomplished** - Что сделано, список фиксов/фич
+3. **Issues Fixed in Detail** - Каждая ошибка подробно:
+   - The Problem (что было не так + код примера)
+   - The Solution (как исправили + код исправления)
+   - Files Fixed (какие файлы, строки)
+   - Pattern Established (паттерн для будущего)
+4. **Key Learnings & Patterns** - Что узнали, какие паттерны установили
+5. **Deployment History** - Список коммитов, статус production
+6. **Production Status** - URL, версия, Docker images, статус
+7. **Next Priority Actions** - Что делать дальше
+
+**ФОРМАТ:**
+- Markdown с подробными code блоками
+- Примеры ДО и ПОСЛЕ для каждого фикса
+- Цитаты от пользователя если были
+- Метрики успеха (✅/❌)
+
+### 🎯 Зачем это нужно:
+
+1. **Контекст для новых сессий** - Claude сразу понимает текущее состояние
+2. **История решений** - Видно почему выбрали тот или иной подход
+3. **Паттерны** - Решения типовых проблем зафиксированы
+4. **Отладка** - Легко найти как похожие проблемы решали раньше
+5. **Онбординг** - Новый разработчик быстро вкурится
+
+### ⛔ АБСОЛЮТНЫЕ ЗАПРЕТЫ:
+
+1. **❌ НИКОГДА НЕ СОЗДАВАТЬ TAG БЕЗ MEMORY BANK UPDATE!!!**
+2. **❌ НИКОГДА НЕ ДЕЛАТЬ "Мелкий фикс, без доки"!!!**
+3. **❌ НИКОГДА НЕ ОСТАВЛЯТЬ Session file пустым/неполным!!!**
+4. **❌ НИКОГДА НЕ ЗАБЫВАТЬ обновить README.md и SESSION-SUMMARY.md!!!**
+
+### ✅ Правильный пример (сегодняшняя сессия):
+
+```bash
+# 1. Зафиксировали фиксы
+git commit -m "Fix arena detail page API integration"
+
+# 2. Создали tag
+git tag -a v0.2.1-arena-detail-fix -m "Fix arena detail TypeErrors"
+
+# 3. СОЗДАЛИ session file (11KB подробностей!)
+memory-bank/session-2025-10-30-arena-detail-api-fix.md
+
+# 4. ОБНОВИЛИ SESSION-SUMMARY.md
+memory-bank/SESSION-SUMMARY.md
+
+# 5. ОБНОВИЛИ README.md
+memory-bank/README.md
+
+# 6. Закоммитили
+git add memory-bank/ && git commit -m "Add session docs"
+
+# 7. Push всего
+git push origin v0.2.1-arena-detail-fix && git push
+```
+
+### 📚 Memory Bank Structure:
+
+```
+memory-bank/
+├── README.md                                    # Навигация, статус проекта
+├── SESSION-SUMMARY.md                           # Последняя сессия кратко
+├── session-2025-10-30-arena-detail-api-fix.md  # Сессия 2 (11KB)
+├── session-2025-10-29-database-migrations.md    # Сессия 1 (предыдущая)
+├── database-migrations-completed.md             # DB schema reference
+├── next-steps-quick-reference.md                # Что делать дальше
+└── projectbrief.md                              # Обзор проекта
+```
+
+### 💡 Быстрая проверка:
+
+Перед тем как сделать git push с тегом:
+```bash
+# Проверь что все 3 файла обновлены:
+ls -lh memory-bank/session-$(date +%Y-%m-%d)*.md  # Новый session
+git diff memory-bank/SESSION-SUMMARY.md           # Обновлён
+git diff memory-bank/README.md                    # Обновлён
+
+# Если хоть один НЕ обновлён - СТОП! Обнови сначала!
+```
 
 ---
 
