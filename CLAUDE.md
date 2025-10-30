@@ -42,7 +42,7 @@ export DOCKER_HUB_TOKEN="dckr_pat_W2slXQiZOhpiOj9CX-DnITmfVro"
 - ✅ **БЕЗ --no-cache** при `docker compose pull` (не поддерживается!)
 - ✅ **SERVER_DIR=/root/giperarena** (НЕ /root/arenahub!!!)
 - ✅ **docker-compose.prod.yml** (НЕ просто docker-compose.yml!!!)
-- ✅ **NODE_ENV=development** в production (production build падает)
+- ✅ **NODE_ENV=production** в production (ОБЯЗАТЕЛЬНО!!! development = медленный компайл на каждый запрос!!!)
 
 ### ⛔ АБСОЛЮТНЫЕ ЗАПРЕТЫ (НАРУШЕНИЕ = ПИЗДЕЦ!!!):
 
@@ -54,10 +54,29 @@ export DOCKER_HUB_TOKEN="dckr_pat_W2slXQiZOhpiOj9CX-DnITmfVro"
 6. **❌ НИКОГДА НЕ ЗАПУСКАТЬ** деплой в фоне (`&` или `run_in_background`)!!!
 7. **❌ НИКОГДА НЕ СОЗДАВАТЬ** альтернативные версии скрипта!!!
 8. **❌ НИКОГДА НЕ РЕДАКТИРОВАТЬ** `scripts/deploy-reliable.sh` без согласования!!!
+9. **❌ НИКОГДА НЕ ОТКАТЫВАТЬ К NODE_ENV=development В PRODUCTION!!!** Это ТУПОСТЬ, которая создаёт 4-11 секунд задержки!!!
+10. **❌ НИКОГДА НЕ ПРЕДЛАГАТЬ "WARMUP SCRIPTS"!!!** Это костыли, а не решение проблемы!!!
 
 ### 🔥 ЕСЛИ ТЫ (CLAUDE) НАРУШИШЬ ЛЮБОЙ ЗАПРЕТ:
 
 **Ты создашь 10+ фоновых процессов, которые будут висеть вечно, собирать старые SHA, и заполнят Docker Hub мусором! Пользователь РАЗОЗЛИТСЯ!!!**
+
+### 🛠️ РЕШЕНИЕ ПРОБЛЕМЫ PRODUCTION BUILD:
+
+**Проблема:** Next.js 15 пытается делать API запросы (Supabase) во время Docker build, но env переменных нет → build fails.
+
+**ПРАВИЛЬНОЕ РЕШЕНИЕ:**
+1. Все страницы с API вызовами делать `'use client'` - data fetching на клиенте через `useEffect`
+2. ИЛИ добавить `export const dynamic = 'force-dynamic'` в Server Components
+3. ИЛИ отключить SSG через `export const dynamicParams = true`
+
+**НЕПРАВИЛЬНЫЕ РЕШЕНИЯ (НЕ ИСПОЛЬЗОВАТЬ!!!):**
+- ❌ Откатываться к NODE_ENV=development
+- ❌ Передавать build args с секретами в Docker
+- ❌ Создавать warmup scripts
+- ❌ Копировать готовый .next из локального билда (хрупко, непредсказуемо)
+
+**ТЕКУЩИЙ СТАТУС:** Работаем над исправлением build failures для production mode.
 
 ### ✅ Правильная последовательность при проблемах:
 
