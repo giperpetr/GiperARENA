@@ -1,88 +1,117 @@
-# Session Summary: Arena Detail API Fix ✅
+# Session Summary: Production Mode Fix ✅
 
 **Date**: October 30, 2025
-**Tag**: v0.2.1-arena-detail-fix
+**Tag**: v0.2.2-production-mode-fix
 **Status**: ✅ DEPLOYED & WORKING
 
 ---
 
 ## 🎯 What Was Accomplished
 
-### ✅ Fixed Arena Detail Pages
-- **5 TypeErrors fixed**: rating.toFixed(), features.map(), devices, operator, verified
-- **PostgreSQL DECIMAL handling**: String → Number conversion pattern
-- **API structure mismatch**: Nested metadata fields, optional sections
-- **Production deployed**: 2 successful deploys (09ba0d6, 4b1283d)
-- **User confirmed**: "Сработало!" (It works!)
+### ✅ Production Mode Enabled
+- **10x performance improvement**: 4-11 seconds → <1 second page loads
+- **Fixed NODE_ENV=production**: Was running `next dev` in production
+- **Fixed NEXT_PUBLIC_ build args**: Environment variables now baked into JS bundle
+- **Arena data loading**: /arenas page now works correctly
+- **Disk space cleaned**: Freed 7GB on production server (42GB → 35GB)
+- **User satisfied**: "Получилось. Давай дальше по плану" (It worked. Let's continue)
 
 ### ✅ Issues Fixed
-1. `TypeError: rating.toFixed is not a function` → `parseFloat(arena.rating).toFixed(1)`
-2. `Cannot read 'map' of undefined` → `metadata?.features || features || []`
-3. Missing hourly_rate → Calculate from `price_per_minute * 60`
-4. Devices/operator crashes → Conditional rendering
-5. Verification field → Support both `is_verified` and `verified`
+1. **Dev mode in production** → Changed Dockerfile to use `next start` with production build
+2. **Missing .next directory** → Added `pnpm run build` step in Dockerfile
+3. **NEXT_PUBLIC_ vars not available** → Added ARG declarations and --build-arg in deploy script
+4. **Arena data not loading** → Fixed by passing environment variables at build time
+5. **Disk space full** → Removed old frontend images (3GB each)
 
 ### ✅ Deployment
-- Cleaned server disk: 100% → 76% (freed 11GB)
-- Built & pushed images: 4b1283d
+- Built & pushed images: 9b48dd6
 - Updated production: https://giperarena.space
-- Git tagged: v0.2.1-arena-detail-fix
+- Git tagged: v0.2.2-production-mode-fix
+- All containers healthy for 3+ hours
 
 ---
 
 ## 📊 Key Patterns Established
 
-### PostgreSQL DECIMAL:
-\`\`\`typescript
-const rating = parseFloat(arena.rating).toFixed(1);
-\`\`\`
+### Next.js Production Dockerfile:
+```dockerfile
+FROM node:20-alpine AS builder
+ARG NEXT_PUBLIC_API_URL                    # Declare build args
+ENV NODE_ENV=production                     # Set production mode
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL  # Set env from arg
+RUN pnpm run build                          # Build with env vars
 
-### Nested Data:
-\`\`\`typescript
-const features = arena.metadata?.features || arena.features || [];
-\`\`\`
+FROM node:20-alpine AS runtime
+ENV NODE_ENV=production
+CMD ["npx", "next", "start"]                # Start production server
+```
 
-### Conditional Rendering:
-\`\`\`typescript
-{data && data.length > 0 && <Component />}
-\`\`\`
+### Docker Build with Args:
+```bash
+docker buildx build \
+  --build-arg NEXT_PUBLIC_API_URL="https://api.example.com" \
+  --build-arg NEXT_PUBLIC_KEY="value" \
+  -f frontend/Dockerfile \
+  --push .
+```
+
+### NEVER in Production:
+```dockerfile
+# ❌ WRONG - DO NOT USE IN PRODUCTION
+ENV NODE_ENV=development
+CMD ["npx", "next", "dev"]
+```
 
 ---
 
 ## 🚀 Production Status
 
 - **URL**: https://giperarena.space
-- **Version**: 4b1283d
-- **Status**: ✅ All pages working
-- **Database**: 39 tables, 5 arenas seeded
+- **Version**: v0.2.2 (9b48dd6)
+- **Mode**: ✅ Production (NODE_ENV=production)
+- **Status**: ✅ All services healthy
+- **Performance**: ✅ Instant page loads
+- **API**: ✅ 5 arenas loading successfully
+
+### Container Health
+```
+giperarena-frontend    Up 3 hours (healthy)
+giperarena-backend     Up 3 hours (healthy)
+giperarena-realtime    Up 3 hours
+giperarena-media       Up 3 hours
+giperarena-blockchain  Up 3 hours
+```
 
 ---
 
 ## 📚 Documentation Created
 
-1. **session-2025-10-30-arena-detail-api-fix.md** (11KB)
+1. **session-2025-10-30-production-mode-fix.md** (21KB)
    - Complete session history
-   - All 5 fixes explained
+   - All 3 issues explained with code examples
    - Patterns & best practices
-   
-2. **README.md** (updated)
-   - Session 2 added
-   - Git tag workflow
-   
+   - User feedback included
+
+2. **CLAUDE.md** (updated)
+   - Added strict production mode rules
+   - Added NEXT_PUBLIC_ build args pattern
+
 3. **SESSION-SUMMARY.md** (this file, updated)
 
 ---
 
 ## 💡 To Continue
 
-1. Read **session-2025-10-30-arena-detail-api-fix.md** for patterns
-2. Check **database-migrations-completed.md** for schema
-3. Review **next-steps-quick-reference.md** for tasks
+1. Read **session-2025-10-30-production-mode-fix.md** for detailed patterns
+2. Test arena detail pages (/arenas/:id) to ensure they work
+3. Remove `version` warning from docker-compose.prod.yml
+4. Monitor disk space usage on production server
 
-**Everything documented, production working!** 🚀
+**Production mode working, 10x faster!** 🚀
 
 ---
 
-*Previous: Database migrations (Oct 29)*
-*Current: Arena pages working (Oct 30)*
-*Next: Device/operator endpoints*
+*Session 1: Database migrations (Oct 29)*
+*Session 2: Arena pages working (Oct 30 morning)*
+*Session 3: Production mode fix (Oct 30 evening)* ← **YOU ARE HERE**
+*Next: Continue with remaining features*
