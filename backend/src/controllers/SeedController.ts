@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { supabase } from '../config/supabase';
 
 export class SeedController {
-  async seedDatabase(req: Request, res: Response) {
+  async seedDatabase(_req: Request, res: Response) {
     try {
       console.log('🌱 Starting database seed via API...');
 
