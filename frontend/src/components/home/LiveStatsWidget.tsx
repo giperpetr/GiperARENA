@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MOCK_LIVE_STATS } from '@/lib/mock-data';
+import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import {
   UsersIcon,
@@ -16,12 +16,28 @@ import {
 
 export function LiveStatsWidget() {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Fetch live stats from API
+  const { data: liveStats, isLoading, error } = useQuery({
+    queryKey: ['stats', 'live'],
+    queryFn: async () => {
+      const response = await fetch('https://api.giperarena.space/api/v1/stats/live');
+      if (!response.ok) {
+        throw new Error('Failed to fetch live stats');
+      }
+      const json = await response.json();
+      return json.data;
+    },
+    refetchInterval: 30000, // Refresh every 30 seconds
+    staleTime: 25000, // Consider data stale after 25 seconds
+  });
+
   const [animatedStats, setAnimatedStats] = useState({
     playersOnline: 0,
     gamesActive: 0,
     tournamentsLive: 0,
     totalPrizePool: 0,
-    totalViewers: 0,
+    arenasActive: 0,
   });
 
   const formatNumber = (num: number) => {
@@ -38,8 +54,10 @@ export function LiveStatsWidget() {
     return `$${amount}`;
   };
 
-  // Animate counters on mount
+  // Animate counters when data loads
   useEffect(() => {
+    if (!liveStats) return;
+
     const duration = 2000; // 2 seconds
     const steps = 60;
     const stepDuration = duration / steps;
@@ -50,36 +68,42 @@ export function LiveStatsWidget() {
       const progress = currentStep / steps;
 
       setAnimatedStats({
-        playersOnline: Math.floor(MOCK_LIVE_STATS.playersOnline * progress),
-        gamesActive: Math.floor(MOCK_LIVE_STATS.gamesActive * progress),
-        tournamentsLive: Math.floor(MOCK_LIVE_STATS.tournamentsLive * progress),
-        totalPrizePool: Math.floor(MOCK_LIVE_STATS.totalPrizePool * progress),
-        totalViewers: Math.floor(MOCK_LIVE_STATS.totalViewers * progress),
+        playersOnline: Math.floor((liveStats.playersOnline || 0) * progress),
+        gamesActive: Math.floor((liveStats.gamesActive || 0) * progress),
+        tournamentsLive: Math.floor((liveStats.tournamentsLive || 0) * progress),
+        totalPrizePool: Math.floor((liveStats.totalPrizePool || 0) * progress),
+        arenasActive: Math.floor((liveStats.arenasActive || 0) * progress),
       });
 
       if (currentStep >= steps) {
         clearInterval(interval);
-        setAnimatedStats(MOCK_LIVE_STATS);
+        setAnimatedStats({
+          playersOnline: liveStats.playersOnline || 0,
+          gamesActive: liveStats.gamesActive || 0,
+          tournamentsLive: liveStats.tournamentsLive || 0,
+          totalPrizePool: liveStats.totalPrizePool || 0,
+          arenasActive: liveStats.arenasActive || 0,
+        });
       }
     }, stepDuration);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [liveStats]);
 
-  // Simulate real-time updates
+  // Simulate real-time updates between API calls
   useEffect(() => {
+    if (!liveStats) return;
+
     const interval = setInterval(() => {
       setAnimatedStats(prev => ({
-        playersOnline: prev.playersOnline + Math.floor(Math.random() * 10 - 5),
-        gamesActive: prev.gamesActive + Math.floor(Math.random() * 5 - 2),
-        tournamentsLive: prev.tournamentsLive,
-        totalPrizePool: prev.totalPrizePool,
-        totalViewers: prev.totalViewers + Math.floor(Math.random() * 20 - 10),
+        ...prev,
+        playersOnline: Math.max(0, prev.playersOnline + Math.floor(Math.random() * 10 - 5)),
+        gamesActive: Math.max(0, prev.gamesActive + Math.floor(Math.random() * 5 - 2)),
       }));
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [liveStats]);
 
   return (
     <>
@@ -124,6 +148,15 @@ export function LiveStatsWidget() {
 
           {/* Stats Content */}
           <div className="p-3 space-y-3 overflow-y-auto h-[calc(100%-8rem)]">
+            {/* Loading/Error State */}
+            {(isLoading || error) && (
+              <div className="text-center py-4">
+                <span className="text-xs text-muted-foreground">
+                  {isLoading ? 'Loading stats...' : 'Failed to load stats'}
+                </span>
+              </div>
+            )}
+
             {/* Players Online */}
             <div className="group hover:bg-cyan-500/5 p-2 rounded-lg transition-colors border border-transparent hover:border-cyan-500/20">
               <div className="flex items-center justify-between mb-1">
@@ -131,7 +164,7 @@ export function LiveStatsWidget() {
                 <UsersIcon className="text-cyan-400" size={16} />
               </div>
               <div className="text-xl font-bold text-foreground">
-                {formatNumber(animatedStats.playersOnline)}
+                {isLoading ? '...' : formatNumber(animatedStats.playersOnline)}
               </div>
               <div className="h-1 bg-border/30 rounded-full mt-1.5 overflow-hidden">
                 <div
@@ -148,7 +181,7 @@ export function LiveStatsWidget() {
                 <GamepadIcon className="text-purple-400" size={16} />
               </div>
               <div className="text-xl font-bold text-foreground">
-                {formatNumber(animatedStats.gamesActive)}
+                {isLoading ? '...' : formatNumber(animatedStats.gamesActive)}
               </div>
               <div className="h-1 bg-border/30 rounded-full mt-1.5 overflow-hidden">
                 <div
@@ -165,7 +198,7 @@ export function LiveStatsWidget() {
                 <TrophyIcon className="text-cyan-400" size={16} />
               </div>
               <div className="text-xl font-bold text-foreground">
-                {formatNumber(animatedStats.tournamentsLive)}
+                {isLoading ? '...' : formatNumber(animatedStats.tournamentsLive)}
               </div>
               <div className="h-1 bg-border/30 rounded-full mt-1.5 overflow-hidden">
                 <div
@@ -182,7 +215,7 @@ export function LiveStatsWidget() {
                 <CoinsIcon className="text-purple-400" size={16} />
               </div>
               <div className="text-xl font-bold text-cyan-400">
-                {formatCurrency(animatedStats.totalPrizePool)}
+                {isLoading ? '...' : formatCurrency(animatedStats.totalPrizePool)}
               </div>
               <div className="h-1 bg-border/30 rounded-full mt-1.5 overflow-hidden">
                 <div
@@ -192,14 +225,14 @@ export function LiveStatsWidget() {
               </div>
             </div>
 
-            {/* Total Viewers */}
+            {/* Arenas Active */}
             <div className="group hover:bg-cyan-500/5 p-2 rounded-lg transition-colors border border-transparent hover:border-cyan-500/20">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-muted-foreground">Total Viewers</span>
+                <span className="text-xs text-muted-foreground">Arenas Active</span>
                 <EyeIcon className="text-cyan-400" size={16} />
               </div>
               <div className="text-xl font-bold text-foreground">
-                {formatNumber(animatedStats.totalViewers)}
+                {isLoading ? '...' : formatNumber(animatedStats.arenasActive)}
               </div>
               <div className="h-1 bg-border/30 rounded-full mt-1.5 overflow-hidden">
                 <div

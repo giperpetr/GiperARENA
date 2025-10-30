@@ -8,6 +8,7 @@ import tournamentsRoutes from './tournaments';
 import betsRoutes from './bets';
 import nftsRoutes from './nfts';
 import mediaRoutes from './media';
+import statsRoutes from './stats';
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/tournaments', tournamentsRoutes);
 router.use('/bets', betsRoutes);
 router.use('/nfts', nftsRoutes);
 router.use('/media', mediaRoutes);
+router.use('/stats', statsRoutes);
 
 export default router;

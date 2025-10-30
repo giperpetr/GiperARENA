@@ -4,13 +4,6 @@ import ArenaDetailClient from './ArenaDetailClient';
 import { api } from '@/lib/api-client';
 import type { Arena } from '@/types';
 
-// Recent sessions mock data (will be fetched from API in future)
-const RECENT_SESSIONS = [
-  { player: 'Player123', score: 9850, time: '2m 45s', timestamp: '5 минут назад' },
-  { player: 'DroneKing', score: 9720, time: '2m 52s', timestamp: '12 минут назад' },
-  { player: 'SkyMaster', score: 9650, time: '2m 58s', timestamp: '28 минут назад' },
-];
-
 export default async function ArenaDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   const arenaId = resolvedParams.id;
@@ -78,7 +71,7 @@ export default async function ArenaDetailPage({ params }: { params: Promise<{ id
               <p className="text-muted-foreground max-w-2xl">{arena.description}</p>
             </div>
 
-            <ArenaDetailClient arena={arena} recentSessions={RECENT_SESSIONS} />
+            <ArenaDetailClient arena={arena} />
           </div>
         </div>
       </section>

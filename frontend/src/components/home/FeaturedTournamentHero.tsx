@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,47 +14,134 @@ import {
   RocketIcon,
 } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
+import { api } from '@/lib/api-client';
+import type { Tournament } from '@/types';
 
 export function FeaturedTournamentHero() {
-  const [timeLeft, setTimeLeft] = useState({
-    days: 2,
-    hours: 14,
-    minutes: 32,
-    seconds: 45,
+  // Fetch featured tournament from API
+  const { data: tournaments, isLoading, error } = useQuery({
+    queryKey: ['tournaments', 'featured'],
+    queryFn: async () => {
+      const response: any = await api.getTournaments({ status: 'upcoming', limit: 1 });
+      return response.data || response;
+    },
+    refetchInterval: 60000, // Refresh every minute
   });
 
-  const [participantsCount, setParticipantsCount] = useState(1247);
+  const featuredTournament: Tournament | undefined = Array.isArray(tournaments)
+    ? tournaments[0]
+    : undefined;
 
-  // Countdown timer
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+
+  const [participantsCount, setParticipantsCount] = useState(0);
+
+  // Initialize participants count from tournament data
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
-        } else if (prev.minutes > 0) {
-          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-        } else if (prev.hours > 0) {
-          return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        } else if (prev.days > 0) {
-          return { ...prev, days: prev.days - 1, hours: 23, minutes: 59, seconds: 59 };
-        }
-        return prev;
-      });
-    }, 1000);
+    if (featuredTournament) {
+      setParticipantsCount(featuredTournament.current_participants);
+    }
+  }, [featuredTournament]);
+
+  // Calculate countdown based on tournament start_date
+  useEffect(() => {
+    if (!featuredTournament?.start_date) return;
+
+    const calculateTimeLeft = () => {
+      const startDate = new Date(featuredTournament.start_date!);
+      const now = new Date();
+      const difference = startDate.getTime() - now.getTime();
+
+      if (difference > 0) {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((difference / 1000 / 60) % 60);
+        const seconds = Math.floor((difference / 1000) % 60);
+
+        setTimeLeft({ days, hours, minutes, seconds });
+      } else {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      }
+    };
+
+    // Initial calculation
+    calculateTimeLeft();
+
+    // Update every second
+    const interval = setInterval(calculateTimeLeft, 1000);
 
     return () => clearInterval(interval);
-  }, []);
-
-  // Simulate new participants
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setParticipantsCount((prev) => prev + Math.floor(Math.random() * 3));
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
+  }, [featuredTournament]);
 
   const formatNumber = (num: number) => num.toString().padStart(2, '0');
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <section className="relative px-6 py-16 overflow-hidden">
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/20 via-purple-900/20 to-pink-900/20" />
+          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
+        </div>
+        <div className="container mx-auto max-w-7xl">
+          <Card className="relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg border-white/20 p-12">
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto mb-4"></div>
+                <p className="text-lg text-muted-foreground">Loading featured tournament...</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </section>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <section className="relative px-6 py-16 overflow-hidden">
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/20 via-purple-900/20 to-pink-900/20" />
+          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
+        </div>
+        <div className="container mx-auto max-w-7xl">
+          <Card className="relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg border-white/20 p-12">
+            <div className="text-center">
+              <p className="text-lg text-red-400 mb-4">Failed to load tournament data</p>
+              <p className="text-sm text-muted-foreground">{(error as Error).message}</p>
+            </div>
+          </Card>
+        </div>
+      </section>
+    );
+  }
+
+  // Empty state - no tournaments available
+  if (!featuredTournament) {
+    return (
+      <section className="relative px-6 py-16 overflow-hidden">
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/20 via-purple-900/20 to-pink-900/20" />
+          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
+        </div>
+        <div className="container mx-auto max-w-7xl">
+          <Card className="relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg border-white/20 p-12">
+            <div className="text-center">
+              <TrophyIcon size={48} className="text-muted-foreground mx-auto mb-4" />
+              <p className="text-lg text-muted-foreground">No featured tournament available</p>
+              <p className="text-sm text-muted-foreground mt-2">Check back soon for upcoming tournaments!</p>
+            </div>
+          </Card>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="relative px-6 py-16 overflow-hidden">
@@ -88,15 +176,22 @@ export function FeaturedTournamentHero() {
               {/* Title */}
               <h2 className="text-4xl lg:text-5xl font-bold leading-tight">
                 <span className="text-gradient-cyan-purple">
-                  Grand Championship
+                  {featuredTournament.name}
                 </span>
-                <br />
-                <span className="text-white">Robot Battle Royale</span>
+                {featuredTournament.tournament_type && (
+                  <>
+                    <br />
+                    <span className="text-white text-3xl">
+                      {featuredTournament.tournament_type.replace(/_/g, ' ').toUpperCase()}
+                    </span>
+                  </>
+                )}
               </h2>
 
               {/* Description */}
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Соревнуйтесь с лучшими пилотами в эпичной битве роботов за главный приз сезона
+                {featuredTournament.description ||
+                  'Соревнуйтесь с лучшими пилотами в эпичной битве роботов за главный приз сезона'}
               </p>
 
               {/* Stats Grid */}
@@ -106,7 +201,9 @@ export function FeaturedTournamentHero() {
                     <CoinsIcon size={20} className="text-cyan-400" />
                     <span className="text-sm text-muted-foreground">Приз</span>
                   </div>
-                  <span className="text-2xl font-bold text-white">$50,000</span>
+                  <span className="text-2xl font-bold text-white">
+                    ${featuredTournament.prize_pool?.toLocaleString() || '0'}
+                  </span>
                 </div>
 
                 <div className="flex flex-col">
@@ -120,9 +217,11 @@ export function FeaturedTournamentHero() {
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2 mb-1">
                     <TrophyIcon size={20} className="text-pink-400" />
-                    <span className="text-sm text-muted-foreground">Формат</span>
+                    <span className="text-sm text-muted-foreground">Макс</span>
                   </div>
-                  <span className="text-2xl font-bold text-white">128</span>
+                  <span className="text-2xl font-bold text-white">
+                    {featuredTournament.max_participants || 'N/A'}
+                  </span>
                 </div>
               </div>
 
@@ -193,12 +292,20 @@ export function FeaturedTournamentHero() {
                 <div className="mt-6 space-y-2">
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Мест занято</span>
-                    <span>{participantsCount} / 2048</span>
+                    <span>
+                      {participantsCount} / {featuredTournament.max_participants || 0}
+                    </span>
                   </div>
                   <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
                     <div
                       className="absolute inset-y-0 left-0 bg-gradient-to-r from-cyan-500 to-purple-600 transition-all duration-500"
-                      style={{ width: `${(participantsCount / 2048) * 100}%` }}
+                      style={{
+                        width: `${
+                          featuredTournament.max_participants
+                            ? (participantsCount / featuredTournament.max_participants) * 100
+                            : 0
+                        }%`,
+                      }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent animate-shimmer" />
                   </div>

@@ -99,6 +99,7 @@ class ApiClient {
     city?: string;
     limit?: number;
     offset?: number;
+    sort?: string;
   }) {
     const params = new URLSearchParams();
     if (filters?.status) params.append('status', filters.status);
@@ -106,6 +107,7 @@ class ApiClient {
     if (filters?.city) params.append('city', filters.city);
     if (filters?.limit) params.append('limit', filters.limit.toString());
     if (filters?.offset) params.append('offset', filters.offset.toString());
+    if (filters?.sort) params.append('sort', filters.sort);
 
     const response: any = await this.request(`/arenas?${params}`);
     return response.data || response;
@@ -177,13 +179,21 @@ class ApiClient {
   async getTournaments(filters?: {
     status?: string;
     arena_id?: string;
+    limit?: number;
+    offset?: number;
   }) {
-    const params = new URLSearchParams(filters as any);
-    return this.request(`/tournaments?${params}`);
+    const params = new URLSearchParams();
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.arena_id) params.append('arena_id', filters.arena_id);
+    if (filters?.limit) params.append('limit', filters.limit.toString());
+    if (filters?.offset) params.append('offset', filters.offset.toString());
+
+    const response: any = await this.request(`/tournaments?${params}`);
+    return response.data || response;
   }
 
-  async getTournamentById(tournamentId: string) {
-    return this.request(`/tournaments/${tournamentId}`);
+  async getTournamentById(tournamentId: string): Promise<Tournament> {
+    return this.request<Tournament>(`/tournaments/${tournamentId}`);
   }
 
   async joinTournament(tournamentId: string) {
@@ -194,6 +204,20 @@ class ApiClient {
 
   async getTournamentLeaderboard(tournamentId: string) {
     return this.request(`/tournaments/${tournamentId}/leaderboard`);
+  }
+
+  async getTournamentBracket(tournamentId: string) {
+    return this.request(`/tournaments/${tournamentId}/bracket`);
+  }
+
+  async getTournamentParticipants(tournamentId: string) {
+    return this.request(`/tournaments/${tournamentId}/participants`);
+  }
+
+  async registerForTournament(tournamentId: string) {
+    return this.request(`/tournaments/${tournamentId}/register`, {
+      method: 'POST',
+    });
   }
 
   // ==========================================

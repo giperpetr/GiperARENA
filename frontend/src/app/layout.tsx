@@ -4,6 +4,8 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import { MegaHeader } from '@/components/layout/MegaHeader';
 import { RichFooter } from '@/components/layout/RichFooter';
+import { QueryProvider } from '@/lib/query-provider';
+import { Toaster } from '@/components/ui/toaster';
 
 // GiperARENA Primary Font - Exo 2
 const exo2 = Exo_2({
@@ -53,9 +55,12 @@ export default function RootLayout({
           'overflow-x-hidden'
         )}
       >
-        <MegaHeader />
-        {children}
-        <RichFooter />
+        <QueryProvider>
+          <MegaHeader />
+          {children}
+          <RichFooter />
+          <Toaster />
+        </QueryProvider>
       </body>
     </html>
   );

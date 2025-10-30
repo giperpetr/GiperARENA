@@ -1,22 +1,54 @@
 'use client';
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { api } from '@/lib/api-client';
 
 interface ArenaDetailClientProps {
   arena: any; // Real API structure - flexible typing for now
-  recentSessions: Array<{
-    player: string;
-    score: number;
-    time: string;
-    timestamp: string;
-  }>;
 }
 
-export default function ArenaDetailClient({ arena, recentSessions }: ArenaDetailClientProps) {
+// Helper functions for time formatting
+function formatDuration(seconds: number): string {
+  if (!seconds) return '0s';
+  const minutes = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return minutes > 0 ? `${minutes}m ${secs}s` : `${secs}s`;
+}
+
+function formatRelativeTime(timestamp: string): string {
+  const now = new Date();
+  const past = new Date(timestamp);
+  const diffMs = now.getTime() - past.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+
+  if (diffMins < 1) return 'только что';
+  if (diffMins < 60) return `${diffMins} минут назад`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours} ${diffHours === 1 ? 'час' : 'часов'} назад`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays} ${diffDays === 1 ? 'день' : 'дней'} назад`;
+}
+
+export default function ArenaDetailClient({ arena }: ArenaDetailClientProps) {
   const [isPlaying, setIsPlaying] = useState(false);
+
+  // Fetch recent sessions from API
+  const { data: recentSessionsData, isLoading: sessionsLoading } = useQuery({
+    queryKey: ['sessions', 'arena', arena.id],
+    queryFn: async () => {
+      const response = await api.getGameSessions({
+        arena_id: arena.id,
+        status: 'completed',
+        limit: 3,
+      });
+      return response;
+    },
+    enabled: !!arena.id,
+  });
 
   // Calculate hourly rate from price_per_minute
   const hourlyRate = arena.price_per_minute
@@ -131,26 +163,65 @@ export default function ArenaDetailClient({ arena, recentSessions }: ArenaDetail
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {recentSessions.map((session, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-3 rounded-lg glass hover-lift"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="text-2xl font-bold text-muted-foreground">
-                          #{index + 1}
+                  {sessionsLoading ? (
+                    // Loading skeleton
+                    <>
+                      {[1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className="flex items-center justify-between p-3 rounded-lg glass animate-pulse"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-muted rounded"></div>
+                            <div className="space-y-2">
+                              <div className="h-4 w-24 bg-muted rounded"></div>
+                              <div className="h-3 w-16 bg-muted rounded"></div>
+                            </div>
+                          </div>
+                          <div className="space-y-2 text-right">
+                            <div className="h-4 w-16 bg-muted rounded ml-auto"></div>
+                            <div className="h-3 w-12 bg-muted rounded ml-auto"></div>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-semibold">{session.player}</p>
-                          <p className="text-xs text-muted-foreground">{session.timestamp}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-primary">{session.score.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">{session.time}</p>
-                      </div>
+                      ))}
+                    </>
+                  ) : !recentSessionsData || recentSessionsData.length === 0 ? (
+                    // Empty state
+                    <div className="text-center py-8 text-muted-foreground">
+                      <div className="text-4xl mb-2">🎮</div>
+                      <p>Недавних игр пока нет</p>
                     </div>
-                  ))}
+                  ) : (
+                    // Display sessions
+                    recentSessionsData.map((session: any, index: number) => (
+                      <div
+                        key={session.id}
+                        className="flex items-center justify-between p-3 rounded-lg glass hover-lift"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="text-2xl font-bold text-muted-foreground">
+                            #{index + 1}
+                          </div>
+                          <div>
+                            <p className="font-semibold">
+                              {session.users?.username || session.player_username || `Player ${session.player_id.slice(0, 6)}`}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatRelativeTime(session.end_time || session.updated_at)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-primary">
+                            {(session.score || 0).toLocaleString()}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {formatDuration(session.duration_seconds || 0)}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
