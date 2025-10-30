@@ -6,46 +6,58 @@ import redis from '../config/redis';
 export class TournamentsService {
   // Get tournaments with filters
   async getTournaments(filters: any, limit: number, offset: number) {
-    let query = supabaseAdmin
-      .from('tournaments')
-      .select(
-        `
-        id,
-        name,
-        description,
-        arena_id,
-        organizer_id,
-        tournament_type,
-        status,
-        start_date,
-        end_date,
-        max_participants,
-        current_participants,
-        prize_pool,
-        entry_fee,
-        created_at,
-        arenas(id, name, location_address)
-      `
-      );
+    // Use direct PostgreSQL query instead of Supabase SDK
+    let sql = `
+      SELECT
+        t.id,
+        t.name,
+        t.description,
+        t.arena_id,
+        t.organizer_id,
+        t.tournament_type,
+        t.status,
+        t.start_date,
+        t.end_date,
+        t.max_participants,
+        t.current_participants,
+        t.prize_pool,
+        t.entry_fee,
+        t.created_at,
+        jsonb_build_object(
+          'id', a.id,
+          'name', a.name,
+          'location_address', a.location_address
+        ) as arenas
+      FROM giperarena.tournaments t
+      LEFT JOIN giperarena.arenas a ON t.arena_id = a.id
+      WHERE 1=1
+    `;
+
+    const params: any[] = [];
+    let paramIndex = 1;
 
     // Apply filters
     if (filters.status) {
-      query = query.eq('status', filters.status);
+      sql += ` AND t.status = $${paramIndex}`;
+      params.push(filters.status);
+      paramIndex++;
     }
     if (filters.arena_id) {
-      query = query.eq('arena_id', filters.arena_id);
+      sql += ` AND t.arena_id = $${paramIndex}`;
+      params.push(filters.arena_id);
+      paramIndex++;
     }
     if (filters.tournament_type) {
-      query = query.eq('tournament_type', filters.tournament_type);
+      sql += ` AND t.tournament_type = $${paramIndex}`;
+      params.push(filters.tournament_type);
+      paramIndex++;
     }
 
-    const { data, error } = await query
-      .order('start_date', { ascending: false })
-      .range(offset, offset + limit - 1);
+    sql += ` ORDER BY t.start_date DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(limit, offset);
 
-    if (error) throw error;
-
-    return data;
+    const result = await pool.query(sql, params);
+    return result.rows;
   }
 
   // Get tournament by ID
