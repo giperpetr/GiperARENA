@@ -41,9 +41,11 @@ COPY frontend ./frontend
 WORKDIR /app/shared
 RUN corepack enable pnpm && pnpm run build
 
-# Skip frontend build - we'll use dev mode in production
+# Build frontend for production
 WORKDIR /app/frontend
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+RUN corepack enable pnpm && pnpm run build
 
 # =========================================
 # Stage 3: Production Runtime
