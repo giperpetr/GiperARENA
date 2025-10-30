@@ -1,5 +1,5 @@
 // Stats Service - Business logic for platform statistics
-import { supabaseAdmin } from '../config/supabase';
+import { pool } from '../config/database';
 import redis from '../config/redis';
 
 export interface LiveStats {
@@ -23,62 +23,38 @@ export class StatsService {
       return JSON.parse(cached);
     }
 
-    // Get stats in parallel for better performance
-    const [
-      playersOnlineResult,
-      gamesActiveResult,
-      tournamentsLiveResult,
-      prizepoolResult,
-      arenasActiveResult,
-    ] = await Promise.all([
-      // Count unique players in active or waiting sessions
-      supabaseAdmin
-        .from('game_sessions')
-        .select('player_id', { count: 'exact', head: false })
-        .in('status', ['active', 'waiting']),
+    // Get all stats in a single optimized query
+    const result = await pool.query(`
+      SELECT
+        (SELECT COUNT(DISTINCT player_id)
+         FROM giperarena.game_sessions
+         WHERE status IN ('active', 'waiting')) as players_online,
 
-      // Count active game sessions
-      supabaseAdmin
-        .from('game_sessions')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'active'),
+        (SELECT COUNT(*)
+         FROM giperarena.game_sessions
+         WHERE status = 'active') as games_active,
 
-      // Count active tournaments
-      supabaseAdmin
-        .from('tournaments')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'active'),
+        (SELECT COUNT(*)
+         FROM giperarena.tournaments
+         WHERE status = 'active') as tournaments_live,
 
-      // Sum all tournament prize pools
-      supabaseAdmin
-        .from('tournaments')
-        .select('prize_pool')
-        .in('status', ['upcoming', 'active']),
+        (SELECT COALESCE(SUM(prize_pool), 0)
+         FROM giperarena.tournaments
+         WHERE status IN ('upcoming', 'active')) as total_prize_pool,
 
-      // Count active arenas
-      supabaseAdmin
-        .from('arenas')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'active'),
-    ]);
+        (SELECT COUNT(*)
+         FROM giperarena.arenas
+         WHERE status = 'active') as arenas_active
+    `);
 
-    // Count unique players (remove duplicates)
-    const uniquePlayers = new Set(
-      playersOnlineResult.data?.map((session) => session.player_id) || []
-    );
-
-    // Calculate total prize pool
-    const totalPrizePool = prizepoolResult.data?.reduce(
-      (sum, tournament) => sum + parseFloat(tournament.prize_pool || '0'),
-      0
-    ) || 0;
+    const row = result.rows[0];
 
     const stats: LiveStats = {
-      playersOnline: uniquePlayers.size,
-      gamesActive: gamesActiveResult.count || 0,
-      tournamentsLive: tournamentsLiveResult.count || 0,
-      totalPrizePool: Math.round(totalPrizePool),
-      arenasActive: arenasActiveResult.count || 0,
+      playersOnline: parseInt(row.players_online) || 0,
+      gamesActive: parseInt(row.games_active) || 0,
+      tournamentsLive: parseInt(row.tournaments_live) || 0,
+      totalPrizePool: Math.round(parseFloat(row.total_prize_pool) || 0),
+      arenasActive: parseInt(row.arenas_active) || 0,
     };
 
     // Cache for 30 seconds
@@ -108,35 +84,30 @@ export class StatsService {
         break;
     }
 
-    let sessionsQuery = supabaseAdmin
-      .from('game_sessions')
-      .select('id, player_id, score, duration_seconds', { count: 'exact', head: false })
-      .eq('status', 'completed');
+    let sql = `
+      SELECT
+        COUNT(*) as total_games,
+        COUNT(DISTINCT player_id) as unique_players,
+        COALESCE(AVG(score), 0) as avg_score,
+        COALESCE(AVG(duration_seconds), 0) as avg_duration
+      FROM giperarena.game_sessions
+      WHERE status = 'completed'
+    `;
 
+    const params: any[] = [];
     if (startDate) {
-      sessionsQuery = sessionsQuery.gte('created_at', startDate);
+      sql += ` AND created_at >= $1`;
+      params.push(startDate);
     }
 
-    const { data: sessions, count: totalGames } = await sessionsQuery;
-
-    // Count unique players
-    const uniquePlayers = new Set(sessions?.map((s) => s.player_id) || []);
-
-    // Calculate average score
-    const avgScore = sessions?.length
-      ? sessions.reduce((sum, s) => sum + (s.score || 0), 0) / sessions.length
-      : 0;
-
-    // Calculate average duration
-    const avgDuration = sessions?.length
-      ? sessions.reduce((sum, s) => sum + (s.duration_seconds || 0), 0) / sessions.length
-      : 0;
+    const result = await pool.query(sql, params);
+    const row = result.rows[0];
 
     return {
-      totalGames: totalGames || 0,
-      uniquePlayers: uniquePlayers.size,
-      averageScore: Math.round(avgScore),
-      averageDuration: Math.round(avgDuration),
+      totalGames: parseInt(row.total_games) || 0,
+      uniquePlayers: parseInt(row.unique_players) || 0,
+      averageScore: Math.round(parseFloat(row.avg_score) || 0),
+      averageDuration: Math.round(parseFloat(row.avg_duration) || 0),
       period,
     };
   }

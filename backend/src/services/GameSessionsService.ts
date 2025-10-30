@@ -1,47 +1,64 @@
 // Game Sessions Service - Business logic for game session operations
 import { supabaseAdmin } from '../config/supabase';
+import { pool } from '../config/database';
 import redis from '../config/redis';
 
 export class GameSessionsService {
   // Get game sessions with filters
   async getGameSessions(filters: any, limit: number, offset: number) {
-    let query = supabaseAdmin
-      .from('game_sessions')
-      .select(
-        `
-        id,
-        arena_id,
-        player_id,
-        status,
-        score,
-        duration_seconds,
-        replay_url,
-        started_at,
-        ended_at,
-        created_at,
-        arenas(id, name, game_type, location_address),
-        users(id, username, avatar_url)
-      `
-      );
+    let sql = `
+      SELECT
+        gs.id,
+        gs.arena_id,
+        gs.player_id,
+        gs.status,
+        gs.score,
+        gs.duration_seconds,
+        gs.replay_url,
+        gs.started_at,
+        gs.ended_at,
+        gs.created_at,
+        jsonb_build_object(
+          'id', a.id,
+          'name', a.name,
+          'game_type', a.game_type,
+          'location_address', a.location_address
+        ) as arenas,
+        jsonb_build_object(
+          'id', u.id,
+          'username', u.username,
+          'avatar_url', u.avatar_url
+        ) as users
+      FROM giperarena.game_sessions gs
+      LEFT JOIN giperarena.arenas a ON gs.arena_id = a.id
+      LEFT JOIN giperarena.users u ON gs.player_id = u.id
+      WHERE 1=1
+    `;
 
-    // Apply filters
+    const params: any[] = [];
+    let paramIndex = 1;
+
     if (filters.arena_id) {
-      query = query.eq('arena_id', filters.arena_id);
+      sql += ` AND gs.arena_id = $${paramIndex}`;
+      params.push(filters.arena_id);
+      paramIndex++;
     }
     if (filters.player_id) {
-      query = query.eq('player_id', filters.player_id);
+      sql += ` AND gs.player_id = $${paramIndex}`;
+      params.push(filters.player_id);
+      paramIndex++;
     }
     if (filters.status) {
-      query = query.eq('status', filters.status);
+      sql += ` AND gs.status = $${paramIndex}`;
+      params.push(filters.status);
+      paramIndex++;
     }
 
-    const { data, error } = await query
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+    sql += ` ORDER BY gs.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(limit, offset);
 
-    if (error) throw error;
-
-    return data;
+    const result = await pool.query(sql, params);
+    return result.rows;
   }
 
   // Get game session by ID
