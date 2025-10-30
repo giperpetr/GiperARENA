@@ -13,7 +13,7 @@ export class StatsController {
    * GET /stats/live
    * Get current live platform statistics
    */
-  async getLiveStats(req: Request, res: Response) {
+  async getLiveStats(_req: Request, res: Response) {
     try {
       const stats = await this.statsService.getLiveStats();
 
