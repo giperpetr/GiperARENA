@@ -114,7 +114,7 @@ export default function ArenaDetailClient({ arena, recentSessions }: ArenaDetail
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {(arena.metadata?.features || arena.features || []).map((feature) => (
+                  {(arena.metadata?.features || arena.features || []).map((feature: string) => (
                     <Badge key={feature} variant="outline">
                       {feature}
                     </Badge>

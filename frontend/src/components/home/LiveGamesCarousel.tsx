@@ -94,7 +94,7 @@ export function LiveGamesCarousel() {
           </Button>
           <Button
             onClick={scrollRight}
-            disabled={scrollPosition >= (MOCK_LIVE_GAMES.length - visibleItems) * itemWidth}
+            disabled={scrollPosition >= (liveSessions.length - visibleItems) * itemWidth}
             className="w-10 h-10 p-0 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 disabled:opacity-30"
           >
             <ChevronRightIcon size={20} className="text-white" />

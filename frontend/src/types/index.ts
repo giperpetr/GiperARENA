@@ -40,7 +40,11 @@ export interface Arena {
   total_games: number;
   total_revenue: number;
   is_verified: boolean;
-  metadata: Record<string, any>;
+  metadata: {
+    features?: string[];
+    devices?: any[];
+    [key: string]: any;
+  };
   created_at: string;
   updated_at: string;
 }

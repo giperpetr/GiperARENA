@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import ArenaDetailClient from './ArenaDetailClient';
 import { api } from '@/lib/api-client';
+import type { Arena } from '@/types';
 
 // Recent sessions mock data (will be fetched from API in future)
 const RECENT_SESSIONS = [
@@ -15,11 +16,14 @@ export default async function ArenaDetailPage({ params }: { params: Promise<{ id
   const arenaId = resolvedParams.id;
 
   // Fetch arena data from API
-  let arena;
+  let arena: Arena | null = null;
   try {
     arena = await api.getArenaById(arenaId);
   } catch (error) {
     console.error('Failed to fetch arena:', error);
+  }
+
+  if (!arena) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -51,7 +55,7 @@ export default async function ArenaDetailPage({ params }: { params: Promise<{ id
                 <h1 className="text-4xl font-bold text-gradient-cyan-purple">
                   {arena.name}
                 </h1>
-                {(arena.is_verified || arena.verified) && (
+                {arena.is_verified && (
                   <Badge variant="success">✓ Верифицирована</Badge>
                 )}
               </div>
