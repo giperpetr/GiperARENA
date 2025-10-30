@@ -6,31 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 interface ArenaDetailClientProps {
-  arena: {
-    id: string;
-    name: string;
-    location: string;
-    country: string;
-    city: string;
-    game_type: string;
-    status: string;
-    rating: number;
-    total_sessions: number;
-    hourly_rate: number;
-    pricing_model: string;
-    description: string;
-    features: string[];
-    operator: {
-      name: string;
-      verified: boolean;
-    };
-    devices: Array<{
-      id: string;
-      name: string;
-      status: string;
-      image: string;
-    }>;
-  };
+  arena: any; // Real API structure - flexible typing for now
   recentSessions: Array<{
     player: string;
     score: number;
@@ -42,12 +18,17 @@ interface ArenaDetailClientProps {
 export default function ArenaDetailClient({ arena, recentSessions }: ArenaDetailClientProps) {
   const [isPlaying, setIsPlaying] = useState(false);
 
+  // Calculate hourly rate from price_per_minute
+  const hourlyRate = arena.price_per_minute
+    ? (parseFloat(arena.price_per_minute) * 60).toFixed(0)
+    : '0';
+
   return (
     <>
       {/* Start Game Button in Header */}
       <div className="glass rounded-lg p-6 lg:min-w-[280px]">
         <p className="text-sm text-muted-foreground mb-2">Цена за час</p>
-        <p className="text-3xl font-bold text-primary mb-4">{arena.hourly_rate} PAC</p>
+        <p className="text-3xl font-bold text-primary mb-4">{hourlyRate} {arena.currency || 'PAC'}</p>
         <Button variant="neon" size="lg" className="w-full" disabled={isPlaying}>
           {isPlaying ? 'В игре...' : 'Начать играть'}
         </Button>
@@ -133,7 +114,7 @@ export default function ArenaDetailClient({ arena, recentSessions }: ArenaDetail
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {arena.features.map((feature) => (
+                  {(arena.metadata?.features || arena.features || []).map((feature) => (
                     <Badge key={feature} variant="outline">
                       {feature}
                     </Badge>
@@ -177,51 +158,55 @@ export default function ArenaDetailClient({ arena, recentSessions }: ArenaDetail
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Available Devices */}
-            <Card glow>
-              <CardHeader>
-                <CardTitle>Доступные устройства</CardTitle>
-                <CardDescription>{arena.devices.length} дронов</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {arena.devices.map((device) => (
-                  <div key={device.id} className="flex items-center justify-between p-3 rounded-lg glass">
-                    <div className="flex items-center gap-3">
-                      <div className="text-2xl">{device.image}</div>
-                      <div>
-                        <p className="font-semibold">{device.name}</p>
-                        <Badge
-                          variant={device.status === 'available' ? 'success' : 'warning'}
-                          className="text-xs mt-1"
-                        >
-                          {device.status === 'available' ? 'Доступен' : 'Занят'}
-                        </Badge>
+            {/* Available Devices - Only show if devices data exists */}
+            {arena.devices && arena.devices.length > 0 && (
+              <Card glow>
+                <CardHeader>
+                  <CardTitle>Доступные устройства</CardTitle>
+                  <CardDescription>{arena.devices.length} дронов</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {arena.devices.map((device: any) => (
+                    <div key={device.id} className="flex items-center justify-between p-3 rounded-lg glass">
+                      <div className="flex items-center gap-3">
+                        <div className="text-2xl">{device.image || '🚁'}</div>
+                        <div>
+                          <p className="font-semibold">{device.name}</p>
+                          <Badge
+                            variant={device.status === 'available' ? 'success' : 'warning'}
+                            className="text-xs mt-1"
+                          >
+                            {device.status === 'available' ? 'Доступен' : 'Занят'}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
 
-            {/* Operator Info */}
-            <Card glow>
-              <CardHeader>
-                <CardTitle>Оператор</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-3">
-                  <div className="text-3xl">🏢</div>
-                  <div>
-                    <p className="font-semibold">{arena.operator.name}</p>
-                    {arena.operator.verified && (
-                      <Badge variant="success" className="text-xs mt-1">
-                        ✓ Верифицирован
-                      </Badge>
-                    )}
+            {/* Operator Info - Only show if operator data exists */}
+            {arena.operator && (
+              <Card glow>
+                <CardHeader>
+                  <CardTitle>Оператор</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">🏢</div>
+                    <div>
+                      <p className="font-semibold">{arena.operator.name}</p>
+                      {arena.operator.verified && (
+                        <Badge variant="success" className="text-xs mt-1">
+                          ✓ Верифицирован
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Rules */}
             <Card glow>

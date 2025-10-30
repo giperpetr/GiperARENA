@@ -51,7 +51,7 @@ export default async function ArenaDetailPage({ params }: { params: Promise<{ id
                 <h1 className="text-4xl font-bold text-gradient-cyan-purple">
                   {arena.name}
                 </h1>
-                {arena.verified && (
+                {(arena.is_verified || arena.verified) && (
                   <Badge variant="success">✓ Верифицирована</Badge>
                 )}
               </div>
