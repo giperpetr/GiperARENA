@@ -9,7 +9,7 @@ const upload = multer({
   limits: {
     fileSize: 52428800, // 50MB
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     // Allowed mime types
     const allowedMimeTypes = [
       'image/jpeg',
@@ -88,13 +88,13 @@ export class MediaFilesController {
         }
       );
 
-      res.status(201).json({
+      return res.status(201).json({
         message: 'File uploaded successfully',
         data: result,
       });
     } catch (error: any) {
       console.error('Upload error:', error);
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Upload failed',
         message: error.message,
       });
@@ -117,12 +117,12 @@ export class MediaFilesController {
         });
       }
 
-      res.json({
+      return res.json({
         data: file,
       });
     } catch (error: any) {
       console.error('Get file error:', error);
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Failed to get file',
         message: error.message,
       });
@@ -140,7 +140,7 @@ export class MediaFilesController {
 
       const url = await this.mediaFilesService.getFileUrl(fileId, expiresIn);
 
-      res.json({
+      return res.json({
         data: {
           url,
           expiresIn,
@@ -148,7 +148,7 @@ export class MediaFilesController {
       });
     } catch (error: any) {
       console.error('Get URL error:', error);
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Failed to generate file URL',
         message: error.message,
       });
@@ -170,13 +170,13 @@ export class MediaFilesController {
         fileType
       );
 
-      res.json({
+      return res.json({
         data: files,
         count: files.length,
       });
     } catch (error: any) {
       console.error('Get entity files error:', error);
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Failed to get entity files',
         message: error.message,
       });
@@ -203,7 +203,7 @@ export class MediaFilesController {
 
       await this.mediaFilesService.deleteFile(fileId, userId);
 
-      res.json({
+      return res.json({
         message: 'File deleted successfully',
       });
     } catch (error: any) {
@@ -216,7 +216,7 @@ export class MediaFilesController {
         });
       }
 
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Failed to delete file',
         message: error.message,
       });

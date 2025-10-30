@@ -52,10 +52,10 @@ export const redis = {
     }
   },
 
-  async del(key: string): Promise<void> {
+  async del(...keys: string[]): Promise<void> {
     if (!redisAvailable) return;
     try {
-      await redisClient.del(key);
+      await redisClient.del(...keys);
     } catch (error) {
       console.warn('Redis del error:', error);
     }
@@ -87,6 +87,16 @@ export const redis = {
     } catch (error) {
       console.warn('Redis pttl error:', error);
       return -1;
+    }
+  },
+
+  async keys(pattern: string): Promise<string[]> {
+    if (!redisAvailable) return [];
+    try {
+      return await redisClient.keys(pattern);
+    } catch (error) {
+      console.warn('Redis keys error:', error);
+      return [];
     }
   },
 

@@ -54,7 +54,7 @@ export class MediaFilesService {
     const filePath = this.generateFilePath(options.entity_type, options.entity_id, options.file_type, uniqueFilename);
 
     // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+    const { error: uploadError } = await supabaseAdmin.storage
       .from(this.bucket)
       .upload(filePath, fileBuffer, {
         contentType: mimeType,
