@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   GamepadIcon,
   UsersIcon,
@@ -14,106 +16,102 @@ import {
   FilterIcon,
   PlayIcon
 } from '@/components/ui/icons';
+import { api } from '@/lib/api-client';
+import Link from 'next/link';
 
-// Mock data for games
-const GAMES = [
-  {
-    id: 1,
-    name: 'Robot Arena Battle',
+// Arena type translations and icons
+const ARENA_TYPE_INFO: Record<string, { name: string; emoji: string; description: string }> = {
+  combat: {
+    name: 'Бои роботов',
     emoji: '🤖',
-    type: 'Combat',
-    players: 1248,
-    activeSessions: 12,
-    avgDuration: '8 min',
-    difficulty: 'Medium',
-    prizePool: '$5,000'
+    description: 'Управляйте боевыми роботами в реальных поединках'
   },
-  {
-    id: 2,
-    name: 'Drone Racing Championship',
+  racing: {
+    name: 'Гонки дронов',
     emoji: '🚁',
-    type: 'Racing',
-    players: 892,
-    activeSessions: 8,
-    avgDuration: '5 min',
-    difficulty: 'Hard',
-    prizePool: '$3,500'
+    description: 'Пилотируйте дроны на скоростных трассах'
   },
-  {
-    id: 3,
-    name: 'Crawler Maze Challenge',
+  crawler: {
+    name: 'Гусеничные машины',
     emoji: '🕷️',
-    type: 'Puzzle',
-    players: 645,
-    activeSessions: 5,
-    avgDuration: '12 min',
-    difficulty: 'Easy',
-    prizePool: '$2,000'
+    description: 'Проходите сложные препятствия на краулерах'
   },
-  {
-    id: 4,
-    name: 'Tank Battle Royale',
+  tank: {
+    name: 'Танковые бои',
     emoji: '🚜',
-    type: 'Combat',
-    players: 1523,
-    activeSessions: 15,
-    avgDuration: '10 min',
-    difficulty: 'Hard',
-    prizePool: '$8,000'
+    description: 'Сражения на радиоуправляемых танках'
   },
-  {
-    id: 5,
-    name: 'Parkour Runner Pro',
+  parkour: {
+    name: 'Паркур',
     emoji: '🏃',
-    type: 'Racing',
-    players: 721,
-    activeSessions: 6,
-    avgDuration: '6 min',
-    difficulty: 'Medium',
-    prizePool: '$2,500'
+    description: 'Преодолевайте препятствия на скорость'
   },
-  {
-    id: 6,
-    name: 'Strategic Command',
+  strategy: {
+    name: 'Стратегия',
     emoji: '⚔️',
-    type: 'Strategy',
-    players: 456,
-    activeSessions: 3,
-    avgDuration: '15 min',
-    difficulty: 'Expert',
-    prizePool: '$10,000'
+    description: 'Тактические сражения с множеством юнитов'
   }
-];
+};
 
-const GAME_TYPES = ['All', 'Combat', 'Racing', 'Puzzle', 'Strategy'];
-const DIFFICULTY_LEVELS = ['All', 'Easy', 'Medium', 'Hard', 'Expert'];
+interface GameMode {
+  arena_type: string;
+  count: number;
+  activeGames: number;
+  totalPlayers: number;
+}
 
 export default function GamesPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState('All');
-  const [selectedDifficulty, setSelectedDifficulty] = useState('All');
+  const [selectedType, setSelectedType] = useState<string | null>(null);
 
-  const filteredGames = GAMES.filter(game => {
-    const matchesSearch = game.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = selectedType === 'All' || game.type === selectedType;
-    const matchesDifficulty = selectedDifficulty === 'All' || game.difficulty === selectedDifficulty;
-    return matchesSearch && matchesType && matchesDifficulty;
+  // Fetch all arenas to build game modes
+  const { data: arenas, isLoading, error } = useQuery({
+    queryKey: ['arenas-for-games'],
+    queryFn: async () => {
+      const response = await api.getArenas({ limit: 1000 });
+      return Array.isArray(response) ? response : [];
+    },
   });
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'Easy':
-        return 'bg-green-500/20 text-green-400 border-green-500/30';
-      case 'Medium':
-        return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
-      case 'Hard':
-        return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
-      case 'Expert':
-        return 'bg-red-500/20 text-red-400 border-red-500/30';
-      default:
-        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
-    }
-  };
+  // Fetch live stats for active games
+  const { data: liveStats } = useQuery({
+    queryKey: ['stats', 'live'],
+    queryFn: async () => {
+      const response = await fetch('https://api.giperarena.space/api/v1/stats/live');
+      if (!response.ok) return null;
+      const json = await response.json();
+      return json.data;
+    },
+    refetchInterval: 30000,
+  });
+
+  // Group arenas by type to create game modes
+  const gameModes: GameMode[] = arenas
+    ? Object.entries(
+        arenas.reduce((acc: Record<string, any[]>, arena: any) => {
+          const type = arena.arena_type || 'other';
+          if (!acc[type]) acc[type] = [];
+          acc[type].push(arena);
+          return acc;
+        }, {})
+      ).map(([type, arenasOfType]) => ({
+        arena_type: type,
+        count: arenasOfType.length,
+        activeGames: arenasOfType.filter((a: any) => a.status === 'active').length,
+        totalPlayers: arenasOfType.reduce((sum: number, a: any) => sum + (a.total_games || 0), 0),
+      }))
+    : [];
+
+  const filteredModes = gameModes.filter(mode => {
+    const info = ARENA_TYPE_INFO[mode.arena_type];
+    if (!info) return false;
+
+    const matchesSearch = info.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = !selectedType || mode.arena_type === selectedType;
+    return matchesSearch && matchesType;
+  });
+
+  const allTypes = Array.from(new Set(gameModes.map(m => m.arena_type)));
 
   return (
     <div className="min-h-screen py-12 px-4 md:px-6">
@@ -121,147 +119,137 @@ export default function GamesPage() {
         {/* Header */}
         <div className="mb-10 lg:mb-12">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gradient-cyan-purple mb-4">
-            Game Modes
+            Игровые режимы
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl">
-            Choose from various game modes and compete with players worldwide for prizes and glory
+            Выбирайте из различных режимов игры и соревнуйтесь с игроками по всему миру за призы и славу
           </p>
-        </div>
-
-        {/* Filters */}
-        <div className="mb-10 space-y-6">
-          {/* Search */}
-          <div className="relative max-w-md">
-            <Input
-              type="text"
-              placeholder="Search games..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-12 bg-white/5 border-white/10 focus:border-cyan-500/50"
-            />
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-              <SearchIcon size={18} />
-            </span>
-          </div>
-
-          {/* Filter Chips */}
-          <div className="flex flex-wrap gap-4">
-            {/* Game Type Filter */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <FilterIcon size={14} />
-                <span>Type:</span>
+          {liveStats && (
+            <div className="flex gap-4 mt-4 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <span><span className="font-bold">{liveStats.gamesActive}</span> активных игр</span>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {GAME_TYPES.map((type) => (
-                  <Button
-                    key={type}
-                    variant={selectedType === type ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setSelectedType(type)}
-                    className={selectedType === type ? 'bg-cyan-500 hover:bg-cyan-600' : ''}
-                  >
-                    {type}
-                  </Button>
-                ))}
+              <div className="flex items-center gap-2">
+                <UsersIcon size={14} className="text-cyan-400" />
+                <span><span className="font-bold">{liveStats.playersOnline}</span> игроков онлайн</span>
               </div>
             </div>
-
-            {/* Difficulty Filter */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <TrophyIcon size={14} />
-                <span>Difficulty:</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {DIFFICULTY_LEVELS.map((difficulty) => (
-                  <Button
-                    key={difficulty}
-                    variant={selectedDifficulty === difficulty ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setSelectedDifficulty(difficulty)}
-                    className={selectedDifficulty === difficulty ? 'bg-purple-500 hover:bg-purple-600' : ''}
-                  >
-                    {difficulty}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
+          )}
         </div>
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Card key={i} className="glass-hover p-6">
+                <Skeleton className="h-16 w-16 rounded-xl mb-4" />
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-full mb-4" />
+                <Skeleton className="h-20 w-full" />
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !isLoading && (
+          <div className="text-center py-12">
+            <GamepadIcon size={64} className="mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-2xl font-bold mb-2">Ошибка загрузки</h3>
+            <p className="text-muted-foreground mb-4">
+              Не удалось загрузить игровые режимы
+            </p>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Обновить страницу
+            </Button>
+          </div>
+        )}
 
         {/* Games Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredGames.map((game) => (
-            <Card
-              key={game.id}
-              className="glass-hover hover-lift cursor-pointer group"
-            >
-              <div className="p-6 space-y-4">
-                {/* Game Icon & Header */}
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-gradient-to-br from-cyan-900/50 to-purple-900/50 rounded-xl flex items-center justify-center text-4xl">
-                      {game.emoji}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-xl text-white group-hover:text-cyan-400 transition-colors">
-                        {game.name}
-                      </h3>
-                      <Badge className="mt-1 bg-purple-500/20 text-purple-400 border-purple-500/30">
-                        {game.type}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
+        {!isLoading && !error && filteredModes.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredModes.map((mode) => {
+              const info = ARENA_TYPE_INFO[mode.arena_type];
+              if (!info) return null;
 
-                {/* Stats */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <UsersIcon size={16} className="text-cyan-400" />
-                    <span>{game.players} players</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <PlayIcon size={16} className="text-purple-400" />
-                    <span>{game.activeSessions} active</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <ClockIcon size={16} className="text-blue-400" />
-                    <span>{game.avgDuration}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <TrophyIcon size={16} className="text-yellow-400" />
-                    <span className="font-bold text-yellow-400">{game.prizePool}</span>
-                  </div>
-                </div>
+              return (
+                <Link
+                  key={mode.arena_type}
+                  href={`/arenas?arena_type=${mode.arena_type}`}
+                >
+                  <Card className="glass-hover hover-lift cursor-pointer group h-full">
+                    <div className="p-6 space-y-4">
+                      {/* Game Icon & Header */}
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 bg-gradient-to-br from-cyan-900/50 to-purple-900/50 rounded-xl flex items-center justify-center text-4xl">
+                            {info.emoji}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-xl text-white group-hover:text-cyan-400 transition-colors">
+                              {info.name}
+                            </h3>
+                            <Badge className="mt-1 bg-purple-500/20 text-purple-400 border-purple-500/30">
+                              {mode.count} {mode.count === 1 ? 'арена' : 'арен'}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
 
-                {/* Difficulty Badge */}
-                <div className="flex items-center justify-between pt-2">
-                  <Badge className={`${getDifficultyColor(game.difficulty)} border`}>
-                    {game.difficulty}
-                  </Badge>
-                  <Button
-                    variant="neon"
-                    size="sm"
-                    className="group-hover:scale-105 transition-transform"
-                  >
-                    <PlayIcon size={14} className="mr-1" />
-                    Play Now
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+                      {/* Description */}
+                      <p className="text-sm text-muted-foreground">
+                        {info.description}
+                      </p>
+
+                      {/* Stats */}
+                      <div className="grid grid-cols-2 gap-3 text-sm pt-2">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <PlayIcon size={16} className="text-cyan-400" />
+                          <span>{mode.activeGames} активных</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <TrophyIcon size={16} className="text-yellow-400" />
+                          <span>{mode.totalPlayers} игр</span>
+                        </div>
+                      </div>
+
+                      {/* Action */}
+                      <div className="flex items-center justify-between pt-2">
+                        <Button
+                          variant="neon"
+                          size="sm"
+                          className="group-hover:scale-105 transition-transform w-full"
+                        >
+                          <PlayIcon size={14} className="mr-1" />
+                          Играть сейчас
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        )}
 
         {/* Empty State */}
-        {filteredGames.length === 0 && (
+        {!isLoading && !error && filteredModes.length === 0 && (
           <div className="text-center py-16">
             <GamepadIcon size={64} className="mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-2xl font-bold text-white mb-2">No games found</h3>
-            <p className="text-muted-foreground">
-              Try adjusting your filters or search query
+            <h3 className="text-2xl font-bold text-white mb-2">Игровые режимы не найдены</h3>
+            <p className="text-muted-foreground mb-4">
+              На данный момент нет доступных арен с этим типом игры
             </p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedType(null);
+              }}
+            >
+              Сбросить фильтры
+            </Button>
           </div>
         )}
       </div>

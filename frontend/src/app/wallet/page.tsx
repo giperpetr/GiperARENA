@@ -1,68 +1,14 @@
 'use client';
 
-
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-// Mock data
-const MOCK_WALLET = {
-  gac_balance: 1250.5,
-  pac_balance: 8540.25,
-  staked_amount: 5000,
-  staking_tier: 'silver',
-  stake_unlock_date: '2025-03-15',
-};
-
-const MOCK_TRANSACTIONS = [
-  {
-    id: '1',
-    type: 'deposit',
-    amount: 1000,
-    token: 'PAC',
-    status: 'completed',
-    timestamp: '2025-01-20T10:30:00Z',
-    hash: '0xabcd...1234',
-  },
-  {
-    id: '2',
-    type: 'game_fee',
-    amount: -50,
-    token: 'PAC',
-    status: 'completed',
-    timestamp: '2025-01-20T11:00:00Z',
-    reference: 'Tokyo Cyber Arena',
-  },
-  {
-    id: '3',
-    type: 'stake',
-    amount: -5000,
-    token: 'PAC',
-    status: 'completed',
-    timestamp: '2025-01-19T15:00:00Z',
-  },
-  {
-    id: '4',
-    type: 'tournament_reward',
-    amount: 500,
-    token: 'PAC',
-    status: 'completed',
-    timestamp: '2025-01-18T20:00:00Z',
-    reference: 'Tokyo Spring Championship',
-  },
-  {
-    id: '5',
-    type: 'withdrawal',
-    amount: -200,
-    token: 'GAC',
-    status: 'pending',
-    timestamp: '2025-01-20T12:00:00Z',
-    hash: '0xef12...5678',
-  },
-];
+import { Skeleton } from '@/components/ui/skeleton';
+import { api } from '@/lib/api-client';
 
 const TRANSACTION_TYPES: Record<string, { label: string; icon: string }> = {
   deposit: { label: 'Пополнение', icon: '⬇️' },
@@ -82,9 +28,63 @@ export default function WalletPage() {
   const [stakeAmount, setStakeAmount] = useState('');
   const [selectedDuration, setSelectedDuration] = useState(30);
 
-  const daysUntilUnlock = Math.ceil(
-    (new Date(MOCK_WALLET.stake_unlock_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-  );
+  // Fetch current user
+  const { data: user, isLoading: userLoading, error: userError } = useQuery({
+    queryKey: ['user', 'me'],
+    queryFn: async () => {
+      const response: any = await api.getCurrentUser();
+      return response.data || response;
+    },
+  });
+
+  // Fetch wallet data
+  const { data: wallet, isLoading: walletLoading } = useQuery({
+    queryKey: ['wallet', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const response: any = await api.getWallet(user.id);
+      return response.data || response;
+    },
+    enabled: !!user?.id,
+  });
+
+  // Fetch transactions
+  const { data: transactions = [], isLoading: transactionsLoading } = useQuery({
+    queryKey: ['transactions', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const response: any = await api.getTransactions(user.id, { limit: 10 });
+      return response.data || response || [];
+    },
+    enabled: !!user?.id,
+  });
+
+  const daysUntilUnlock = wallet?.stake_unlock_date
+    ? Math.ceil((new Date(wallet.stake_unlock_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : 0;
+
+  // Auth error handling
+  if (userError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card glow className="max-w-md">
+          <CardHeader>
+            <CardTitle>Требуется авторизация</CardTitle>
+            <CardDescription>
+              Войдите в систему, чтобы просмотреть ваш кошелёк
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button variant="neon" className="w-full" onClick={() => (window.location.href = '/auth/login')}>
+              Войти
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const isLoading = userLoading || walletLoading;
 
   return (
     <div className="min-h-screen bg-background">
@@ -114,14 +114,18 @@ export default function WalletPage() {
                   <CardDescription>Токен управления платформой</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-4xl font-bold text-primary mb-6">
-                    {MOCK_WALLET.gac_balance.toLocaleString()}
-                  </p>
+                  {isLoading ? (
+                    <Skeleton className="h-12 w-32 mb-6" />
+                  ) : (
+                    <p className="text-4xl font-bold text-primary mb-6">
+                      {(wallet?.gac_balance || 0).toLocaleString()}
+                    </p>
+                  )}
                   <div className="flex gap-2">
-                    <Button variant="neon" className="flex-1">
+                    <Button variant="neon" className="flex-1" disabled={isLoading}>
                       Купить
                     </Button>
-                    <Button variant="outline" className="flex-1">
+                    <Button variant="outline" className="flex-1" disabled={isLoading}>
                       Продать
                     </Button>
                   </div>
@@ -138,14 +142,18 @@ export default function WalletPage() {
                   <CardDescription>Игровая валюта</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-4xl font-bold text-secondary mb-6">
-                    {MOCK_WALLET.pac_balance.toLocaleString()}
-                  </p>
+                  {isLoading ? (
+                    <Skeleton className="h-12 w-32 mb-6" />
+                  ) : (
+                    <p className="text-4xl font-bold text-secondary mb-6">
+                      {(wallet?.pac_balance || 0).toLocaleString()}
+                    </p>
+                  )}
                   <div className="flex gap-2">
-                    <Button variant="secondary" className="flex-1">
+                    <Button variant="secondary" className="flex-1" disabled={isLoading}>
                       Купить
                     </Button>
-                    <Button variant="outline" className="flex-1">
+                    <Button variant="outline" className="flex-1" disabled={isLoading}>
                       Продать
                     </Button>
                   </div>
@@ -308,53 +316,67 @@ export default function WalletPage() {
                 <CardDescription>Последние операции</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {MOCK_TRANSACTIONS.map((tx) => (
-                    <div
-                      key={tx.id}
-                      className="flex items-center justify-between p-4 rounded-lg glass hover-lift"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="text-2xl">
-                          {TRANSACTION_TYPES[tx.type]?.icon || '💸'}
-                        </div>
-                        <div>
-                          <p className="font-semibold">
-                            {TRANSACTION_TYPES[tx.type]?.label || tx.type}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(tx.timestamp).toLocaleString('ru-RU', {
-                              month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </p>
-                          {tx.reference && (
-                            <p className="text-xs text-muted-foreground">{tx.reference}</p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p
-                          className={`font-bold ${tx.amount > 0 ? 'text-green-500' : 'text-foreground'}`}
+                {transactionsLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-20 w-full" />
+                    ))}
+                  </div>
+                ) : transactions.length > 0 ? (
+                  <>
+                    <div className="space-y-3">
+                      {transactions.map((tx: any) => (
+                        <div
+                          key={tx.id}
+                          className="flex items-center justify-between p-4 rounded-lg glass hover-lift"
                         >
-                          {tx.amount > 0 ? '+' : ''}
-                          {tx.amount} {tx.token}
-                        </p>
-                        <Badge
-                          variant={tx.status === 'completed' ? 'success' : 'warning'}
-                          className="text-xs mt-1"
-                        >
-                          {tx.status === 'completed' ? 'Завершено' : 'В обработке'}
-                        </Badge>
-                      </div>
+                          <div className="flex items-center gap-3">
+                            <div className="text-2xl">
+                              {TRANSACTION_TYPES[tx.transaction_type]?.icon || '💸'}
+                            </div>
+                            <div>
+                              <p className="font-semibold">
+                                {TRANSACTION_TYPES[tx.transaction_type]?.label || tx.transaction_type}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(tx.created_at).toLocaleString('ru-RU', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </p>
+                              {tx.description && (
+                                <p className="text-xs text-muted-foreground">{tx.description}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p
+                              className={`font-bold ${tx.amount > 0 ? 'text-green-500' : 'text-foreground'}`}
+                            >
+                              {tx.amount > 0 ? '+' : ''}
+                              {tx.amount} {tx.token_type}
+                            </p>
+                            <Badge
+                              variant={tx.status === 'completed' ? 'success' : 'warning'}
+                              className="text-xs mt-1"
+                            >
+                              {tx.status === 'completed' ? 'Завершено' : tx.status === 'pending' ? 'В обработке' : tx.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-                <Button variant="outline" className="w-full mt-4">
-                  Показать все
-                </Button>
+                    <Button variant="outline" className="w-full mt-4">
+                      Показать все
+                    </Button>
+                  </>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>Транзакций пока нет</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -368,43 +390,71 @@ export default function WalletPage() {
                 <CardDescription>Ваши замороженные токены</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="text-center p-4 rounded-lg glass">
-                  <p className="text-sm text-muted-foreground mb-1">Застейкано</p>
-                  <p className="text-3xl font-bold text-neon-purple">
-                    {MOCK_WALLET.staked_amount.toLocaleString()}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">PAC</p>
-                </div>
+                {isLoading ? (
+                  <div className="space-y-4">
+                    <Skeleton className="h-24 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                  </div>
+                ) : wallet?.staked_amount && wallet.staked_amount > 0 ? (
+                  <>
+                    <div className="text-center p-4 rounded-lg glass">
+                      <p className="text-sm text-muted-foreground mb-1">Застейкано</p>
+                      <p className="text-3xl font-bold text-neon-purple">
+                        {wallet.staked_amount.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">PAC</p>
+                    </div>
 
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Уровень</span>
-                    <Badge variant="secondary">Silver</Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">APY</span>
-                    <span className="font-bold text-primary">8%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Разблокировка</span>
-                    <span className="font-bold">{daysUntilUnlock} дней</span>
-                  </div>
-                </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Уровень</span>
+                        <Badge variant="secondary">
+                          {wallet.staking_tier ? wallet.staking_tier.charAt(0).toUpperCase() + wallet.staking_tier.slice(1) : 'Bronze'}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">APY</span>
+                        <span className="font-bold text-primary">8%</span>
+                      </div>
+                      {daysUntilUnlock > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Разблокировка</span>
+                          <span className="font-bold">{daysUntilUnlock} дней</span>
+                        </div>
+                      )}
+                    </div>
 
-                <div className="pt-4 border-t border-border">
-                  <p className="text-xs text-muted-foreground mb-2">Progress</p>
-                  <div className="h-2 bg-space-border-gray rounded-full overflow-hidden mb-1">
-                    <div
-                      className="h-full bg-gradient-to-r from-primary to-secondary"
-                      style={{ width: '65%' }}
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">65% времени прошло</p>
-                </div>
+                    {daysUntilUnlock > 0 && wallet.stake_unlock_date && (
+                      <>
+                        <div className="pt-4 border-t border-border">
+                          <p className="text-xs text-muted-foreground mb-2">Progress</p>
+                          <div className="h-2 bg-space-border-gray rounded-full overflow-hidden mb-1">
+                            <div
+                              className="h-full bg-gradient-to-r from-primary to-secondary"
+                              style={{
+                                width: `${Math.min(100, Math.max(0, ((Date.now() - new Date(wallet.stake_unlock_date).getTime() + (daysUntilUnlock * 24 * 60 * 60 * 1000)) / (daysUntilUnlock * 24 * 60 * 60 * 1000)) * 100))}%`
+                              }}
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {Math.min(100, Math.max(0, ((Date.now() - new Date(wallet.stake_unlock_date).getTime() + (daysUntilUnlock * 24 * 60 * 60 * 1000)) / (daysUntilUnlock * 24 * 60 * 60 * 1000)) * 100)).toFixed(0)}% времени прошло
+                          </p>
+                        </div>
 
-                <Button variant="destructive" className="w-full" disabled>
-                  Анстейкать рано
-                </Button>
+                        <Button variant="destructive" className="w-full" disabled>
+                          Анстейкать рано
+                        </Button>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p className="mb-4">У вас нет активного стейкинга</p>
+                    <Button variant="outline" size="sm">
+                      Начать стейкинг
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

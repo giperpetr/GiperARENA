@@ -1,11 +1,13 @@
 'use client';
 
-
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { api } from '@/lib/api-client';
 
 type NFTRarity = 'common' | 'rare' | 'epic' | 'legendary';
 type NFTType = 'device' | 'achievement' | 'collectible' | 'skin';
@@ -28,122 +30,6 @@ interface NFT {
   };
 }
 
-const MOCK_NFTS: NFT[] = [
-  {
-    id: '1',
-    name: 'Tokyo Cyber Drone #42',
-    description: 'Legendary racing drone from Tokyo Arena. 156 wins, 89% win rate.',
-    image: '🚁',
-    type: 'device',
-    rarity: 'legendary',
-    price: 2500,
-    seller: '0x1234...5678',
-    status: 'listed',
-    stats: {
-      wins: 156,
-      games_played: 175,
-      arena: 'Tokyo Cyber Arena',
-    },
-  },
-  {
-    id: '2',
-    name: 'Champion Achievement Badge',
-    description: 'Earned by winning 100+ games in a single arena.',
-    image: '🏆',
-    type: 'achievement',
-    rarity: 'epic',
-    price: 800,
-    seller: '0xabcd...efgh',
-    status: 'listed',
-  },
-  {
-    id: '3',
-    name: 'Neon Skin Pack',
-    description: 'Exclusive cyan-purple neon skin for all devices.',
-    image: '🎨',
-    type: 'skin',
-    rarity: 'rare',
-    price: 450,
-    seller: '0x9876...5432',
-    status: 'listed',
-  },
-  {
-    id: '4',
-    name: 'Arena Founder Card',
-    description: 'Limited edition founder collectible. Only 100 exist.',
-    image: '🎴',
-    type: 'collectible',
-    rarity: 'legendary',
-    price: 5000,
-    seller: '0xffff...0000',
-    status: 'listed',
-  },
-  {
-    id: '5',
-    name: 'Battle Robot MK-7',
-    description: 'Heavy combat robot with reinforced armor. 45 arena wins.',
-    image: '🤖',
-    type: 'device',
-    rarity: 'epic',
-    price: 1800,
-    seller: '0x5555...aaaa',
-    status: 'listed',
-    stats: {
-      wins: 45,
-      games_played: 67,
-      arena: 'Berlin Battle Zone',
-    },
-  },
-  {
-    id: '6',
-    name: 'Speed Demon Skin',
-    description: 'Fire-themed skin with particle effects.',
-    image: '🔥',
-    type: 'skin',
-    rarity: 'rare',
-    price: 350,
-    seller: '0x1111...2222',
-    status: 'listed',
-  },
-  {
-    id: '7',
-    name: 'First Blood Achievement',
-    description: 'Awarded for winning first game in any arena.',
-    image: '⚡',
-    type: 'achievement',
-    rarity: 'common',
-    price: 150,
-    seller: '0x3333...4444',
-    status: 'listed',
-  },
-  {
-    id: '8',
-    name: 'Galaxy Drone Limited',
-    description: 'Space-themed drone with cosmic trail effects.',
-    image: '🌌',
-    type: 'device',
-    rarity: 'legendary',
-    price: 3200,
-    seller: '0x7777...8888',
-    status: 'listed',
-    stats: {
-      wins: 203,
-      games_played: 245,
-      arena: 'Moscow Sky Arena',
-    },
-  },
-  {
-    id: '9',
-    name: 'Veteran Collectible',
-    description: 'Exclusive card for players with 1000+ games.',
-    image: '💎',
-    type: 'collectible',
-    rarity: 'epic',
-    price: 1200,
-    seller: '0x9999...0000',
-    status: 'listed',
-  },
-];
 
 const RARITY_COLORS: Record<NFTRarity, string> = {
   common: 'bg-space-light-gray/10 text-space-light-gray border-space-light-gray',
@@ -166,27 +52,62 @@ export default function MarketplacePage() {
   const [sortBy, setSortBy] = useState<'price_asc' | 'price_desc' | 'rarity' | 'recent'>('recent');
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({ min: 0, max: 10000 });
 
+  // Fetch current user (optional for My NFTs section)
+  const { data: user } = useQuery({
+    queryKey: ['user', 'me'],
+    queryFn: async () => {
+      try {
+        const response: any = await api.getCurrentUser();
+        return response.data || response;
+      } catch {
+        return null;
+      }
+    },
+  });
+
+  // Fetch all marketplace NFTs
+  const { data: marketplaceNFTs = [], isLoading: loadingMarketplace } = useQuery({
+    queryKey: ['nfts', 'marketplace'],
+    queryFn: async () => {
+      const response = await fetch('https://api.giperarena.space/api/v1/nfts?status=listed');
+      if (!response.ok) return [];
+      const json = await response.json();
+      return (json.data || json || []) as NFT[];
+    },
+  });
+
+  // Fetch user's NFTs
+  const { data: myNFTs = [], isLoading: loadingMyNFTs } = useQuery({
+    queryKey: ['nfts', 'my', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const response: any = await api.getUserNFTs(user.id);
+      return (response.data || response || []) as NFT[];
+    },
+    enabled: !!user?.id,
+  });
+
   // Filter NFTs
-  const filteredNFTs = MOCK_NFTS.filter((nft) => {
-    const matchesSearch = nft.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         nft.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = selectedType === 'all' || nft.type === selectedType;
+  const filteredNFTs = marketplaceNFTs.filter((nft: any) => {
+    const matchesSearch = nft.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         nft.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = selectedType === 'all' || nft.nft_type === selectedType;
     const matchesRarity = selectedRarity === 'all' || nft.rarity === selectedRarity;
-    const matchesPrice = nft.price >= priceRange.min && nft.price <= priceRange.max;
+    const matchesPrice = (nft.price || 0) >= priceRange.min && (nft.price || 0) <= priceRange.max;
 
     return matchesSearch && matchesType && matchesRarity && matchesPrice;
   });
 
   // Sort NFTs
-  const sortedNFTs = [...filteredNFTs].sort((a, b) => {
+  const sortedNFTs = [...filteredNFTs].sort((a: any, b: any) => {
     switch (sortBy) {
       case 'price_asc':
-        return a.price - b.price;
+        return (a.price || 0) - (b.price || 0);
       case 'price_desc':
-        return b.price - a.price;
+        return (b.price || 0) - (a.price || 0);
       case 'rarity':
         const rarityOrder = { common: 0, rare: 1, epic: 2, legendary: 3 };
-        return rarityOrder[b.rarity] - rarityOrder[a.rarity];
+        return rarityOrder[b.rarity as NFTRarity] - rarityOrder[a.rarity as NFTRarity];
       case 'recent':
       default:
         return 0;
@@ -210,25 +131,37 @@ export default function MarketplacePage() {
         <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-4">
           <Card glow className="glass">
             <CardHeader>
-              <CardTitle className="text-3xl font-bold text-primary">
-                {MOCK_NFTS.length}
-              </CardTitle>
+              {loadingMarketplace ? (
+                <Skeleton className="h-10 w-20" />
+              ) : (
+                <CardTitle className="text-3xl font-bold text-primary">
+                  {marketplaceNFTs.length}
+                </CardTitle>
+              )}
               <CardDescription>Всего NFT</CardDescription>
             </CardHeader>
           </Card>
           <Card glow className="glass">
             <CardHeader>
-              <CardTitle className="text-3xl font-bold text-secondary">
-                $2.5M
-              </CardTitle>
-              <CardDescription>Объем торгов</CardDescription>
+              {loadingMarketplace ? (
+                <Skeleton className="h-10 w-20" />
+              ) : (
+                <CardTitle className="text-3xl font-bold text-secondary">
+                  {((marketplaceNFTs as any[]).reduce((sum, nft) => sum + (nft.price || 0), 0) * 0.5 / 1000).toFixed(1)}K
+                </CardTitle>
+              )}
+              <CardDescription>Объем торгов (PAC)</CardDescription>
             </CardHeader>
           </Card>
           <Card glow className="glass">
             <CardHeader>
-              <CardTitle className="text-3xl font-bold text-neon-cyan">
-                1,234
-              </CardTitle>
+              {loadingMarketplace ? (
+                <Skeleton className="h-10 w-20" />
+              ) : (
+                <CardTitle className="text-3xl font-bold text-neon-cyan">
+                  {(marketplaceNFTs as any[]).filter((nft: any) => nft.status === 'listed').length}
+                </CardTitle>
+              )}
               <CardDescription>Активных листингов</CardDescription>
             </CardHeader>
           </Card>
@@ -372,7 +305,22 @@ export default function MarketplacePage() {
             </h2>
           </div>
 
-          {sortedNFTs.length === 0 ? (
+          {loadingMarketplace ? (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Card key={i} glow>
+                  <CardHeader>
+                    <Skeleton className="h-48 w-full mb-4" />
+                    <Skeleton className="h-6 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-full" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-24 w-full" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : sortedNFTs.length === 0 ? (
             <Card glow className="glass text-center py-12">
               <CardContent>
                 <div className="text-6xl mb-4">🔍</div>
@@ -383,45 +331,45 @@ export default function MarketplacePage() {
             </Card>
           ) : (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {sortedNFTs.map((nft) => (
+              {sortedNFTs.map((nft: any) => (
                 <Card key={nft.id} glow className="hover-lift">
                   <CardHeader>
                     {/* Image */}
                     <div className="mb-4 flex h-48 items-center justify-center rounded-lg bg-space-medium-gray text-8xl">
-                      {nft.image}
+                      {nft.metadata?.image || TYPE_ICONS[nft.nft_type as NFTType] || '🎮'}
                     </div>
 
                     {/* Type & Rarity Badges */}
                     <div className="mb-2 flex gap-2">
                       <Badge variant="outline">
-                        {TYPE_ICONS[nft.type]} {nft.type === 'device' ? 'Устройство' : nft.type === 'achievement' ? 'Достижение' : nft.type === 'collectible' ? 'Коллекционное' : 'Скин'}
+                        {TYPE_ICONS[nft.nft_type as NFTType] || '🎮'} {nft.nft_type === 'device' ? 'Устройство' : nft.nft_type === 'achievement' ? 'Достижение' : nft.nft_type === 'collectible' ? 'Коллекционное' : 'Скин'}
                       </Badge>
-                      <Badge className={RARITY_COLORS[nft.rarity]}>
+                      <Badge className={RARITY_COLORS[nft.rarity as NFTRarity] || ''}>
                         {nft.rarity === 'common' ? 'Обычный' : nft.rarity === 'rare' ? 'Редкий' : nft.rarity === 'epic' ? 'Эпический' : 'Легендарный'}
                       </Badge>
                     </div>
 
-                    <CardTitle>{nft.name}</CardTitle>
-                    <CardDescription>{nft.description}</CardDescription>
+                    <CardTitle>{nft.name || 'Unnamed NFT'}</CardTitle>
+                    <CardDescription>{nft.description || 'No description'}</CardDescription>
                   </CardHeader>
 
                   <CardContent>
                     {/* Stats for devices */}
-                    {nft.stats && (
+                    {nft.metadata?.stats && (
                       <div className="mb-4 space-y-2 rounded-lg bg-space-dark-gray/50 p-3">
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Побед:</span>
-                          <span className="font-medium text-primary">{nft.stats.wins}</span>
+                          <span className="font-medium text-primary">{nft.metadata.stats.wins}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Игр:</span>
-                          <span className="font-medium">{nft.stats.games_played}</span>
+                          <span className="font-medium">{nft.metadata.stats.games_played}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Win rate:</span>
                           <span className="font-medium text-secondary">
-                            {nft.stats.wins && nft.stats.games_played
-                              ? `${Math.round((nft.stats.wins / nft.stats.games_played) * 100)}%`
+                            {nft.metadata.stats.wins && nft.metadata.stats.games_played
+                              ? `${Math.round((nft.metadata.stats.wins / nft.metadata.stats.games_played) * 100)}%`
                               : 'N/A'}
                           </span>
                         </div>
@@ -432,7 +380,7 @@ export default function MarketplacePage() {
                     <div className="mb-4 flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Продавец:</span>
                       <code className="rounded bg-space-dark-gray px-2 py-1 text-xs">
-                        {nft.seller}
+                        {nft.owner_id ? `${nft.owner_id.slice(0, 6)}...${nft.owner_id.slice(-4)}` : 'Unknown'}
                       </code>
                     </div>
 
@@ -441,10 +389,10 @@ export default function MarketplacePage() {
                       <span className="text-sm text-muted-foreground">Цена:</span>
                       <div className="text-right">
                         <div className="text-2xl font-bold text-primary">
-                          {nft.price.toLocaleString()} PAC
+                          {(nft.price || 0).toLocaleString()} PAC
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          ≈ ${(nft.price * 0.5).toLocaleString()}
+                          ≈ ${((nft.price || 0) * 0.5).toLocaleString()}
                         </div>
                       </div>
                     </div>
@@ -465,64 +413,73 @@ export default function MarketplacePage() {
         <div>
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-2xl font-bold">Мои NFT</h2>
-            <Button variant="outline">Создать листинг</Button>
+            {user && <Button variant="outline">Создать листинг</Button>}
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {/* Example owned NFTs */}
-            <Card glow className="hover-lift">
-              <CardHeader>
-                <div className="mb-4 flex h-32 items-center justify-center rounded-lg bg-space-medium-gray text-6xl">
-                  🎮
-                </div>
-                <CardTitle className="text-base">Starter Drone #123</CardTitle>
-                <CardDescription className="text-xs">Твой первый дрон</CardDescription>
-              </CardHeader>
-              <CardFooter>
-                <Button variant="outline" size="sm" className="w-full">
-                  Выставить на продажу
+          {!user ? (
+            <Card glow className="glass text-center py-12">
+              <CardContent>
+                <div className="text-6xl mb-4">🔐</div>
+                <p className="text-xl text-muted-foreground mb-4">
+                  Войдите, чтобы увидеть свои NFT
+                </p>
+                <Button variant="neon" onClick={() => (window.location.href = '/auth/login')}>
+                  Войти
                 </Button>
-              </CardFooter>
-            </Card>
-
-            <Card glow className="hover-lift">
-              <CardHeader>
-                <div className="mb-4 flex h-32 items-center justify-center rounded-lg bg-space-medium-gray text-6xl">
-                  🏅
-                </div>
-                <CardTitle className="text-base">Rookie Badge</CardTitle>
-                <CardDescription className="text-xs">Первые 10 побед</CardDescription>
-              </CardHeader>
-              <CardFooter>
-                <Button variant="outline" size="sm" className="w-full">
-                  Выставить на продажу
-                </Button>
-              </CardFooter>
-            </Card>
-
-            <Card glow className="hover-lift">
-              <CardHeader>
-                <div className="mb-4 flex h-32 items-center justify-center rounded-lg bg-space-medium-gray text-6xl">
-                  ✨
-                </div>
-                <CardTitle className="text-base">Blue Skin</CardTitle>
-                <CardDescription className="text-xs">Стандартный скин</CardDescription>
-              </CardHeader>
-              <CardFooter>
-                <Button variant="outline" size="sm" className="w-full">
-                  Выставить на продажу
-                </Button>
-              </CardFooter>
-            </Card>
-
-            {/* Add more card */}
-            <Card glow className="hover-lift flex items-center justify-center border-dashed">
-              <CardContent className="text-center">
-                <div className="text-6xl mb-2">➕</div>
-                <p className="text-sm text-muted-foreground">Купи больше NFT</p>
               </CardContent>
             </Card>
-          </div>
+          ) : loadingMyNFTs ? (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Card key={i} glow>
+                  <CardHeader>
+                    <Skeleton className="h-32 w-full mb-4" />
+                    <Skeleton className="h-4 w-3/4" />
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+          ) : myNFTs.length > 0 ? (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {myNFTs.slice(0, 4).map((nft: any) => (
+                <Card key={nft.id} glow className="hover-lift">
+                  <CardHeader>
+                    <div className="mb-4 flex h-32 items-center justify-center rounded-lg bg-space-medium-gray text-6xl">
+                      {nft.metadata?.image || TYPE_ICONS[nft.nft_type as NFTType] || '🎮'}
+                    </div>
+                    <CardTitle className="text-base">{nft.name || 'Unnamed NFT'}</CardTitle>
+                    <CardDescription className="text-xs">{nft.description || 'No description'}</CardDescription>
+                  </CardHeader>
+                  <CardFooter>
+                    <Button variant="outline" size="sm" className="w-full">
+                      Выставить на продажу
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+              {/* Add more card */}
+              {myNFTs.length < 4 && (
+                <Card glow className="hover-lift flex items-center justify-center border-dashed">
+                  <CardContent className="text-center">
+                    <div className="text-6xl mb-2">➕</div>
+                    <p className="text-sm text-muted-foreground">Купи больше NFT</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          ) : (
+            <Card glow className="glass text-center py-12">
+              <CardContent>
+                <div className="text-6xl mb-4">📦</div>
+                <p className="text-xl text-muted-foreground mb-4">
+                  У вас пока нет NFT
+                </p>
+                <Button variant="neon" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                  Купить NFT
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </main>

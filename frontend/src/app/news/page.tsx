@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   TrophyIcon,
   ArenaIcon,
@@ -14,6 +16,7 @@ import {
   CalendarIcon,
   ClockIcon,
 } from '@/components/ui/icons';
+import { api } from '@/lib/api-client';
 
 type NewsCategory = 'all' | 'tournaments' | 'arenas' | 'blockchain' | 'community' | 'updates';
 
@@ -150,12 +153,51 @@ const CATEGORY_CONFIG = {
 export default function NewsPage() {
   const [selectedCategory, setSelectedCategory] = useState<NewsCategory>('all');
 
+  // Fetch upcoming tournaments for sidebar
+  const { data: upcomingTournaments, isLoading: tournamentsLoading } = useQuery({
+    queryKey: ['tournaments', 'upcoming'],
+    queryFn: async () => {
+      const response: any = await api.getTournaments({
+        status: 'upcoming',
+        limit: 1,
+      });
+      return response || [];
+    },
+  });
+
+  // Fetch newest arenas for sidebar
+  const { data: recentArenas, isLoading: arenasLoading } = useQuery({
+    queryKey: ['arenas', 'recent'],
+    queryFn: async () => {
+      const response = await api.getArenas({
+        limit: 1,
+        sort: 'created_at.desc',
+      });
+      return Array.isArray(response) ? response : [];
+    },
+  });
+
+  // Fetch platform stats for player count
+  const { data: platformStats, isLoading: statsLoading } = useQuery({
+    queryKey: ['stats', 'platform'],
+    queryFn: async () => {
+      const response = await fetch('https://api.giperarena.space/api/v1/stats/platform');
+      if (!response.ok) return null;
+      const json = await response.json();
+      return json.data || json;
+    },
+  });
+
   const filteredNews =
     selectedCategory === 'all'
       ? MOCK_NEWS
       : MOCK_NEWS.filter((article) => article.category === selectedCategory);
 
   const featuredArticles = MOCK_NEWS.filter((article) => article.featured);
+
+  const nextTournament = upcomingTournaments?.[0];
+  const newestArena = recentArenas?.[0];
+  const playerCount = platformStats?.uniquePlayers || 100000;
 
   return (
     <main className="min-h-screen px-6 py-24">
@@ -358,6 +400,7 @@ export default function NewsPage() {
 
         {/* Sidebar Info */}
         <div className="mt-12 grid gap-8 lg:grid-cols-3">
+          {/* Upcoming Tournament */}
           <Card glow className="glass">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -366,16 +409,43 @@ export default function NewsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-2">
-                World Drone Championship 2026
-              </p>
-              <p className="text-2xl font-bold text-cyan-400">15 апреля 2026</p>
-              <Button variant="neon" size="sm" className="mt-4 w-full" asChild>
-                <Link href="/tournaments">Подробнее</Link>
-              </Button>
+              {tournamentsLoading ? (
+                <>
+                  <Skeleton className="h-4 w-3/4 mb-2" />
+                  <Skeleton className="h-8 w-1/2 mb-4" />
+                </>
+              ) : nextTournament ? (
+                <>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {nextTournament.name}
+                  </p>
+                  <p className="text-2xl font-bold text-cyan-400">
+                    {nextTournament.start_date
+                      ? new Date(nextTournament.start_date).toLocaleDateString('ru-RU', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })
+                      : 'Скоро'}
+                  </p>
+                  <Button variant="neon" size="sm" className="mt-4 w-full" asChild>
+                    <Link href={`/tournaments/${nextTournament.id}`}>Подробнее</Link>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Новые турниры скоро
+                  </p>
+                  <Button variant="outline" size="sm" className="mt-4 w-full" asChild>
+                    <Link href="/tournaments">Смотреть все</Link>
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
 
+          {/* Newest Arena */}
           <Card glow className="glass">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -384,14 +454,33 @@ export default function NewsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-2">Marina Tech Arena</p>
-              <p className="text-2xl font-bold text-purple-400">Сингапур</p>
-              <Button variant="outline" size="sm" className="mt-4 w-full" asChild>
-                <Link href="/arenas">Смотреть арены</Link>
-              </Button>
+              {arenasLoading ? (
+                <>
+                  <Skeleton className="h-4 w-3/4 mb-2" />
+                  <Skeleton className="h-8 w-1/2 mb-4" />
+                </>
+              ) : newestArena ? (
+                <>
+                  <p className="text-sm text-muted-foreground mb-2">{newestArena.name}</p>
+                  <p className="text-2xl font-bold text-purple-400">
+                    {newestArena.city || newestArena.country || 'Онлайн'}
+                  </p>
+                  <Button variant="outline" size="sm" className="mt-4 w-full" asChild>
+                    <Link href={`/arenas/${newestArena.id}`}>Посетить</Link>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground mb-2">Загрузка...</p>
+                  <Button variant="outline" size="sm" className="mt-4 w-full" asChild>
+                    <Link href="/arenas">Смотреть все</Link>
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
 
+          {/* Community Stats */}
           <Card glow className="glass">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -400,11 +489,22 @@ export default function NewsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-2">Активных игроков</p>
-              <p className="text-2xl font-bold text-neon-cyan">100,000+</p>
-              <Button variant="outline" size="sm" className="mt-4 w-full" asChild>
-                <Link href="/community">Присоединиться</Link>
-              </Button>
+              {statsLoading ? (
+                <>
+                  <Skeleton className="h-4 w-3/4 mb-2" />
+                  <Skeleton className="h-8 w-1/2 mb-4" />
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground mb-2">Активных игроков</p>
+                  <p className="text-2xl font-bold text-neon-cyan">
+                    {playerCount.toLocaleString()}+
+                  </p>
+                  <Button variant="outline" size="sm" className="mt-4 w-full" asChild>
+                    <Link href="/community">Присоединиться</Link>
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>

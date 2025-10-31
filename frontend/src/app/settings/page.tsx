@@ -1,20 +1,43 @@
 'use client';
 
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { api } from '@/lib/api-client';
 
 export default function SettingsPage() {
+  // Fetch current user
+  const { data: user, isLoading: userLoading, error: userError } = useQuery({
+    queryKey: ['user', 'me'],
+    queryFn: async () => {
+      const response: any = await api.getCurrentUser();
+      return response.data || response;
+    },
+  });
+
   const [profile, setProfile] = useState({
-    username: 'DroneRacer2024',
-    email: 'user@example.com',
-    bio: 'Professional drone racer and gaming enthusiast',
+    username: '',
+    email: '',
+    bio: '',
     avatar: '🎮',
   });
+
+  // Update profile state when user data loads
+  useEffect(() => {
+    if (user) {
+      setProfile({
+        username: user.username || '',
+        email: user.email || '',
+        bio: user.bio || '',
+        avatar: user.avatar_url || '🎮',
+      });
+    }
+  }, [user]);
 
   const [notifications, setNotifications] = useState({
     email_games: true,
@@ -37,9 +60,26 @@ export default function SettingsPage() {
     session_timeout: '30',
   });
 
+  // Mutation for updating profile
+  const updateProfileMutation = useMutation({
+    mutationFn: async (updates: any) => {
+      return api.updateProfile(updates);
+    },
+    onSuccess: () => {
+      alert('Профиль успешно обновлен!');
+    },
+    onError: (error) => {
+      alert(`Ошибка: ${error.message}`);
+    },
+  });
+
   const handleSaveProfile = () => {
-    console.log('Save profile:', profile);
-    alert('Профиль сохранен!');
+    updateProfileMutation.mutate({
+      username: profile.username,
+      email: profile.email,
+      bio: profile.bio,
+      avatar_url: profile.avatar,
+    });
   };
 
   const handleSaveNotifications = () => {

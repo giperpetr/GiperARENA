@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   ClockIcon,
   UsersIcon,
@@ -12,6 +14,7 @@ import {
   PlayIcon,
   XIcon
 } from '@/components/ui/icons';
+import { api } from '@/lib/api-client';
 
 const MOCK_QUEUE_STATUS = {
   position: 3,
@@ -20,16 +23,80 @@ const MOCK_QUEUE_STATUS = {
   selectedGame: 'Robot Arena Battle'
 };
 
-const AVAILABLE_MODES = [
-  { id: 1, name: 'Robot Arena Battle', emoji: '🤖', players: 12, avgWait: '2 min' },
-  { id: 2, name: 'Drone Racing', emoji: '🚁', players: 8, avgWait: '1 min' },
-  { id: 3, name: 'Tank Battle Royale', emoji: '🚜', players: 15, avgWait: '3 min' }
-];
+const ARENA_TYPE_INFO: Record<string, { name: string; emoji: string }> = {
+  combat: { name: 'Robot Arena Battle', emoji: '🤖' },
+  racing: { name: 'Drone Racing', emoji: '🚁' },
+  crawler: { name: 'Crawler Challenge', emoji: '🕷️' },
+  tank: { name: 'Tank Battle', emoji: '🚜' },
+  parkour: { name: 'Parkour Run', emoji: '🏃' },
+  strategy: { name: 'Strategy Warfare', emoji: '⚔️' },
+};
+
+interface GameMode {
+  id: string;
+  arena_type: string;
+  name: string;
+  emoji: string;
+  players: number;
+  avgWait: string;
+  arenaCount: number;
+}
 
 export default function QueuePage() {
   const [inQueue, setInQueue] = useState(false);
-  const [selectedMode, setSelectedMode] = useState<typeof AVAILABLE_MODES[0] | null>(null);
+  const [selectedMode, setSelectedMode] = useState<GameMode | null>(null);
   const [countdown, setCountdown] = useState(150); // 2 min 30 sec
+
+  // Fetch all arenas to build game modes
+  const { data: arenas, isLoading: arenasLoading } = useQuery({
+    queryKey: ['arenas-for-queue'],
+    queryFn: async () => {
+      const response = await api.getArenas({ limit: 1000, status: 'active' });
+      return Array.isArray(response) ? response : [];
+    },
+  });
+
+  // Fetch live stats for active games count
+  const { data: liveStats } = useQuery({
+    queryKey: ['stats', 'live'],
+    queryFn: async () => {
+      const response = await fetch('https://api.giperarena.space/api/v1/stats/live');
+      if (!response.ok) return null;
+      const json = await response.json();
+      return json.data;
+    },
+    refetchInterval: 10000, // Refresh every 10 seconds
+  });
+
+  // Group arenas by type to create game modes
+  const gameModes: GameMode[] = arenas
+    ? Object.entries(
+        arenas.reduce((acc: Record<string, any[]>, arena: any) => {
+          const type = arena.arena_type || 'other';
+          if (!acc[type]) acc[type] = [];
+          acc[type].push(arena);
+          return acc;
+        }, {})
+      )
+        .filter(([type]) => ARENA_TYPE_INFO[type]) // Only known types
+        .map(([type, arenasOfType]) => {
+          const info = ARENA_TYPE_INFO[type];
+          const activeCount = arenasOfType.filter((a: any) => a.status === 'active').length;
+          // Estimate players in queue based on active arenas (mock calculation)
+          const estimatedPlayers = Math.floor(activeCount * 2.5 + Math.random() * 5);
+          const avgWaitMinutes = Math.ceil(estimatedPlayers / Math.max(activeCount, 1));
+
+          return {
+            id: type,
+            arena_type: type,
+            name: info.name,
+            emoji: info.emoji,
+            players: estimatedPlayers,
+            avgWait: `${avgWaitMinutes} min`,
+            arenaCount: activeCount,
+          };
+        })
+    : [];
 
   useEffect(() => {
     if (!inQueue) return;
@@ -53,7 +120,7 @@ export default function QueuePage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleJoinQueue = (mode: typeof AVAILABLE_MODES[0]) => {
+  const handleJoinQueue = (mode: GameMode) => {
     setSelectedMode(mode);
     setInQueue(true);
   };
@@ -63,6 +130,8 @@ export default function QueuePage() {
     setSelectedMode(null);
     setCountdown(150);
   };
+
+  const isLoading = arenasLoading;
 
   return (
     <div className="min-h-screen py-12 px-4 md:px-6">
@@ -150,56 +219,84 @@ export default function QueuePage() {
         {!inQueue && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-white">Available Game Modes</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {AVAILABLE_MODES.map((mode) => (
-                <Card
-                  key={mode.id}
-                  className="glass-hover hover-lift cursor-pointer group"
-                >
-                  <div className="p-6 space-y-4">
-                    {/* Mode Icon */}
-                    <div className="w-20 h-20 bg-gradient-to-br from-cyan-900/50 to-purple-900/50 rounded-xl flex items-center justify-center text-5xl mx-auto">
-                      {mode.emoji}
-                    </div>
 
-                    {/* Mode Name */}
-                    <div className="text-center">
-                      <h3 className="font-bold text-xl text-white group-hover:text-cyan-400 transition-colors mb-2">
-                        {mode.name}
-                      </h3>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <UsersIcon size={16} className="text-purple-400" />
-                          <span>Players in queue</span>
-                        </div>
-                        <span className="font-bold text-white">{mode.players}</span>
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="glass p-6">
+                    <Skeleton className="h-20 w-20 rounded-xl mx-auto mb-4" />
+                    <Skeleton className="h-6 w-3/4 mx-auto mb-4" />
+                    <Skeleton className="h-4 w-full mb-2" />
+                    <Skeleton className="h-4 w-full mb-4" />
+                    <Skeleton className="h-10 w-full" />
+                  </Card>
+                ))}
+              </div>
+            ) : gameModes.length === 0 ? (
+              <Card className="glass p-12 text-center">
+                <GamepadIcon size={64} className="mx-auto text-muted-foreground mb-4" />
+                <p className="text-lg text-muted-foreground">
+                  No game modes available at the moment
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Check back soon or visit our arenas page
+                </p>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {gameModes.map((mode) => (
+                  <Card
+                    key={mode.id}
+                    className="glass-hover hover-lift cursor-pointer group"
+                  >
+                    <div className="p-6 space-y-4">
+                      {/* Mode Icon */}
+                      <div className="w-20 h-20 bg-gradient-to-br from-cyan-900/50 to-purple-900/50 rounded-xl flex items-center justify-center text-5xl mx-auto">
+                        {mode.emoji}
                       </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <ClockIcon size={16} className="text-cyan-400" />
-                          <span>Avg. wait time</span>
-                        </div>
-                        <span className="font-bold text-white">{mode.avgWait}</span>
-                      </div>
-                    </div>
 
-                    {/* Join Button */}
-                    <Button
-                      variant="neon"
-                      className="w-full group-hover:scale-105 transition-transform"
-                      onClick={() => handleJoinQueue(mode)}
-                    >
-                      <PlayIcon size={16} className="mr-2" />
-                      Join Queue
-                    </Button>
-                  </div>
-                </Card>
-              ))}
-            </div>
+                      {/* Mode Name */}
+                      <div className="text-center">
+                        <h3 className="font-bold text-xl text-white group-hover:text-cyan-400 transition-colors mb-2">
+                          {mode.name}
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          {mode.arenaCount} {mode.arenaCount === 1 ? 'arena' : 'arenas'} available
+                        </p>
+                      </div>
+
+                      {/* Stats */}
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <UsersIcon size={16} className="text-purple-400" />
+                            <span>Players in queue</span>
+                          </div>
+                          <span className="font-bold text-white">{mode.players}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <ClockIcon size={16} className="text-cyan-400" />
+                            <span>Avg. wait time</span>
+                          </div>
+                          <span className="font-bold text-white">{mode.avgWait}</span>
+                        </div>
+                      </div>
+
+                      {/* Join Button */}
+                      <Button
+                        variant="neon"
+                        className="w-full group-hover:scale-105 transition-transform"
+                        onClick={() => handleJoinQueue(mode)}
+                      >
+                        <PlayIcon size={16} className="mr-2" />
+                        Join Queue
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
