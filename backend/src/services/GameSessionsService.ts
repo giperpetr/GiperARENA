@@ -64,24 +64,30 @@ export class GameSessionsService {
       return JSON.parse(cached);
     }
 
-    const { data, error } = await supabaseAdmin
-      .from('game_sessions')
-      .select(
-        `
-        *,
-        arenas(id, name, game_type, operator_id),
-        users(id, username, avatar_url)
-      `
-      )
-      .eq('id', sessionId)
-      .single();
+    const sql = `
+      SELECT
+        gs.*,
+        jsonb_build_object(
+          'id', a.id,
+          'name', a.name,
+          'game_type', a.game_type,
+          'operator_id', a.operator_id
+        ) as arenas
+      FROM giperarena.game_sessions gs
+      LEFT JOIN giperarena.arenas a ON gs.arena_id = a.id
+      WHERE gs.id = $1
+    `;
 
-    if (error) throw error;
+    const result = await pool.query(sql, [sessionId]);
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    const data = result.rows[0];
 
     // Cache for 1 minute
-    if (data) {
-      await redis.setex(cacheKey, 60, JSON.stringify(data));
-    }
+    await redis.setex(cacheKey, 60, JSON.stringify(data));
 
     return data;
   }
