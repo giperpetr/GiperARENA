@@ -170,24 +170,26 @@ ArenaHUB.space/blockchain/
 │                                                         │
 │ DUAL TOKEN SYSTEM                                       │
 │ ┌──────────────────────────┬──────────────────────────┐ │
-│ │ GAC (Governance Token)   │ PAC (Play Token)        │ │
+│ │ GAC (Governance Token)   │ PAC (Play Credits)      │ │
+│ │ 🌐 Blockchain Token      │ 💾 Internal Token       │ │
 │ │                          │                         │ │
-│ │ 💎 Total Supply:         │ 🎮 Total Supply:        │ │
-│ │    100,000,000 (Fixed)   │    Unlimited (Emission) │ │
+│ │ 💎 Total Supply:         │ 🎮 Supply:              │ │
+│ │    100,000,000 (Fixed)   │    Dynamic (Minted)     │ │
 │ │                          │                         │ │
 │ │ 🏛️ Purpose:             │ 🎯 Purpose:             │ │
 │ │    Governance & Voting   │    Play & Rewards       │ │
 │ │    Staking & Rewards     │    Betting & Wagering   │ │
 │ │    Treasury Control      │    NFT Purchases        │ │
+│ │    Tradeable on DEX      │    Platform Currency    │ │
 │ │                          │                         │ │
-│ │ 💵 Current Price:        │ 💵 Current Price:       │ │
-│ │    $12.34 USD            │    $0.098 USD           │ │
-│ │    Market Cap: $1.234B   │    Market Cap: $234M    │ │
+│ │ 💵 Current Price:        │ 💰 Value:               │ │
+│ │    $12.34 USD            │    Internal use only    │ │
+│ │    Market Cap: $1.234B   │    Convertible to GAC   │ │
 │ │                          │                         │ │
-│ │ 📊 24h Change:           │ 📊 24h Change:          │ │
-│ │    +2.34%                │    +1.23%               │ │
+│ │ 📊 24h Change:           │ 🔄 Conversion:          │ │
+│ │    +2.34%                │    1,000 PAC = 1 GAC    │ │
 │ │                          │                         │
-│ │ [BUY GAC] [STAKE]        │ [BUY PAC] [SWAP]        │ │
+│ │ [BUY GAC] [STAKE]        │ [EARN PAC] [CONVERT]    │ │
 │ └──────────────────────────┴──────────────────────────┘ │
 │                                                         │
 │ TOKEN DISTRIBUTION (Pie Chart)                          │
@@ -234,15 +236,60 @@ ArenaHUB.space/blockchain/
 │ PRICE CHART (Last 30 Days)                              │
 │ [Линейный график цены GAC и PAC]                       │
 │                                                         │
-│ TRADING PAIRS                                           │
+│ TRADING PAIRS (GAC только)                              │
 │ ┌─────────────────────────────────────────────────────┐ │
-│ │ GAC/USDC | GAC/SOL | PAC/USDC | PAC/SOL           │ │
+│ │ GAC/USDC | GAC/SOL                                  │ │
 │ │ Volume: $2.3M | Liquidity: $45M | Spread: 0.05%   │ │
 │ │ [TRADE ON RAYDIUM] [TRADE ON ORCA] [TRADE ON DEX] │ │
+│ │                                                     │ │
+│ │ 💡 PAC - Internal platform currency only           │ │
+│ │    Convert PAC to GAC through platform exchange    │ │
 │ └─────────────────────────────────────────────────────┘ │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## 💾 PAC INTERNAL TOKEN SYSTEM
+
+### Как PAC работает под капотом:
+
+PAC (Play Arena Credits) - это **внутренний токен платформы**, который существует только в нашей базе данных PostgreSQL. Это не блокчейн токен!
+
+**Ключевые особенности:**
+- 🔒 **Secure Storage**: Double-entry ledger система в PostgreSQL
+- 📊 **Immutable Audit Trail**: Каждая транзакция навсегда в истории
+- 🛡️ **Row Level Security**: Пользователи видят только свои балансы
+- ⚡ **Fast & Free**: Мгновенные транзакции без gas fees
+- 🔄 **Convertible**: Можно конвертировать в GAC для вывода на wallet
+
+**Архитектура хранения:**
+```sql
+-- Double-Entry Ledger Tables
+pac_accounts (id, user_id, balance, version)
+pac_transfers (id, from_account, to_account, amount, status)
+pac_entries (id, transfer_id, account_id, debit/credit, balance_snapshot)
+```
+
+**Безопасность:**
+- ✅ NUMERIC(20,8) для предотвращения float rounding errors
+- ✅ Idempotency keys для защиты от replay attacks
+- ✅ SERIALIZABLE isolation для предотвращения race conditions
+- ✅ SELECT FOR UPDATE для explicit row locking
+- ✅ Materialized views для быстрых balance queries
+
+**Как вывести PAC:**
+1. Зайдите в раздел /blockchain/bridge
+2. Конвертируйте PAC в GAC (1,000 PAC = 1 GAC)
+3. Выведите GAC на ваш Solana wallet
+4. Торгуйте GAC на DEX (Raydium, Orca) за USDC/SOL
+
+**Почему PAC не на блокчейне:**
+- ⚡ Мгновенные транзакции без задержек блокчейна
+- 💰 Нет газовых комиссий для каждой игры
+- 🎮 Лучший UX для игроков (не нужно подтверждать каждую транзакцию в wallet)
+- 🔒 Полный контроль безопасности на уровне платформы
 
 ---
 
@@ -672,15 +719,7 @@ ArenaHUB.space/blockchain/
 │ │    Holders: 45,234                                  │ │
 │ │    [VIEW CODE] [VIEW TRANSACTIONS]                  │ │
 │ │                                                     │ │
-│ │ 2. PAC Token Contract                               │ │
-│ │    Address: 0x5e6f...7g8h                           │ │
-│ │    Type: Token (SPL)                                │ │
-│ │    Verified: ✅                                     │ │
-│ │    Transactions: 1,234,567                          │ │
-│ │    Holders: 123,456                                 │ │
-│ │    [VIEW CODE] [VIEW TRANSACTIONS]                  │ │
-│ │                                                     │ │
-│ │ 3. NFT Equipment Contract                           │ │
+│ │ 2. NFT Equipment Contract                           │ │
 │ │    Address: 0x9i1j...2k3l                           │ │
 │ │    Type: NFT (Metaplex)                             │ │
 │ │    Verified: ✅                                     │ │
@@ -688,7 +727,7 @@ ArenaHUB.space/blockchain/
 │ │    NFTs Minted: 45,234                              │ │
 │ │    [VIEW CODE] [VIEW TRANSACTIONS]                  │ │
 │ │                                                     │ │
-│ │ 4. Tournament Contract                              │ │
+│ │ 3. Tournament Contract                              │ │
 │ │    Address: 0x4m5n...6o7p                           │ │
 │ │    Type: Smart Contract                             │ │
 │ │    Verified: ✅                                     │ │
@@ -696,7 +735,7 @@ ArenaHUB.space/blockchain/
 │ │    Tournaments: 234                                 │ │
 │ │    [VIEW CODE] [VIEW TRANSACTIONS]                  │ │
 │ │                                                     │ │
-│ │ 5. Staking Contract                                 │ │
+│ │ 4. Staking Contract                                 │ │
 │ │    Address: 0x8q9r...0s1t                           │ │
 │ │    Type: Smart Contract                             │ │
 │ │    Verified: ✅                                     │ │
