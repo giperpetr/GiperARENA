@@ -80,6 +80,9 @@ ssh -i "$SSH_KEY" "$SERVER" bash << ENDSSH
 set -e
 cd $SERVER_DIR
 
+echo "🗑️  Очистка диска (Docker prune)..."
+docker system prune -af --volumes 2>/dev/null || true
+
 echo "🗑️  Удаление старых образов..."
 docker rmi giperpetr/giperarena-frontend:latest -f 2>/dev/null || true
 docker rmi giperpetr/giperarena-backend:latest -f 2>/dev/null || true
