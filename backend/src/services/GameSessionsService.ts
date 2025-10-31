@@ -20,7 +20,7 @@ export class GameSessionsService {
         jsonb_build_object(
           'id', a.id,
           'name', a.name,
-          'game_type', a.game_type,
+          'arena_type', a.arena_type,
           'location_address', a.location_address
         ) as arenas
       FROM giperarena.game_sessions gs
@@ -79,7 +79,7 @@ export class GameSessionsService {
         jsonb_build_object(
           'id', a.id,
           'name', a.name,
-          'game_type', a.game_type,
+          'arena_type', a.arena_type,
           'operator_id', a.operator_id
         ) as arenas
       FROM giperarena.game_sessions gs
@@ -205,7 +205,7 @@ export class GameSessionsService {
         jsonb_build_object(
           'id', a.id,
           'name', a.name,
-          'game_type', a.game_type,
+          'arena_type', a.arena_type,
           'location_address', a.location_address
         ) as arenas
       FROM giperarena.game_sessions gs

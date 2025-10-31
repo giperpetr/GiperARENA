@@ -15,7 +15,7 @@ export class ArenasController {
     try {
       const {
         status,
-        game_type,
+        arena_type,
         country,
         city,
         limit = 20,
@@ -28,7 +28,7 @@ export class ArenasController {
       const filters: any = {};
 
       if (status) filters.status = status;
-      if (game_type) filters.game_type = game_type;
+      if (arena_type) filters.arena_type = arena_type;
       if (country) filters.country = country;
       if (city) filters.city = city;
 
@@ -109,7 +109,7 @@ export class ArenasController {
       };
 
       // Validate required fields
-      const requiredFields = ['name', 'game_type', 'country', 'city'];
+      const requiredFields = ['name', 'arena_type', 'country', 'city'];
       const missingFields = requiredFields.filter((field) => !arenaData[field]);
 
       if (missingFields.length > 0) {

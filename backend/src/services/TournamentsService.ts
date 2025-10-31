@@ -74,7 +74,7 @@ export class TournamentsService {
       .select(
         `
         *,
-        arenas(id, name, game_type, location_address),
+        arenas(id, name, arena_type, location_address),
         users(id, username, avatar_url)
       `
       )

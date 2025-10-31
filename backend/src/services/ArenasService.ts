@@ -102,7 +102,7 @@ export class ArenasService {
         const result = await client.query(
           `
           INSERT INTO giperarena.arenas (
-            name, description, game_type, location_address, location_coordinates,
+            name, description, arena_type, location_address, location_coordinates,
             country, city, operator_id, status, pricing_model, hourly_rate
           )
           VALUES (
@@ -115,7 +115,7 @@ export class ArenasService {
           [
             arenaData.name,
             arenaData.description,
-            arenaData.game_type,
+            arenaData.arena_type,
             arenaData.location_address,
             arenaData.longitude,
             arenaData.latitude,
@@ -139,7 +139,7 @@ export class ArenasService {
       .insert({
         name: arenaData.name,
         description: arenaData.description,
-        game_type: arenaData.game_type,
+        arena_type: arenaData.arena_type,
         location_address: arenaData.location_address,
         country: arenaData.country,
         city: arenaData.city,
@@ -189,7 +189,7 @@ export class ArenasService {
       const result = await client.query(
         `
         SELECT
-          id, name, description, game_type, location_address,
+          id, name, description, arena_type, location_address,
           country, city, status, pricing_model, hourly_rate,
           total_sessions, rating, operator_id, created_at,
           ts_rank(
