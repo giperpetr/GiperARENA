@@ -1,5 +1,4 @@
 // Game Sessions Service - Business logic for game session operations
-import { supabaseAdmin } from '../config/supabase';
 import { pool } from '../config/database';
 import redis from '../config/redis';
 
