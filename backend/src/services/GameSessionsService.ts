@@ -94,39 +94,31 @@ export class GameSessionsService {
 
   // Create game session
   async createGameSession(sessionData: any) {
-    const { data, error } = await supabaseAdmin
-      .from('game_sessions')
-      .insert({
-        arena_id: sessionData.arena_id,
-        player_id: sessionData.player_id,
-        status: 'waiting',
-      })
-      .select()
-      .single();
+    const sql = `
+      INSERT INTO giperarena.game_sessions (arena_id, player_id, status)
+      VALUES ($1, $2, 'waiting')
+      RETURNING *
+    `;
 
-    if (error) throw error;
-
-    return data;
+    const result = await pool.query(sql, [sessionData.arena_id, sessionData.player_id]);
+    return result.rows[0];
   }
 
   // Start game session
   async startGameSession(sessionId: string) {
-    const { data, error } = await supabaseAdmin
-      .from('game_sessions')
-      .update({
-        status: 'active',
-        started_at: new Date().toISOString(),
-      })
-      .eq('id', sessionId)
-      .select()
-      .single();
+    const sql = `
+      UPDATE giperarena.game_sessions
+      SET status = 'active', started_at = NOW()
+      WHERE id = $1
+      RETURNING *
+    `;
 
-    if (error) throw error;
+    const result = await pool.query(sql, [sessionId]);
 
     // Invalidate cache
     await redis.del(`session:${sessionId}`);
 
-    return data;
+    return result.rows[0];
   }
 
   // End game session
@@ -150,19 +142,29 @@ export class GameSessionsService {
       updateData.replay_url = replayUrl;
     }
 
-    const { data, error } = await supabaseAdmin
-      .from('game_sessions')
-      .update(updateData)
-      .eq('id', sessionId)
-      .select()
-      .single();
+    const sql = `
+      UPDATE giperarena.game_sessions
+      SET status = $1, ended_at = $2, duration_seconds = $3, score = $4, replay_url = $5
+      WHERE id = $6
+      RETURNING *
+    `;
 
-    if (error) throw error;
+    const result = await pool.query(sql, [
+      updateData.status,
+      updateData.ended_at,
+      updateData.duration_seconds,
+      updateData.score || null,
+      updateData.replay_url || null,
+      sessionId,
+    ]);
 
     // Update arena total_sessions count
-    await supabaseAdmin.rpc('increment_arena_sessions', {
-      arena_id: session.arena_id,
-    });
+    await pool.query(
+      `UPDATE giperarena.arenas SET total_sessions = total_sessions + 1 WHERE id = $1`,
+      [session.arena_id]
+    );
+
+    const data = result.rows[0];
 
     // Invalidate cache
     await redis.del(`session:${sessionId}`);
@@ -172,22 +174,19 @@ export class GameSessionsService {
 
   // Cancel game session
   async cancelGameSession(sessionId: string) {
-    const { data, error } = await supabaseAdmin
-      .from('game_sessions')
-      .update({
-        status: 'cancelled',
-        ended_at: new Date().toISOString(),
-      })
-      .eq('id', sessionId)
-      .select()
-      .single();
+    const sql = `
+      UPDATE giperarena.game_sessions
+      SET status = 'cancelled', ended_at = NOW()
+      WHERE id = $1
+      RETURNING *
+    `;
 
-    if (error) throw error;
+    const result = await pool.query(sql, [sessionId]);
 
     // Invalidate cache
     await redis.del(`session:${sessionId}`);
 
-    return data;
+    return result.rows[0];
   }
 
   // Get user's game history
@@ -199,27 +198,32 @@ export class GameSessionsService {
       return JSON.parse(cached);
     }
 
-    const { data, error } = await supabaseAdmin
-      .from('game_sessions')
-      .select(
-        `
-        id,
-        arena_id,
-        status,
-        score,
-        duration_seconds,
-        started_at,
-        ended_at,
-        created_at,
-        arenas(id, name, game_type, location_address)
-      `
-      )
-      .eq('player_id', userId)
-      .in('status', ['completed', 'cancelled'])
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+    const sql = `
+      SELECT
+        gs.id,
+        gs.arena_id,
+        gs.status,
+        gs.score,
+        gs.duration_seconds,
+        gs.started_at,
+        gs.ended_at,
+        gs.created_at,
+        jsonb_build_object(
+          'id', a.id,
+          'name', a.name,
+          'game_type', a.game_type,
+          'location_address', a.location_address
+        ) as arenas
+      FROM giperarena.game_sessions gs
+      LEFT JOIN giperarena.arenas a ON gs.arena_id = a.id
+      WHERE gs.player_id = $1
+        AND gs.status IN ('completed', 'cancelled')
+      ORDER BY gs.created_at DESC
+      LIMIT $2 OFFSET $3
+    `;
 
-    if (error) throw error;
+    const result = await pool.query(sql, [userId, limit, offset]);
+    const data = result.rows;
 
     // Cache for 2 minutes
     await redis.setex(cacheKey, 120, JSON.stringify(data));

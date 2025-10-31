@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   frontend:
-    image: giperpetr/giperarena-frontend:9b48dd6
+    image: giperpetr/giperarena-frontend:b14e87f
     container_name: giperarena-frontend
     restart: unless-stopped
     env_file:
@@ -24,7 +24,7 @@ services:
       - "traefik.http.services.giperarena.loadbalancer.server.port=3000"
 
   backend:
-    image: giperpetr/giperarena-backend:9b48dd6
+    image: giperpetr/giperarena-backend:b14e87f
     container_name: giperarena-backend
     restart: unless-stopped
     env_file:

@@ -175,9 +175,7 @@ export class ArenasService {
 
   // Delete arena
   async deleteArena(arenaId: string) {
-    const { error } = await supabaseAdmin.from('arenas').delete().eq('id', arenaId);
-
-    if (error) throw error;
+    await pool.query(`DELETE FROM giperarena.arenas WHERE id = $1`, [arenaId]);
 
     // Invalidate cache
     await redis.del(`arena:${arenaId}`);
