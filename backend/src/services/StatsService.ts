@@ -28,11 +28,11 @@ export class StatsService {
       SELECT
         (SELECT COUNT(DISTINCT player_id)
          FROM giperarena.game_sessions
-         WHERE status IN ('active', 'waiting')) as players_online,
+         WHERE status IN ('in_progress', 'waiting')) as players_online,
 
         (SELECT COUNT(*)
          FROM giperarena.game_sessions
-         WHERE status = 'active') as games_active,
+         WHERE status = 'in_progress') as games_active,
 
         (SELECT COUNT(*)
          FROM giperarena.tournaments

@@ -14,8 +14,8 @@ export class GameSessionsService {
         gs.score,
         gs.duration_seconds,
         gs.replay_url,
-        gs.started_at,
-        gs.ended_at,
+        gs.start_time as started_at,
+        gs.end_time as ended_at,
         gs.created_at,
         jsonb_build_object(
           'id', a.id,
@@ -65,7 +65,17 @@ export class GameSessionsService {
 
     const sql = `
       SELECT
-        gs.*,
+        gs.id,
+        gs.arena_id,
+        gs.player_id,
+        gs.status,
+        gs.score,
+        gs.duration_seconds,
+        gs.replay_url,
+        gs.start_time as started_at,
+        gs.end_time as ended_at,
+        gs.created_at,
+        gs.updated_at,
         jsonb_build_object(
           'id', a.id,
           'name', a.name,
@@ -107,7 +117,7 @@ export class GameSessionsService {
   async startGameSession(sessionId: string) {
     const sql = `
       UPDATE giperarena.game_sessions
-      SET status = 'active', started_at = NOW()
+      SET status = 'in_progress', start_time = NOW()
       WHERE id = $1
       RETURNING *
     `;
@@ -123,37 +133,22 @@ export class GameSessionsService {
   // End game session
   async endGameSession(sessionId: string, score?: number, replayUrl?: string) {
     const session = await this.getGameSessionById(sessionId);
-    const startedAt = new Date(session.started_at);
-    const endedAt = new Date();
-    const durationSeconds = Math.floor((endedAt.getTime() - startedAt.getTime()) / 1000);
-
-    const updateData: any = {
-      status: 'completed',
-      ended_at: endedAt.toISOString(),
-      duration_seconds: durationSeconds,
-    };
-
-    if (score !== undefined) {
-      updateData.score = score;
-    }
-
-    if (replayUrl) {
-      updateData.replay_url = replayUrl;
-    }
+    const startTime = session.started_at ? new Date(session.started_at) : new Date();
+    const endTime = new Date();
+    const durationSeconds = Math.floor((endTime.getTime() - startTime.getTime()) / 1000);
 
     const sql = `
       UPDATE giperarena.game_sessions
-      SET status = $1, ended_at = $2, duration_seconds = $3, score = $4, replay_url = $5
-      WHERE id = $6
+      SET status = 'completed', end_time = $1, duration_seconds = $2, score = $3, replay_url = $4
+      WHERE id = $5
       RETURNING *
     `;
 
     const result = await pool.query(sql, [
-      updateData.status,
-      updateData.ended_at,
-      updateData.duration_seconds,
-      updateData.score || null,
-      updateData.replay_url || null,
+      endTime.toISOString(),
+      durationSeconds,
+      score || null,
+      replayUrl || null,
       sessionId,
     ]);
 
@@ -175,7 +170,7 @@ export class GameSessionsService {
   async cancelGameSession(sessionId: string) {
     const sql = `
       UPDATE giperarena.game_sessions
-      SET status = 'cancelled', ended_at = NOW()
+      SET status = 'cancelled', end_time = NOW()
       WHERE id = $1
       RETURNING *
     `;
@@ -204,8 +199,8 @@ export class GameSessionsService {
         gs.status,
         gs.score,
         gs.duration_seconds,
-        gs.started_at,
-        gs.ended_at,
+        gs.start_time as started_at,
+        gs.end_time as ended_at,
         gs.created_at,
         jsonb_build_object(
           'id', a.id,
