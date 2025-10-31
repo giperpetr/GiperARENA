@@ -23,15 +23,9 @@ export class GameSessionsService {
           'name', a.name,
           'game_type', a.game_type,
           'location_address', a.location_address
-        ) as arenas,
-        jsonb_build_object(
-          'id', u.id,
-          'username', u.username,
-          'avatar_url', u.avatar_url
-        ) as users
+        ) as arenas
       FROM giperarena.game_sessions gs
       LEFT JOIN giperarena.arenas a ON gs.arena_id = a.id
-      LEFT JOIN giperarena.users u ON gs.player_id = u.id
       WHERE 1=1
     `;
 
